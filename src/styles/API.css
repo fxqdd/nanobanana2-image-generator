@@ -1,0 +1,957 @@
+/* API页面基础样式 */
+.api-page {
+  padding: 40px 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+  position: relative;
+  transition: background-color 0.3s ease;
+}
+
+/* 暗色墙纸效果 */
+.api-page.dark-wallpaper {
+  background-color: #121212;
+  background-image: 
+    radial-gradient(circle at 10% 20%, rgba(255, 165, 0, 0.05) 0%, transparent 20%),
+    radial-gradient(circle at 80% 30%, rgba(255, 165, 0, 0.07) 0%, transparent 25%),
+    radial-gradient(circle at 40% 70%, rgba(255, 165, 0, 0.04) 0%, transparent 20%),
+    radial-gradient(circle at 90% 90%, rgba(255, 165, 0, 0.06) 0%, transparent 15%);
+  min-height: 100vh;
+}
+
+.api-page.dark-wallpaper .api-header h1,
+.api-page.dark-wallpaper .api-header p {
+  color: white;
+}
+
+/* API头部区域 */
+.api-header {
+  position: relative;
+  text-align: center;
+  margin-bottom: 40px;
+  padding: 40px 20px;
+  background: linear-gradient(135deg, rgba(255, 165, 0, 0.1) 0%, rgba(255, 165, 0, 0.05) 100%);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.api-page.dark-wallpaper .api-header {
+  background: linear-gradient(135deg, rgba(255, 165, 0, 0.15) 0%, rgba(255, 165, 0, 0.05) 100%);
+}
+
+.api-header h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--text-color);
+  margin-bottom: 16px;
+}
+
+.api-header p {
+  font-size: 1.25rem;
+  color: var(--text-secondary);
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+/* 暗色墙纸开关 */
+.wallpaper-toggle {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.9);
+  border: 1px solid var(--border-color);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow-light);
+}
+
+.wallpaper-toggle:hover {
+  transform: scale(1.1);
+  box-shadow: var(--shadow-medium);
+}
+
+.wallpaper-toggle.active {
+  background-color: rgba(255, 165, 0, 0.2);
+  border-color: var(--primary-color);
+  color: white;
+}
+
+.api-page.dark-wallpaper .wallpaper-toggle {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: white;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* API导航标签 */
+.api-tabs {
+  display: flex;
+  gap: 8px;
+  background-color: var(--background-light);
+  border-radius: var(--radius);
+  padding: 8px;
+  margin-bottom: 30px;
+  box-shadow: var(--shadow-light);
+  flex-wrap: wrap;
+}
+
+.api-page.dark-wallpaper .api-tabs {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.tab-button {
+  flex: 1;
+  padding: 12px 20px;
+  background-color: transparent;
+  border: none;
+  border-radius: var(--radius);
+  color: var(--text-secondary);
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: center;
+  min-width: 120px;
+}
+
+.tab-button:hover {
+  color: var(--primary-color);
+  background-color: rgba(255, 165, 0, 0.05);
+}
+
+.tab-button.active {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.api-page.dark-wallpaper .tab-button {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.api-page.dark-wallpaper .tab-button:hover {
+  color: white;
+  background-color: rgba(255, 165, 0, 0.2);
+}
+
+/* API主要内容区域 */
+.api-content {
+  background-color: var(--background-light);
+  border-radius: var(--radius);
+  padding: 32px;
+  box-shadow: var(--shadow-light);
+}
+
+.api-page.dark-wallpaper .api-content {
+  background-color: rgba(255, 255, 255, 0.03);
+}
+
+/* 概览页面样式 */
+.overview-content section {
+  margin-bottom: 40px;
+}
+
+.overview-content h2 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--text-color);
+  margin-bottom: 20px;
+}
+
+.overview-content p {
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: 16px;
+}
+
+/* API密钥卡片 */
+.api-key-section {
+  margin: 40px 0;
+}
+
+.api-key-card {
+  background-color: rgba(255, 165, 0, 0.05);
+  border: 1px solid rgba(255, 165, 0, 0.2);
+  border-radius: var(--radius);
+  padding: 24px;
+  position: relative;
+}
+
+.api-page.dark-wallpaper .api-key-card {
+  background-color: rgba(255, 165, 0, 0.1);
+  border-color: rgba(255, 165, 0, 0.3);
+}
+
+.api-key-card h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-color);
+  margin-bottom: 16px;
+}
+
+.api-key-display {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+  background-color: var(--background-light);
+  padding: 12px 16px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border-color);
+}
+
+.api-page.dark-wallpaper .api-key-display {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.api-key-display code {
+  flex: 1;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 0.9375rem;
+  color: var(--text-color);
+  word-break: break-all;
+}
+
+.copy-button {
+  padding: 8px 16px;
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: var(--radius);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.copy-button:hover {
+  background-color: var(--primary-dark);
+  transform: translateY(-1px);
+}
+
+.api-key-note {
+  font-size: 0.875rem;
+  color: #FF6B6B;
+  margin-bottom: 8px;
+}
+
+.api-key-expiry {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin-bottom: 16px;
+}
+
+.regenerate-key-button {
+  padding: 10px 20px;
+  background-color: transparent;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  border-radius: var(--radius);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.regenerate-key-button:hover {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+/* API特性网格 */
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px;
+}
+
+.feature-card {
+  background-color: rgba(255, 255, 255, 0.5);
+  border-radius: var(--radius);
+  padding: 24px;
+  text-align: center;
+  box-shadow: var(--shadow-light);
+  transition: all 0.3s ease;
+  border: 1px solid var(--border-color);
+}
+
+.api-page.dark-wallpaper .feature-card {
+  background-color: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.feature-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-medium);
+}
+
+.feature-icon {
+  font-size: 2.5rem;
+  margin-bottom: 16px;
+}
+
+.feature-card h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-color);
+  margin-bottom: 8px;
+}
+
+.feature-card p {
+  font-size: 0.9375rem;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+/* 快速开始步骤 */
+.quick-start-steps {
+  padding-left: 24px;
+}
+
+.quick-start-steps li {
+  margin-bottom: 20px;
+}
+
+.quick-start-steps h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-color);
+  margin-bottom: 8px;
+}
+
+.quick-start-steps p {
+  margin: 0;
+}
+
+/* 文档页面样式 */
+.endpoints-section,
+.errors-section {
+  margin-bottom: 40px;
+}
+
+.docs-content h2 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--text-color);
+  margin-bottom: 24px;
+}
+
+/* 端点卡片 */
+.endpoint-card {
+  background-color: rgba(255, 255, 255, 0.5);
+  border-radius: var(--radius);
+  padding: 24px;
+  margin-bottom: 20px;
+  box-shadow: var(--shadow-light);
+  border: 1px solid var(--border-color);
+}
+
+.api-page.dark-wallpaper .endpoint-card {
+  background-color: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.endpoint-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.method {
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.method.get {
+  background-color: #61DAFB;
+  color: #000;
+}
+
+.method.post {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.method.put {
+  background-color: #FF9800;
+  color: white;
+}
+
+.method.delete {
+  background-color: #F44336;
+  color: white;
+}
+
+.endpoint-url {
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--primary-color);
+}
+
+.endpoint-description {
+  color: var(--text-secondary);
+  margin-bottom: 16px;
+  line-height: 1.6;
+}
+
+/* 参数表格 */
+.params-table-container,
+.errors-table-container {
+  overflow-x: auto;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-light);
+}
+
+.params-table,
+.errors-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: var(--background-light);
+}
+
+.api-page.dark-wallpaper .params-table,
+.api-page.dark-wallpaper .errors-table {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.params-table th,
+.errors-table th {
+  background-color: rgba(255, 165, 0, 0.1);
+  color: var(--text-color);
+  padding: 12px 16px;
+  text-align: left;
+  font-weight: 600;
+}
+
+.api-page.dark-wallpaper .params-table th,
+.api-page.dark-wallpaper .errors-table th {
+  background-color: rgba(255, 165, 0, 0.2);
+}
+
+.params-table td,
+.errors-table td {
+  padding: 12px 16px;
+  border-top: 1px solid var(--border-color);
+}
+
+.api-page.dark-wallpaper .params-table td,
+.api-page.dark-wallpaper .errors-table td {
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.params-table tr:hover,
+.errors-table tr:hover {
+  background-color: rgba(255, 165, 0, 0.05);
+}
+
+.api-page.dark-wallpaper .params-table tr:hover,
+.api-page.dark-wallpaper .errors-table tr:hover {
+  background-color: rgba(255, 165, 0, 0.1);
+}
+
+.params-table code,
+.errors-table code {
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  background-color: rgba(255, 165, 0, 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.875rem;
+}
+
+.api-page.dark-wallpaper .params-table code,
+.api-page.dark-wallpaper .errors-table code {
+  background-color: rgba(255, 165, 0, 0.2);
+}
+
+/* 示例页面样式 */
+.code-examples-section,
+.usage-example {
+  margin-bottom: 40px;
+}
+
+.examples-content h2 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--text-color);
+  margin-bottom: 24px;
+}
+
+.code-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  background-color: var(--background-light);
+  border-radius: var(--radius);
+  padding: 8px;
+  box-shadow: var(--shadow-light);
+}
+
+.api-page.dark-wallpaper .code-tabs {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.code-tab {
+  padding: 10px 16px;
+  background-color: transparent;
+  border: none;
+  border-radius: var(--radius);
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.code-tab:hover {
+  color: var(--primary-color);
+  background-color: rgba(255, 165, 0, 0.05);
+}
+
+.code-tab.active {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.api-page.dark-wallpaper .code-tab {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.api-page.dark-wallpaper .code-tab:hover {
+  color: white;
+  background-color: rgba(255, 165, 0, 0.2);
+}
+
+/* 代码示例区域 */
+.code-example {
+  position: relative;
+  background-color: #282c34;
+  border-radius: var(--radius);
+  padding: 16px;
+  overflow: auto;
+}
+
+.code-example pre {
+  margin: 0;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  color: #abb2bf;
+}
+
+.copy-code-button {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  padding: 6px 12px;
+  background-color: rgba(255, 255, 255, 0.1);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.copy-code-button:hover {
+  background-color: var(--primary-color);
+}
+
+/* 使用示例步骤 */
+.usage-steps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px;
+}
+
+.usage-step {
+  background-color: rgba(255, 255, 255, 0.5);
+  border-radius: var(--radius);
+  padding: 24px;
+  box-shadow: var(--shadow-light);
+  border: 1px solid var(--border-color);
+}
+
+.api-page.dark-wallpaper .usage-step {
+  background-color: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.usage-step h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-color);
+  margin-bottom: 12px;
+}
+
+.usage-step p {
+  color: var(--text-secondary);
+  margin-bottom: 16px;
+  line-height: 1.6;
+}
+
+.usage-step pre {
+  background-color: #282c34;
+  padding: 16px;
+  border-radius: var(--radius);
+  overflow-x: auto;
+  margin: 0;
+}
+
+.usage-step code {
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 0.9375rem;
+  color: #abb2bf;
+}
+
+/* 状态页面样式 */
+.status-content h2 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--text-color);
+  margin-bottom: 24px;
+}
+
+/* 状态指示器 */
+.status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 32px;
+  background-color: rgba(76, 175, 80, 0.1);
+  padding: 16px;
+  border-radius: var(--radius);
+  border: 1px solid rgba(76, 175, 80, 0.2);
+}
+
+.api-page.dark-wallpaper .status-indicator {
+  background-color: rgba(76, 175, 80, 0.2);
+  border-color: rgba(76, 175, 80, 0.3);
+}
+
+.status-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background-color: #4CAF50;
+}
+
+.status-dot.green {
+  background-color: #4CAF50;
+}
+
+.status-dot.yellow {
+  background-color: #FFC107;
+}
+
+.status-dot.red {
+  background-color: #F44336;
+}
+
+.status-text {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+/* 服务状态 */
+.status-details,
+.uptime-stats,
+.incidents-section {
+  margin-bottom: 32px;
+  background-color: rgba(255, 255, 255, 0.5);
+  border-radius: var(--radius);
+  padding: 24px;
+  box-shadow: var(--shadow-light);
+  border: 1px solid var(--border-color);
+}
+
+.api-page.dark-wallpaper .status-details,
+.api-page.dark-wallpaper .uptime-stats,
+.api-page.dark-wallpaper .incidents-section {
+  background-color: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.status-details h3,
+.uptime-stats h3,
+.incidents-section h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-color);
+  margin-bottom: 16px;
+}
+
+.service-status {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.service-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background-color: var(--background-light);
+  border-radius: var(--radius);
+  border: 1px solid var(--border-color);
+}
+
+.api-page.dark-wallpaper .service-item {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.service-name {
+  font-weight: 500;
+  color: var(--text-color);
+}
+
+.status-badge {
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.status-badge.green {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.status-badge.yellow {
+  background-color: #FFC107;
+  color: #212121;
+}
+
+.status-badge.red {
+  background-color: #F44336;
+  color: white;
+}
+
+/* 正常运行时间统计 */
+.uptime-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 20px;
+}
+
+.uptime-item {
+  text-align: center;
+  padding: 16px;
+  background-color: var(--background-light);
+  border-radius: var(--radius);
+  border: 1px solid var(--border-color);
+}
+
+.api-page.dark-wallpaper .uptime-item {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.uptime-value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  margin-bottom: 4px;
+}
+
+.uptime-label {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+/* 事件列表 */
+.incident-item {
+  padding: 16px;
+  background-color: var(--background-light);
+  border-radius: var(--radius);
+  border: 1px solid var(--border-color);
+}
+
+.api-page.dark-wallpaper .incident-item {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.incident-item.resolved {
+  border-left: 4px solid #4CAF50;
+}
+
+.incident-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.incident-title {
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.incident-date {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.incident-description {
+  font-size: 0.9375rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+/* 响应式设计 */
+@media (max-width: 992px) {
+  .api-header h1 {
+    font-size: 2.25rem;
+  }
+  
+  .api-header p {
+    font-size: 1.125rem;
+  }
+  
+  .api-content {
+    padding: 24px;
+  }
+  
+  .feature-grid,
+  .usage-steps {
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .api-page {
+    padding: 20px 15px;
+  }
+  
+  .api-header {
+    padding: 30px 16px;
+  }
+  
+  .api-header h1 {
+    font-size: 2rem;
+  }
+  
+  .api-header p {
+    font-size: 1rem;
+  }
+  
+  .api-tabs {
+    flex-direction: column;
+  }
+  
+  .tab-button {
+    min-width: auto;
+  }
+  
+  .api-content {
+    padding: 20px;
+  }
+  
+  .feature-grid,
+  .usage-steps {
+    grid-template-columns: 1fr;
+  }
+  
+  .endpoint-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .endpoint-url {
+    font-size: 0.9375rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .wallpaper-toggle {
+    width: 36px;
+    height: 36px;
+    font-size: 1.125rem;
+    top: 16px;
+    right: 16px;
+  }
+  
+  .api-content {
+    padding: 16px;
+  }
+  
+  .api-key-display {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .copy-button {
+    align-self: center;
+  }
+  
+  .service-status {
+    grid-template-columns: 1fr;
+  }
+  
+  .uptime-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .incident-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+/* 暗色模式适配 */
+body.dark-mode .api-container {
+  background-color: #111;
+}
+
+body.dark-mode .api-page:not(.dark-wallpaper) {
+  background-color: var(--background-dark);
+}
+
+body.dark-mode .api-content,
+body.dark-mode .api-tabs,
+body.dark-mode .code-tabs {
+  background-color: var(--background-dark);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+body.dark-mode .tab-button,
+body.dark-mode .code-tab {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+body.dark-mode .tab-button:hover,
+body.dark-mode .code-tab:hover {
+  color: white;
+  background-color: rgba(255, 165, 0, 0.2);
+}
+
+body.dark-mode .api-key-card,
+body.dark-mode .feature-card,
+body.dark-mode .endpoint-card,
+body.dark-mode .usage-step,
+body.dark-mode .status-details,
+body.dark-mode .uptime-stats,
+body.dark-mode .incidents-section {
+  background-color: var(--background-dark);
+  border-color: rgba(255, 255, 255, 0.1);
+}

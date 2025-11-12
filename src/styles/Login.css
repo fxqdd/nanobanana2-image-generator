@@ -1,0 +1,530 @@
+/* 登录页面样式 */
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: linear-gradient(135deg, #fff, #f8f9fa);
+}
+
+.login-container {
+  width: 100%;
+  max-width: 450px;
+  background-color: white;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-medium);
+  padding: 40px;
+  transition: var(--transition);
+}
+
+.login-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.login-header h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-color);
+  margin-bottom: 8px;
+}
+
+.login-subtitle {
+  color: var(--text-secondary);
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.error-message {
+  background-color: #ffebee;
+  color: #c62828;
+  padding: 12px 16px;
+  border-radius: var(--radius);
+  margin-bottom: 20px;
+  font-size: 0.9rem;
+  border: 1px solid #ffcdd2;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group label {
+  font-weight: 500;
+  color: var(--text-color);
+  font-size: 0.95rem;
+}
+
+.form-group input {
+  padding: 12px 16px;
+  font-size: 1rem;
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius);
+  background-color: white;
+  color: var(--text-color);
+  transition: var(--transition);
+  outline: none;
+}
+
+.form-group input:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(255, 165, 0, 0.1);
+}
+
+/* 密码输入容器样式 */
+.password-input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.toggle-password-visibility {
+  position: absolute;
+  right: 10px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  padding: 5px;
+  color: var(--text-secondary);
+  transition: color 0.2s;
+}
+
+.toggle-password-visibility:hover {
+  color: var(--primary-color);
+}
+
+/* 密码提示文本 */
+.password-hint {
+  display: block;
+  margin-top: 5px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+/* 测试账号样式 */
+.test-accounts {
+  margin-top: 20px;
+  padding: 15px;
+  background-color: var(--background-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+}
+
+.test-accounts-title {
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: var(--text-primary);
+  }
+
+.test-account-item {
+  margin-bottom: 8px;
+  font-size: 14px;
+  color: var(--text-secondary);
+  font-family: monospace;
+}
+
+.password-options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.remember-me {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.remember-me input[type="checkbox"] {
+  width: auto;
+  margin: 0;
+}
+
+.remember-me label {
+  font-weight: normal;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.forgot-password {
+  background: none;
+  border: none;
+  color: var(--primary-color);
+  font-size: 0.9rem;
+  cursor: pointer;
+  padding: 0;
+  transition: var(--transition);
+}
+
+.forgot-password:hover {
+  color: #ff8c00;
+  text-decoration: underline;
+}
+
+.login-button {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: var(--radius);
+  padding: 14px 24px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.login-button:hover:not(:disabled) {
+  background-color: #ff8c00;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-medium);
+}
+
+.login-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.loading-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.form-toggle {
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.toggle-link {
+  background: none;
+  border: none;
+  color: var(--primary-color);
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0;
+  transition: var(--transition);
+}
+
+.toggle-link:hover {
+  color: #ff8c00;
+  text-decoration: underline;
+}
+
+.login-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 32px 0;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.login-divider::before,
+.login-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background-color: var(--border-color);
+  margin: 0 16px;
+}
+
+.social-login {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.social-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 12px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  background-color: white;
+  color: var(--text-color);
+  cursor: pointer;
+  transition: var(--transition);
+  font-size: 0.85rem;
+}
+
+.social-button:hover {
+  background-color: #f8f9fa;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-light);
+}
+
+.social-icon {
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.social-button.google .social-icon {
+  color: #db4437;
+}
+
+.social-button.google .social-icon {
+  color: #db4437;
+}
+
+.social-button.github .social-icon {
+  color: white;
+}
+
+.social-button.facebook .social-icon {
+  color: white;
+}
+
+.social-button.github {
+  background-color: #24292e;
+  color: white;
+}
+
+.social-button.github:hover {
+  background-color: #1d2125;
+}
+
+.social-button.facebook {
+  background-color: #1877f2;
+  color: white;
+}
+
+.social-button.facebook:hover {
+  background-color: #166fe5;
+}
+
+.verification-box {
+  margin-top: 24px;
+  padding: 18px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  background-color: var(--background-secondary);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.verification-box h4 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: var(--text-color);
+}
+
+.verification-box p {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.verification-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.verification-button {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: var(--radius);
+  padding: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.verification-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.verification-button:hover:not(:disabled) {
+  background-color: #ff8c00;
+  box-shadow: var(--shadow-light);
+}
+
+.verification-button.secondary {
+  background-color: transparent;
+  color: var(--primary-color);
+  border: 2px solid var(--primary-color);
+}
+
+.verification-button.secondary:hover:not(:disabled) {
+  background-color: rgba(255, 165, 0, 0.1);
+  box-shadow: none;
+}
+
+.verification-status {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.verification-status.success {
+  color: var(--primary-color);
+}
+
+.verification-status.error {
+  color: #d32f2f;
+}
+
+.login-footer {
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+.login-footer a {
+  color: var(--primary-color);
+  text-decoration: none;
+  margin: 0 4px;
+}
+
+.login-footer a:hover {
+  text-decoration: underline;
+}
+
+/* 暗色模式适配 */
+body.dark-mode .login-page {
+  background: linear-gradient(135deg, #1a1a2e, #16213e);
+}
+
+body.dark-mode .login-container {
+  background-color: var(--background-dark);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+body.dark-mode .login-header h2,
+body.dark-mode .form-group label,
+body.dark-mode .social-button {
+  color: var(--text-color);
+}
+
+body.dark-mode .login-subtitle,
+body.dark-mode .remember-me label,
+body.dark-mode .form-toggle,
+body.dark-mode .login-divider,
+body.dark-mode .login-footer {
+  color: var(--text-secondary);
+}
+
+body.dark-mode .form-group input {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-color: var(--border-color);
+  color: var(--text-color);
+}
+
+body.dark-mode .form-group input:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(255, 183, 77, 0.2);
+}
+
+body.dark-mode .social-button {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-color: var(--border-color);
+}
+
+body.dark-mode .social-button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+body.dark-mode .social-button.github:hover {
+  background-color: #30363d;
+}
+
+body.dark-mode .social-button.facebook {
+  background-color: #1877f2;
+  color: white;
+}
+
+body.dark-mode .social-button.facebook:hover {
+  background-color: #166fe5;
+}
+
+body.dark-mode .verification-box {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+body.dark-mode .verification-box p {
+  color: var(--text-secondary);
+}
+
+body.dark-mode .verification-button.secondary {
+  color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+body.dark-mode .error-message {
+  background-color: rgba(220, 53, 69, 0.1);
+  color: #ff7b72;
+  border-color: rgba(220, 53, 69, 0.3);
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .login-container {
+    padding: 32px 24px;
+  }
+  
+  .login-header h2 {
+    font-size: 1.75rem;
+  }
+  
+  .social-login {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .social-button:last-child {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 480px) {
+  .login-container {
+    padding: 24px 20px;
+  }
+  
+  .login-header h2 {
+    font-size: 1.5rem;
+  }
+  
+  .form-group input {
+    padding: 10px 14px;
+  }
+  
+  .login-button {
+    padding: 12px 20px;
+    font-size: 1rem;
+  }
+  
+  .social-login {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,130 @@
+/* Unified "iOS-like" page spacing for Account/Billing/Settings */
+.page {
+  padding: 48px 24px;
+  max-width: 980px;
+  margin: 0 auto;
+}
+
+.page h1 {
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+
+.tabs {
+  display: inline-flex;
+  background: var(--background-light);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  overflow: hidden;
+  margin: 8px 0 24px;
+}
+
+.tab {
+  padding: 10px 16px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: var(--text-secondary);
+}
+
+.tab.active {
+  background: rgba(255, 165, 0, 0.12);
+  color: var(--text-color);
+  font-weight: 600;
+}
+
+.settings-section > h2 {
+  font-size: 22px;
+  margin: 8px 0 16px;
+}
+
+.card {
+  background: var(--background-light);
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  box-shadow: var(--shadow-light);
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+.row {
+  display: flex;
+  gap: 16px;
+  padding: 12px 0;
+  border-top: 1px solid rgba(0,0,0,0.04);
+}
+.row:first-child {
+  border-top: none;
+}
+
+.col label {
+  display: block;
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+
+select {
+  width: 100%;
+  min-width: 260px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+  background: var(--background-light);
+}
+
+.btn-small {
+  padding: 8px 12px;
+  font-size: 0.9rem;
+  border-radius: 10px;
+}
+
+.badge-success {
+  background: #e6f6ed;
+  color: #0f9d58;
+}
+
+.danger-zone {
+  margin-top: 28px;
+  padding: 20px;
+  border: 1px solid rgba(255,0,0,0.15);
+  border-radius: 14px;
+  background: rgba(255,0,0,0.02);
+}
+
+.btn-danger {
+  background: #e53935;
+  color: #fff;
+}
+
+.page .card,
+.page select,
+.page .tabs {
+  background: var(--background-light);
+}
+
+body.dark-mode .card {
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+}
+
+body.dark-mode .danger-zone {
+  background: rgba(229, 57, 53, 0.08);
+  border-color: rgba(229, 57, 53, 0.3);
+}
+
+.list-card h3 {
+  font-size: 20px;
+  margin-bottom: 6px;
+}
+
+.list-card p {
+  color: var(--text-secondary);
+}
+
+@media (max-width: 640px) {
+  .page { padding: 32px 16px; }
+  select { min-width: 100%; }
+}
+
+

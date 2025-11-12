@@ -1,0 +1,253 @@
+.footer {
+  background-color: var(--background-light);
+  border-top: 1px solid var(--border-color);
+  padding: 60px 0 30px;
+  transition: var(--transition);
+}
+
+.footer-top {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 40px;
+  margin-bottom: 40px;
+}
+
+/* 品牌区域 */
+.footer-brand {
+  max-width: 320px;
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.footer-logo {
+  width: 36px;
+  height: 36px;
+  margin-right: 12px;
+}
+
+.footer-logo-text {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  letter-spacing: -0.5px;
+}
+
+.footer-description {
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  margin-bottom: 24px;
+}
+
+/* 社交媒体链接 */
+.footer-social {
+  display: flex;
+  gap: 16px;
+}
+
+.social-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: rgba(0, 0, 0, 0.05);
+  color: var(--text-color);
+  transition: var(--transition);
+}
+
+.social-link:hover {
+  background-color: var(--primary-color);
+  color: white;
+  transform: translateY(-3px);
+}
+
+/* 链接容器 */
+.footer-links-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 30px;
+}
+
+.footer-links-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.footer-heading {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-color);
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.footer-heading::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  width: 30px;
+  height: 2px;
+  background-color: var(--primary-color);
+}
+
+.footer-links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.footer-links li {
+  margin-bottom: 12px;
+}
+
+.footer-link {
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 0.9375rem;
+  transition: var(--transition);
+  position: relative;
+  display: inline-block;
+  padding-left: 0;
+}
+
+.footer-link:hover {
+  color: var(--primary-color);
+  transform: translateX(5px);
+}
+
+.footer-link::before {
+  content: '→';
+  position: absolute;
+  left: -12px;
+  opacity: 0;
+  transition: var(--transition);
+}
+
+.footer-link:hover::before {
+  opacity: 1;
+  left: -8px;
+}
+
+/* 底部版权信息 */
+.footer-bottom {
+  padding-top: 30px;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.footer-copyright {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.footer-legal {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.legal-link {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: var(--transition);
+}
+
+.legal-link:hover {
+  color: var(--primary-color);
+}
+
+/* 响应式设计 */
+@media (max-width: 992px) {
+  .footer-top {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+  
+  .footer-brand {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .footer {
+    padding: 40px 0 20px;
+  }
+  
+  .footer-links-container {
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 20px;
+  }
+  
+  .footer-heading {
+    font-size: 1rem;
+    margin-bottom: 16px;
+  }
+  
+  .footer-link {
+    font-size: 0.875rem;
+  }
+  
+  .footer-bottom {
+    text-align: center;
+    padding-top: 20px;
+  }
+  
+  .footer-legal {
+    justify-content: center;
+    gap: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .footer-top {
+    gap: 30px;
+  }
+  
+  .footer-links-container {
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  
+  .footer-logo {
+    width: 30px;
+    height: 30px;
+  }
+  
+  .footer-logo-text {
+    font-size: 1.5rem;
+  }
+  
+  .social-link {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .footer-legal {
+    flex-direction: column;
+    gap: 8px;
+  }
+}
+
+/* 暗色模式适配 */
+body.dark-mode .social-link {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+body.dark-mode .footer {
+  background-color: var(--background-dark);
+  border-top-color: rgba(255, 255, 255, 0.1);
+}
+
+body.dark-mode .footer-bottom {
+  border-top-color: rgba(255, 255, 255, 0.1);
+}
