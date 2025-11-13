@@ -20,29 +20,31 @@ const ResetPassword = () => {
   useEffect(() => {
     const hash = location.hash || (typeof window !== 'undefined' ? window.location.hash : '')
     const search = location.search || (typeof window !== 'undefined' ? window.location.search : '')
-    const combinedParams = new URLSearchParams()
 
+    const params = new URLSearchParams()
     const appendParams = (source) => {
       if (!source) return
       const normalized = source.replace(/^([#?])/, '')
+      if (!normalized) return
       const entries = new URLSearchParams(normalized)
       entries.forEach((value, key) => {
-        if (!combinedParams.has(key)) {
-          combinedParams.set(key, value)
+        if (!params.has(key)) {
+          params.set(key, value)
         }
       })
     }
 
-    appendParams(hash)
     appendParams(search)
+    appendParams(hash)
 
-    const hasParams = !combinedParams.keys().next().done
+    const hasParams = !params.keys().next().done
+
     if (import.meta.env.DEV) {
       console.info('[ResetPassword] location snapshot', {
         href: typeof window !== 'undefined' ? window.location.href : '',
-        hash,
         search,
-        params: hasParams ? Object.fromEntries(combinedParams.entries()) : null
+        hash,
+        params: hasParams ? Object.fromEntries(params.entries()) : null
       })
     }
 
@@ -54,12 +56,12 @@ const ResetPassword = () => {
         return
       }
 
-      const type = combinedParams.get('type')
-      const accessToken = combinedParams.get('access_token')
-      const refreshToken = combinedParams.get('refresh_token')
-      const code = combinedParams.get('code')
-      const tokenHash = combinedParams.get('token_hash')
-      const email = combinedParams.get('email')
+      const type = params.get('type')
+      const accessToken = params.get('access_token')
+      const refreshToken = params.get('refresh_token')
+      const code = params.get('code')
+      const tokenHash = params.get('token_hash')
+      const email = params.get('email')
 
       if (type !== 'recovery') {
         setStatusType('error')
@@ -91,10 +93,6 @@ const ResetPassword = () => {
           sessionError = new Error('Missing tokens for password recovery')
         }
 
-        if (import.meta.env.DEV) {
-          console.info('[ResetPassword] session attempt result:', sessionError ?? 'success')
-        }
-
         if (sessionError) {
           console.error('Failed to establish session from recovery link:', sessionError)
           setStatusType('error')
@@ -108,9 +106,7 @@ const ResetPassword = () => {
         setStatusMessage('')
 
         if (typeof window !== 'undefined') {
-          const cleanUrl = `${window.location.pathname}${
-            window.location.hash?.startsWith('#') ? window.location.hash : ''
-          }`
+          const cleanUrl = `${window.location.pathname}#type=recovery`
           window.history.replaceState({}, document.title, cleanUrl)
         }
       } catch (err) {
