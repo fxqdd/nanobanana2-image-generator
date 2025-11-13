@@ -282,11 +282,11 @@ function Editor() {
                         ];
                     return (
                       <div>
-                        <div style={{ color: '#666', marginBottom: 4 }}>积分消耗（仅展示，不可选择）</div>
+                        <div style={{ color: '#666', marginBottom: 4 }}>{t('editor.costDisplayTitle')}</div>
                         <ul style={{ margin: 0, paddingLeft: 16 }}>
                           {items.map(it => (
                             <li key={`${it.name}-${it.cost}`} style={{ display: 'flex', gap: 8 }}>
-                              <span style={{ color: '#555' }}>消耗{it.cost}分</span>
+                              <span style={{ color: '#555' }}>{t('editor.costConsume').replace('{points}', it.cost)}</span>
                               <span style={{ color: '#222' }}>{it.name}</span>
                             </li>
                           ))}
@@ -412,7 +412,7 @@ function Editor() {
                   )
                 }
               >
-                {isGenerating ? t('editor.generating') : `${t('editor.generate')}（消耗${currentCost}积分）`}
+                {isGenerating ? t('editor.generating') : `${t('editor.generate')}${t('editor.costConsumeInButton').replace('{points}', currentCost)}`}
               </button>
             )}
             
@@ -647,10 +647,10 @@ function Editor() {
                 <div className="output-placeholder">
                   <div className="placeholder-icon">📷</div>
                   <p className="placeholder-text">
-                  {activeTab === 'imageEdit' ? '准备编辑图像' : '准备生成图像'}
+                  {activeTab === 'imageEdit' ? t('editor.prepareEditImage') : t('editor.prepareGenerateImage')}
                 </p>
                 <p className="placeholder-subtext">
-                  {activeTab === 'imageEdit' ? '上传参考图像并输入编辑提示' : '输入详细描述生成图像'}
+                  {activeTab === 'imageEdit' ? t('editor.uploadReferenceAndPrompt') : t('editor.enterDescriptionToGenerate')}
                 </p>
                 </div>
               )

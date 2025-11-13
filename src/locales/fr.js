@@ -166,7 +166,14 @@ export default {
     clear: 'Effacer',
     optimizingWithGemini: 'Optimisation du prompt avec Gemini...',
     pleaseWait: 'Veuillez patienter, cela peut prendre quelques secondes',
-    downloadImage: 'Télécharger l\'Image'
+    downloadImage: 'Télécharger l\'Image',
+    costDisplayTitle: 'Consommation de crédits (affichage uniquement, non sélectionnable)',
+    costConsume: 'Consommer {points} points',
+    costConsumeInButton: '(Consommer {points} crédits)',
+    prepareEditImage: 'Préparer l\'édition d\'image',
+    prepareGenerateImage: 'Préparer la génération d\'image',
+    uploadReferenceAndPrompt: 'Télécharger l\'image de référence et entrer l\'invite d\'édition',
+    enterDescriptionToGenerate: 'Entrer une description détaillée pour générer l\'image'
   },
   showcase: {
     title: 'Galerie',

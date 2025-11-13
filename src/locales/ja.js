@@ -163,7 +163,14 @@ export default {
     clear: 'クリア',
     optimizingWithGemini: 'Geminiでプロンプトを最適化中...',
     pleaseWait: 'お待ちください。数秒かかる場合があります',
-    downloadImage: '画像をダウンロード'
+    downloadImage: '画像をダウンロード',
+    costDisplayTitle: 'クレジット消費（表示のみ、選択不可）',
+    costConsume: '消費{points}ポイント',
+    costConsumeInButton: '（消費{points}クレジット）',
+    prepareEditImage: '画像編集の準備',
+    prepareGenerateImage: '画像生成の準備',
+    uploadReferenceAndPrompt: '参考画像をアップロードして編集プロンプトを入力',
+    enterDescriptionToGenerate: '詳細な説明を入力して画像を生成'
   },
   showcase: {
     title: 'ショーケース',

@@ -1,184 +1,133 @@
 import React from 'react';
+import { useLanguage } from '../contexts/LanguageContext';
+import SEO from '../components/SEO';
 import '../styles/Privacy.css';
 
 const Privacy = () => {
+  const { t, getLocalizedPath } = useLanguage();
+  
   return (
     <div className="privacy-container">
-      <h1>隐私政策</h1>
+      <SEO
+        title={t('privacy.title')}
+        description={t('privacy.description')}
+        path={getLocalizedPath('/privacy')}
+        keywords="privacy policy, data protection, personal information"
+      />
+      <h1>{t('privacy.title')}</h1>
       
       <div className="privacy-content">
         <section>
-          <h2>1. 引言</h2>
-          <p>
-            欢迎使用 Nanobanana2 AI 工具站（以下简称"本网站"）。
-            本隐私政策描述了我们如何收集、使用、存储和保护您的个人信息。
-            请仔细阅读本隐私政策，了解我们的隐私保护实践。
-          </p>
+          <h2>{t('privacy.section1.title')}</h2>
+          <p>{t('privacy.section1.content')}</p>
         </section>
 
         <section>
-          <h2>2. 我们收集的信息</h2>
-          <h3>2.1 账户信息</h3>
-          <p>
-            当您创建账户时，我们可能收集以下信息：
-          </p>
+          <h2>{t('privacy.section2.title')}</h2>
+          <h3>{t('privacy.section2.subsection1.title')}</h3>
+          <p>{t('privacy.section2.subsection1.intro')}</p>
           <ul>
-            <li>个人信息：姓名、电子邮箱地址、头像等</li>
-            <li>身份验证信息：密码等安全凭证</li>
-            <li>如果使用社交媒体账号登录，可能收集该平台提供的相关信息</li>
+            {(t('privacy.section2.subsection1.items') || []).map((item, idx) => (
+              <li key={idx}>{item}</li>
+            ))}
           </ul>
-          <h3>2.2 使用记录与统计数据</h3>
-          <p>
-            为了提供、维护和改进我们的服务，我们收集您的使用数据：
-          </p>
+          <h3>{t('privacy.section2.subsection2.title')}</h3>
+          <p>{t('privacy.section2.subsection2.intro')}</p>
           <ul>
-            <li>使用次数：您使用各个AI工具的次数统计</li>
-            <li>使用记录：您使用AI工具的时间、频率、操作类型等信息</li>
-            <li>输入数据：您提交给AI工具的查询或内容（用于处理您的请求）</li>
-            <li>输出数据：AI工具生成的结果或响应</li>
-            <li>资源使用情况：处理时长、API调用次数等技术指标</li>
+            {(t('privacy.section2.subsection2.items') || []).map((item, idx) => (
+              <li key={idx}>{item}</li>
+            ))}
           </ul>
-          <h3>2.3 设备和浏览器信息</h3>
-          <p>
-            我们可能收集有关您使用的设备和浏览器的信息：
-          </p>
+          <h3>{t('privacy.section2.subsection3.title')}</h3>
+          <p>{t('privacy.section2.subsection3.intro')}</p>
           <ul>
-            <li>IP地址</li>
-            <li>浏览器类型和版本</li>
-            <li>操作系统信息</li>
-            <li>设备标识符</li>
-            <li>访问时间和日期</li>
-            <li>访问的页面或功能</li>
+            {(t('privacy.section2.subsection3.items') || []).map((item, idx) => (
+              <li key={idx}>{item}</li>
+            ))}
           </ul>
         </section>
 
         <section>
-          <h2>3. 信息使用方式</h2>
-          <h3>3.1 提供服务</h3>
-          <p>
-            我们使用您的信息来：
-          </p>
+          <h2>{t('privacy.section3.title')}</h2>
+          <h3>{t('privacy.section3.subsection1.title')}</h3>
+          <p>{t('privacy.section3.subsection1.intro')}</p>
           <ul>
-            <li>创建和维护您的账户</li>
-            <li>处理您的AI工具使用请求</li>
-            <li>管理您的订阅和计费信息</li>
-            <li>实施使用限制和配额管理</li>
+            {(t('privacy.section3.subsection1.items') || []).map((item, idx) => (
+              <li key={idx}>{item}</li>
+            ))}
           </ul>
-          <h3>3.2 改进服务</h3>
-          <p>
-            我们使用收集的使用记录和统计数据：
-          </p>
+          <h3>{t('privacy.section3.subsection2.title')}</h3>
+          <p>{t('privacy.section3.subsection2.intro')}</p>
           <ul>
-            <li>分析用户行为模式，优化产品功能和用户体验</li>
-            <li>监控服务性能，提高系统可靠性和响应速度</li>
-            <li>开发新功能和改进现有功能</li>
-            <li>确保服务符合用户需求和期望</li>
+            {(t('privacy.section3.subsection2.items') || []).map((item, idx) => (
+              <li key={idx}>{item}</li>
+            ))}
           </ul>
-          <h3>3.3 安全与合规</h3>
-          <p>
-            我们使用您的信息来：
-          </p>
+          <h3>{t('privacy.section3.subsection3.title')}</h3>
+          <p>{t('privacy.section3.subsection3.intro')}</p>
           <ul>
-            <li>验证账户身份，防止未经授权的访问</li>
-            <li>检测和防止欺诈活动</li>
-            <li>遵守适用的法律法规要求</li>
-            <li>保护用户数据安全和隐私</li>
+            {(t('privacy.section3.subsection3.items') || []).map((item, idx) => (
+              <li key={idx}>{item}</li>
+            ))}
           </ul>
-          <h3>3.4 通信</h3>
-          <p>
-            我们可能使用您的联系信息：
-          </p>
+          <h3>{t('privacy.section3.subsection4.title')}</h3>
+          <p>{t('privacy.section3.subsection4.intro')}</p>
           <ul>
-            <li>发送服务相关通知（如订阅到期提醒）</li>
-            <li>提供客户支持和响应您的查询</li>
-            <li>发送产品更新和促销信息（如您已选择接收）</li>
+            {(t('privacy.section3.subsection4.items') || []).map((item, idx) => (
+              <li key={idx}>{item}</li>
+            ))}
           </ul>
         </section>
 
         <section>
-          <h2>4. 数据存储与保护</h2>
-          <h3>4.1 数据存储期限</h3>
-          <p>
-            我们将在实现本隐私政策所述目的所需的时间内保留您的个人信息，
-            除非法律要求或允许更长的保留期。
-            对于使用记录数据，我们通常保留与您的订阅期限一致的时间。
-          </p>
-          <h3>4.2 数据保护措施</h3>
-          <p>
-            我们采用多种安全措施来保护您的个人信息：
-          </p>
+          <h2>{t('privacy.section4.title')}</h2>
+          <h3>{t('privacy.section4.subsection1.title')}</h3>
+          <p>{t('privacy.section4.subsection1.content')}</p>
+          <h3>{t('privacy.section4.subsection2.title')}</h3>
+          <p>{t('privacy.section4.subsection2.intro')}</p>
           <ul>
-            <li>加密存储和传输敏感数据</li>
-            <li>实施访问控制和身份验证机制</li>
-            <li>定期进行安全评估和漏洞扫描</li>
-            <li>遵循行业标准的安全最佳实践</li>
+            {(t('privacy.section4.subsection2.items') || []).map((item, idx) => (
+              <li key={idx}>{item}</li>
+            ))}
           </ul>
         </section>
 
         <section>
-          <h2>5. 数据共享与披露</h2>
-          <p>
-            我们不会出售您的个人信息。在以下情况下，我们可能会共享您的信息：
-          </p>
+          <h2>{t('privacy.section5.title')}</h2>
+          <p>{t('privacy.section5.intro')}</p>
           <ul>
-            <li>获得您的明确同意后</li>
-            <li>与我们的服务提供商共享，以便他们代表我们提供服务（受保密义务约束）</li>
-            <li>遵守适用法律、法规或政府要求，或回应法律程序</li>
-            <li>保护我们的权利、财产或安全，或用户的权利、财产或安全</li>
-            <li>在合并、收购或资产转让的情况下，如涉及个人信息的转移，
-              我们会要求新的持有您个人信息的实体继续受本隐私政策的约束</li>
+            {(t('privacy.section5.items') || []).map((item, idx) => (
+              <li key={idx}>{item}</li>
+            ))}
           </ul>
-          <p>
-            请注意，当您使用我们的AI工具时，您提交的输入数据可能会被处理并用于改进AI模型，
-            但我们会确保这些数据在使用前被匿名化或去标识化。
-          </p>
+          <p>{t('privacy.section5.note')}</p>
         </section>
 
         <section>
-          <h2>6. 用户权利</h2>
-          <p>
-            您对您的个人信息享有以下权利：
-          </p>
+          <h2>{t('privacy.section6.title')}</h2>
+          <p>{t('privacy.section6.intro')}</p>
           <ul>
-            <li>访问权：获取我们持有的关于您的个人信息</li>
-            <li>更正权：要求更正不准确或不完整的个人信息</li>
-            <li>删除权：在特定情况下要求删除您的个人信息</li>
-            <li>限制处理权：在特定情况下限制我们处理您的个人信息</li>
-            <li>数据可携带权：以结构化、常用和机器可读的格式接收您的个人信息
-              并将其传输给另一个数据控制者</li>
-            <li>反对权：在特定情况下反对处理您的个人信息</li>
-            <li>撤回同意权：撤回您之前给予的同意（不影响在撤回前基于同意进行的处理）</li>
+            {(t('privacy.section6.items') || []).map((item, idx) => (
+              <li key={idx}>{item}</li>
+            ))}
           </ul>
-          <p>
-            如需行使上述权利，请通过以下联系方式与我们联系。
-            我们会在合理的时间内回复您的请求。
-          </p>
+          <p>{t('privacy.section6.contact')}</p>
         </section>
 
         <section>
-          <h2>7. 第三方链接和服务</h2>
-          <p>
-            本网站可能包含指向第三方网站或服务的链接。
-            我们不对这些第三方的隐私实践或内容负责。
-            我们建议您在访问这些第三方网站时查看其隐私政策。
-          </p>
+          <h2>{t('privacy.section7.title')}</h2>
+          <p>{t('privacy.section7.content')}</p>
         </section>
 
         <section>
-          <h2>8. 隐私政策更新</h2>
-          <p>
-            我们可能会不时更新本隐私政策。更新后的隐私政策将在本网站上公布，
-            并自公布之日起生效。我们鼓励您定期查看本隐私政策，了解我们的隐私保护实践。
-          </p>
+          <h2>{t('privacy.section8.title')}</h2>
+          <p>{t('privacy.section8.content')}</p>
         </section>
 
         <section>
-          <h2>9. 联系我们</h2>
-          <p>
-            如果您对本隐私政策有任何疑问、意见或请求，或希望行使您的数据主体权利，
-            请通过以下方式联系我们：
-          </p>
-          <p>电子邮件：privacy@nanobanana-ai.com</p>
+          <h2>{t('privacy.section9.title')}</h2>
+          <p>{t('privacy.section9.intro')}</p>
+          <p>{t('privacy.section9.email')}</p>
         </section>
       </div>
     </div>

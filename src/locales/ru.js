@@ -166,7 +166,14 @@ export default {
     clear: 'Очистить',
     optimizingWithGemini: 'Оптимизация промпта с Gemini...',
     pleaseWait: 'Пожалуйста, подождите, это может занять несколько секунд',
-    downloadImage: 'Скачать изображение'
+    downloadImage: 'Скачать изображение',
+    costDisplayTitle: 'Расход баллов (только для отображения, не выбирается)',
+    costConsume: 'Потратить {points} баллов',
+    costConsumeInButton: '(Потратить {points} баллов)',
+    prepareEditImage: 'Подготовка к редактированию изображения',
+    prepareGenerateImage: 'Подготовка к генерации изображения',
+    uploadReferenceAndPrompt: 'Загрузите эталонное изображение и введите подсказку для редактирования',
+    enterDescriptionToGenerate: 'Введите подробное описание для генерации изображения'
   },
   showcase: {
     title: 'Галерея',

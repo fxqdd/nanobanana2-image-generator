@@ -166,7 +166,14 @@ export default {
     clear: 'Clear',
     optimizingWithGemini: 'Optimizing prompt with Gemini...',
     pleaseWait: 'Please wait, this may take a few seconds',
-    downloadImage: 'Download Image'
+    downloadImage: 'Download Image',
+    costDisplayTitle: 'Credit consumption (display only, not selectable)',
+    costConsume: 'Consume {points} points',
+    costConsumeInButton: '(Consume {points} credits)',
+    prepareEditImage: 'Prepare to edit image',
+    prepareGenerateImage: 'Prepare to generate image',
+    uploadReferenceAndPrompt: 'Upload reference image and enter editing prompt',
+    enterDescriptionToGenerate: 'Enter detailed description to generate image'
   },
   showcase: {
     title: 'Showcase',
@@ -437,6 +444,242 @@ export default {
       title: 'Login - Nano Banana 2',
       description: 'Login or register for Nano Banana 2 account to start using powerful AI image editing features.',
       keywords: 'login, register, Nano Banana 2, AI image editor'
+    }
+  },
+  terms: {
+    title: 'Terms of Service',
+    description: 'Nano Banana 2 Terms of Service and Usage Agreement',
+    section1: {
+      title: '1. Introduction',
+      content: 'Welcome to Nanobanana2 AI Tool Station (hereinafter referred to as "this website"). These terms of service constitute a legal agreement between you and this website, regulating your use of this website and the AI services it provides. Please read these terms carefully; by using this website, you agree to be bound by these terms.'
+    },
+    section2: {
+      title: '2. Service Description',
+      content: 'Nanobanana2 AI Tool Station provides various AI tool services, including but not limited to AI writing, image processing, data analysis, and other functions. These services are provided through subscription, and users can enjoy corresponding usage permissions and functions according to different subscription plans.'
+    },
+    section3: {
+      title: '3. Subscription and Payment',
+      subsection1: {
+        title: '3.1 Subscription Plans',
+        content: 'This website offers various subscription plans, each with different service content, usage restrictions, and prices. For specific plan details, please refer to the pricing page of this website.'
+      },
+      subsection2: {
+        title: '3.2 Payment Methods',
+        content: 'You need to pay the corresponding fees through the payment methods specified by this website when subscribing. All fees are priced in RMB and do not include any taxes that may be incurred.'
+      },
+      subsection3: {
+        title: '3.3 Auto-Renewal',
+        content: 'Unless you cancel your subscription before the end of the current subscription period, your subscription will automatically renew, and we will charge the corresponding fees from your payment method according to your current subscription plan.'
+      },
+      subsection4: {
+        title: '3.4 Refund Policy',
+        content: 'Once subscription fees are paid, they are non-refundable unless otherwise required by applicable law. For special circumstances, please contact our customer service team.'
+      }
+    },
+    section4: {
+      title: '4. Usage Restrictions',
+      subsection1: {
+        title: '4.1 Usage Frequency Limits',
+        content: 'According to your selected subscription plan, we will set corresponding limits on the frequency, number of times, or processing volume of your use of AI services. Usage exceeding the limits may result in temporary service unavailability or require upgrading your subscription plan.'
+      },
+      subsection2: {
+        title: '4.2 Prohibited Uses',
+        intro: 'You may not use the services of this website to:',
+        items: [
+          'Violate any applicable laws and regulations',
+          'Infringe upon the intellectual property or other rights of others',
+          'Engage in fraud, harassment, or other illegal activities',
+          'Distribute malware or viruses',
+          'Interfere with or disrupt the normal operation of this website',
+          'Attempt to bypass the security measures of this website'
+        ]
+      }
+    },
+    section5: {
+      title: '5. Usage Records and Data Collection',
+      content: 'In order to provide, maintain, and improve our services, this website will record your usage frequency, usage records, and other related data. We will ensure the security of this data and use it only for service purposes, unless we obtain your explicit consent or are required by law.',
+      reference: 'For specific data collection and usage policies, please refer to our Privacy Policy.'
+    },
+    section6: {
+      title: '6. User Accounts',
+      subsection1: {
+        title: '6.1 Account Creation',
+        content: 'You need to create an account to use the services of this website. When creating an account, you must provide accurate, complete, and up-to-date information.'
+      },
+      subsection2: {
+        title: '6.2 Account Security',
+        content: 'You are responsible for maintaining the confidentiality of your account and for all activities that occur under your account. If there is any unauthorized use of your account, you should notify us immediately.'
+      },
+      subsection3: {
+        title: '6.3 Account Termination',
+        content: 'We reserve the right to terminate or suspend your account at any time for any reason (including but not limited to violation of these terms of service). You may also cancel your subscription and terminate your account at any time.'
+      }
+    },
+    section7: {
+      title: '7. Intellectual Property',
+      content: 'The intellectual property of this website and all its content (including but not limited to text, images, code, trademarks, and logos) belongs to this website. The intellectual property of content you generate while using this website\'s services belongs to you, but you grant us the necessary licenses so that we can provide, maintain, and improve services.'
+    },
+    section8: {
+      title: '8. Disclaimer',
+      content: 'The services of this website are provided "as is" and "as available" without any form of warranty. We make no express or implied warranties regarding the accuracy, reliability, or suitability of the services. You bear the risk of using this website\'s services.'
+    },
+    section9: {
+      title: '9. Limitation of Liability',
+      content: 'To the maximum extent permitted by law, this website and its owners, managers, employees, or agents shall not be liable for any direct, indirect, incidental, special, or consequential damages arising from the use or inability to use this website\'s services, including but not limited to loss of profits, data loss, or business interruption.'
+    },
+    section10: {
+      title: '10. Terms Modification',
+      content: 'We reserve the right to modify these terms of service at any time. Modified terms will be published on this website and will take effect from the date of publication. If you continue to use the services of this website, it means you agree to be bound by the modified terms.'
+    },
+    section11: {
+      title: '11. Applicable Law',
+      content: 'These terms of service are governed by the laws of the People\'s Republic of China. Any disputes arising from these terms shall first be resolved through friendly negotiation; if negotiation fails, they shall be submitted to a people\'s court with jurisdiction for litigation.'
+    },
+    section12: {
+      title: '12. Contact Us',
+      intro: 'If you have any questions or suggestions about these terms of service, please contact us through the following methods:',
+      email: 'Email: support@nanobanana-ai.com'
+    }
+  },
+  privacy: {
+    title: 'Privacy Policy',
+    description: 'Nano Banana 2 Privacy Policy and Data Protection Statement',
+    section1: {
+      title: '1. Introduction',
+      content: 'Welcome to Nanobanana2 AI Tool Station (hereinafter referred to as "this website"). This privacy policy describes how we collect, use, store, and protect your personal information. Please read this privacy policy carefully to understand our privacy protection practices.'
+    },
+    section2: {
+      title: '2. Information We Collect',
+      subsection1: {
+        title: '2.1 Account Information',
+        intro: 'When you create an account, we may collect the following information:',
+        items: [
+          'Personal information: name, email address, avatar, etc.',
+          'Authentication information: passwords and other security credentials',
+          'If you log in using a social media account, relevant information provided by that platform may be collected'
+        ]
+      },
+      subsection2: {
+        title: '2.2 Usage Records and Statistical Data',
+        intro: 'In order to provide, maintain, and improve our services, we collect your usage data:',
+        items: [
+          'Usage frequency: statistics on the number of times you use various AI tools',
+          'Usage records: information about the time, frequency, and operation types of your use of AI tools',
+          'Input data: queries or content you submit to AI tools (used to process your requests)',
+          'Output data: results or responses generated by AI tools',
+          'Resource usage: technical indicators such as processing duration and API call counts'
+        ]
+      },
+      subsection3: {
+        title: '2.3 Device and Browser Information',
+        intro: 'We may collect information about the devices and browsers you use:',
+        items: [
+          'IP address',
+          'Browser type and version',
+          'Operating system information',
+          'Device identifiers',
+          'Access time and date',
+          'Pages or features accessed'
+        ]
+      }
+    },
+    section3: {
+      title: '3. How We Use Information',
+      subsection1: {
+        title: '3.1 Service Provision',
+        intro: 'We use your information to:',
+        items: [
+          'Create and maintain your account',
+          'Process your AI tool usage requests',
+          'Manage your subscription and billing information',
+          'Implement usage restrictions and quota management'
+        ]
+      },
+      subsection2: {
+        title: '3.2 Service Improvement',
+        intro: 'We use collected usage records and statistical data to:',
+        items: [
+          'Analyze user behavior patterns to optimize product features and user experience',
+          'Monitor service performance to improve system reliability and response speed',
+          'Develop new features and improve existing features',
+          'Ensure services meet user needs and expectations'
+        ]
+      },
+      subsection3: {
+        title: '3.3 Security and Compliance',
+        intro: 'We use your information to:',
+        items: [
+          'Verify account identity and prevent unauthorized access',
+          'Detect and prevent fraudulent activities',
+          'Comply with applicable laws and regulatory requirements',
+          'Protect user data security and privacy'
+        ]
+      },
+      subsection4: {
+        title: '3.4 Communication',
+        intro: 'We may use your contact information to:',
+        items: [
+          'Send service-related notifications (such as subscription expiration reminders)',
+          'Provide customer support and respond to your inquiries',
+          'Send product updates and promotional information (if you have chosen to receive them)'
+        ]
+      }
+    },
+    section4: {
+      title: '4. Data Storage and Protection',
+      subsection1: {
+        title: '4.1 Data Retention Period',
+        content: 'We will retain your personal information for as long as necessary to achieve the purposes described in this privacy policy, unless the law requires or allows a longer retention period. For usage record data, we typically retain it for a period consistent with your subscription duration.'
+      },
+      subsection2: {
+        title: '4.2 Data Protection Measures',
+        intro: 'We adopt various security measures to protect your personal information:',
+        items: [
+          'Encrypt storage and transmission of sensitive data',
+          'Implement access control and authentication mechanisms',
+          'Regularly conduct security assessments and vulnerability scans',
+          'Follow industry-standard security best practices'
+        ]
+      }
+    },
+    section5: {
+      title: '5. Data Sharing and Disclosure',
+      intro: 'We do not sell your personal information. We may share your information in the following circumstances:',
+      items: [
+        'After obtaining your explicit consent',
+        'Sharing with our service providers so they can provide services on our behalf (subject to confidentiality obligations)',
+        'Complying with applicable laws, regulations, or government requirements, or responding to legal processes',
+        'Protecting our rights, property, or safety, or the rights, property, or safety of users',
+        'In the case of mergers, acquisitions, or asset transfers, if personal information is involved in the transfer, we will require the new entity holding your personal information to continue to be bound by this privacy policy'
+      ],
+      note: 'Please note that when you use our AI tools, the input data you submit may be processed and used to improve AI models, but we will ensure that this data is anonymized or de-identified before use.'
+    },
+    section6: {
+      title: '6. User Rights',
+      intro: 'You have the following rights regarding your personal information:',
+      items: [
+        'Right of access: obtain personal information we hold about you',
+        'Right of rectification: request correction of inaccurate or incomplete personal information',
+        'Right of erasure: request deletion of your personal information under certain circumstances',
+        'Right to restrict processing: restrict our processing of your personal information under certain circumstances',
+        'Right to data portability: receive your personal information in a structured, commonly used, and machine-readable format and transmit it to another data controller',
+        'Right to object: object to the processing of your personal information under certain circumstances',
+        'Right to withdraw consent: withdraw consent you previously gave (without affecting processing based on consent before withdrawal)'
+      ],
+      contact: 'To exercise the above rights, please contact us through the contact information below. We will respond to your request within a reasonable time.'
+    },
+    section7: {
+      title: '7. Third-Party Links and Services',
+      content: 'This website may contain links to third-party websites or services. We are not responsible for the privacy practices or content of these third parties. We recommend that you review their privacy policies when visiting these third-party websites.'
+    },
+    section8: {
+      title: '8. Privacy Policy Updates',
+      content: 'We may update this privacy policy from time to time. Updated privacy policies will be published on this website and will take effect from the date of publication. We encourage you to regularly review this privacy policy to understand our privacy protection practices.'
+    },
+    section9: {
+      title: '9. Contact Us',
+      intro: 'If you have any questions, comments, or requests regarding this privacy policy, or wish to exercise your data subject rights, please contact us through the following methods:',
+      email: 'Email: privacy@nanobanana-ai.com'
     }
   }
 }

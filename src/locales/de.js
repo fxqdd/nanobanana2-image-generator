@@ -166,7 +166,14 @@ export default {
     clear: 'Löschen',
     optimizingWithGemini: 'Prompt mit Gemini optimieren...',
     pleaseWait: 'Bitte warten Sie, dies kann einige Sekunden dauern',
-    downloadImage: 'Bild herunterladen'
+    downloadImage: 'Bild herunterladen',
+    costDisplayTitle: 'Guthabenverbrauch (nur Anzeige, nicht auswählbar)',
+    costConsume: 'Verbrauche {points} Punkte',
+    costConsumeInButton: '(Verbrauche {points} Guthaben)',
+    prepareEditImage: 'Bildbearbeitung vorbereiten',
+    prepareGenerateImage: 'Bildgenerierung vorbereiten',
+    uploadReferenceAndPrompt: 'Referenzbild hochladen und Bearbeitungsaufforderung eingeben',
+    enterDescriptionToGenerate: 'Detaillierte Beschreibung eingeben, um Bild zu generieren'
   },
   showcase: {
     title: 'Galerie',
