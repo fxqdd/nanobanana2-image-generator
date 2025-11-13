@@ -4,6 +4,13 @@
 
 > 最新方案：我们已经在 Cloudflare Pages Functions 中新增 `functions/api/send-signup-email.js`，使用 Resend 直接发送验证邮件。因此 Supabase 不再需要自定义 SMTP，避免 `config reloader` 报错。
 
+### 注册流程改造
+
+- 前端注册不再调用 `supabase.auth.signUp`，而是请求新的 `functions/api/register-user.js`。
+- `register-user` 会用 Service Role 调用 `supabase.auth.admin.createUser` 创建账号（不会触发官方确认邮件）。
+- 创建成功后，复用 `send-signup-email` 生成动作链接并通过 Resend 发送品牌化邮件。
+- 后续用户点击邮件确认后，就能正常登录；Supabase 控制台只会显示 Resend 发出的邮件记录。
+
 ### 需要的 Cloudflare 环境变量
 
 | 变量名 | 说明 |
@@ -25,10 +32,10 @@
 ### 验证步骤
 
 1. 关闭 Supabase `Project Settings → Auth → Emails` 中的自定义 SMTP。
-2. 确认环境变量已在 Cloudflare Pages 设置并部署。
-3. 注册新账号，浏览器控制台应看到 `✅ Resend 验证邮件发送成功`。
-4. 检查 Resend Dashboard → Logs 是否有邮件记录。
-5. 邮箱中收到邮件并点击验证链接，Supabase 会正常确认账号。
+2. 确认 Cloudflare Pages 已配置环境变量并重新部署。
+3. 注册新账号 → Network 面板可看到 `/api/register-user` 和 `/api/send-signup-email` 200。
+4. Resend Dashboard → Logs 能看到唯一一封确认邮件（不再有 Supabase 默认邮件）。
+5. 邮箱收到 Resend 邮件，点击链接后 Supabase `email_confirmed_at` 更新为时间戳。
 
 ---
 

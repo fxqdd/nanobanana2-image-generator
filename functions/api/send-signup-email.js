@@ -1,17 +1,8 @@
 import { createClient } from '@supabase/supabase-js'
 
 /**
- * Cloudflare Pages Function
- * Bypass Supabase SMTP by generating a Supabase email action link
- * and sending it through Resend's HTTP API.
- *
- * Required environment variables (set in Cloudflare Pages project):
- * - SUPABASE_URL
- * - SUPABASE_SERVICE_ROLE_KEY
- * - RESEND_API_KEY
- * - RESEND_FROM_EMAIL   (e.g. onboarding@resend.dev or verified domain)
- * - RESEND_FROM_NAME    (optional, default 'Nano Banana 2')
- * - PUBLIC_SITE_URL     (optional override for redirect link)
+ * Cloudflare Pages Function to resend verification emails via Resend,
+ * reusing the same helper that registration uses.
  */
 
 const ACCEPTED_TYPES = new Set(['signup', 'email_change'])
@@ -20,7 +11,6 @@ export const onRequestPost = async (context) => {
   try {
     const { request, env } = context
     const body = await request.json()
-
     const { email, type = 'signup', locale = 'zh' } = body || {}
 
     if (!email || typeof email !== 'string') {
@@ -31,68 +21,120 @@ export const onRequestPost = async (context) => {
       return jsonResponse({ error: `Unsupported email type: ${type}` }, 400)
     }
 
-    const serviceRole = env.SUPABASE_SERVICE_ROLE_KEY
-    const supabaseUrl = env.SUPABASE_URL
-    const resendApiKey = env.RESEND_API_KEY
-    const fromEmail = env.RESEND_FROM_EMAIL
-
-    if (!serviceRole || !supabaseUrl || !resendApiKey || !fromEmail) {
-      console.error('Missing environment variables for send-signup-email')
-      return jsonResponse({ error: 'Server configuration error' }, 500)
-    }
-
-    const normalizedSiteUrl =
-      typeof env.PUBLIC_SITE_URL === 'string' && env.PUBLIC_SITE_URL.trim().length > 0
-        ? env.PUBLIC_SITE_URL.trim().replace(/\/$/, '')
-        : null
-
-    const redirectUrl = normalizedSiteUrl
-      ? `${normalizedSiteUrl}/login`
-      : `${new URL(request.url).origin}/login`
-
-    const supabaseAdmin = createClient(supabaseUrl, serviceRole, {
-      auth: { persistSession: false }
-    })
-
-    const { data, error } = await supabaseAdmin.auth.admin.generateLink({
-      type,
+    const origin = new URL(request.url).origin
+    const result = await sendVerificationEmail({
+      env,
       email,
-      options: {
-        emailRedirectTo: redirectUrl,
-        data: { locale }
-      }
+      type,
+      locale,
+      origin
     })
 
-    if (error || !data) {
-      console.error('Failed to generate Supabase email link', error)
+    if (!result.success) {
       return jsonResponse(
-        { error: 'Failed to generate verification link', details: error?.message },
-        500
+        { error: result.error || 'Failed to send verification email', details: result.details },
+        result.status || 500
       )
     }
 
-    const actionLink =
-      data.properties?.action_link ||
-      data.properties?.email_otp ||
-      data.properties?.link
+    return jsonResponse({ success: true })
+  } catch (err) {
+    console.error('Unexpected error in send-signup-email:', err)
+    return jsonResponse(
+      { error: 'Internal server error', details: err.message },
+      500
+    )
+  }
+}
 
-    if (!actionLink) {
-      console.error('Supabase did not return an action link', data)
-      return jsonResponse(
-        { error: 'No action link returned from Supabase' },
-        500
-      )
+export async function sendVerificationEmail({
+  env,
+  email,
+  type = 'signup',
+  locale = 'zh',
+  origin
+}) {
+  const serviceRole = env.SUPABASE_SERVICE_ROLE_KEY
+  const supabaseUrl = env.SUPABASE_URL
+  const resendApiKey = env.RESEND_API_KEY
+  const fromEmail = env.RESEND_FROM_EMAIL
+
+  if (!serviceRole || !supabaseUrl || !resendApiKey || !fromEmail) {
+    console.error('Missing environment variables for Resend flow')
+    return {
+      success: false,
+      status: 500,
+      error: 'Server configuration error'
     }
+  }
 
-    const fromName = env.RESEND_FROM_NAME || 'Nano Banana 2'
-    const subject =
-      type === 'email_change'
-        ? '确认您的 Nano Banana 2 邮箱变更'
-        : '请验证您的 Nano Banana 2 账号'
+  const supabaseAdmin = createClient(supabaseUrl, serviceRole, {
+    auth: { persistSession: false }
+  })
 
-    const html = getEmailTemplate({ actionLink, locale })
+  const redirectUrl = resolveRedirectUrl(env, origin)
+  const { data, error } = await supabaseAdmin.auth.admin.generateLink({
+    type,
+    email,
+    options: {
+      emailRedirectTo: redirectUrl,
+      data: { locale }
+    }
+  })
 
-    const emailResponse = await fetch('https://api.resend.com/emails', {
+  if (error || !data) {
+    console.error('Failed to generate Supabase email link', error)
+    return {
+      success: false,
+      status: 500,
+      error: 'Failed to generate verification link',
+      details: error?.message
+    }
+  }
+
+  const actionLink =
+    data.properties?.action_link || data.properties?.email_otp || data.properties?.link
+
+  if (!actionLink) {
+    console.error('Supabase did not return an action link', data)
+    return {
+      success: false,
+      status: 500,
+      error: 'No action link returned from Supabase'
+    }
+  }
+
+  const emailSendResult = await sendViaResend({
+    resendApiKey,
+    fromEmail,
+    fromName: env.RESEND_FROM_NAME || 'Nano Banana 2',
+    email,
+    locale,
+    type,
+    actionLink
+  })
+
+  if (!emailSendResult.success) {
+    return {
+      success: false,
+      status: 502,
+      error: 'Failed to send verification email',
+      details: emailSendResult.details
+    }
+  }
+
+  return { success: true, link: actionLink }
+}
+
+const sendViaResend = async ({ resendApiKey, fromEmail, fromName, email, locale, type, actionLink }) => {
+  const subject =
+    type === 'email_change'
+      ? '确认您的 Nano Banana 2 邮箱变更'
+      : '请验证您的 Nano Banana 2 账号'
+
+  const html = getEmailTemplate({ actionLink, locale })
+  try {
+    const resp = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${resendApiKey}`,
@@ -106,23 +148,26 @@ export const onRequestPost = async (context) => {
       })
     })
 
-    if (!emailResponse.ok) {
-      const errorText = await emailResponse.text()
-      console.error('Resend API error:', errorText)
-      return jsonResponse(
-        { error: 'Failed to send verification email', details: errorText },
-        502
-      )
+    if (!resp.ok) {
+      const text = await resp.text()
+      console.error('Resend API error:', text)
+      return { success: false, details: text }
     }
 
-    return jsonResponse({ success: true })
+    return { success: true }
   } catch (err) {
-    console.error('Unexpected error in send-signup-email:', err)
-    return jsonResponse(
-      { error: 'Internal server error', details: err.message },
-      500
-    )
+    console.error('Resend API network error:', err)
+    return { success: false, details: err.message }
   }
+}
+
+const resolveRedirectUrl = (env, origin) => {
+  const normalizedSiteUrl =
+    typeof env.PUBLIC_SITE_URL === 'string' && env.PUBLIC_SITE_URL.trim().length > 0
+      ? env.PUBLIC_SITE_URL.trim().replace(/\/$/, '')
+      : null
+
+  return normalizedSiteUrl ? `${normalizedSiteUrl}/login` : `${origin}/login`
 }
 
 const jsonResponse = (data, status = 200) =>

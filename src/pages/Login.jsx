@@ -4,7 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import SEO from '../components/SEO';
 import supabase, { setAuthStorageMode, getAuthStorageMode } from '../lib/supabaseClient';
-import { sendVerificationEmail } from '../utils/emailAPI';
+import { sendVerificationEmail, registerUser } from '../utils/emailAPI';
 import '../styles/Login.css';
 
 const PENDING_EMAIL_KEY = 'nb-pending-email';
@@ -235,166 +235,34 @@ const Login = () => {
 
       // 构建重定向 URL - 使用简单的 /login 路径，避免语言路径问题
       const redirectUrl = `${window.location.origin}/login`;
-      console.log('Attempting sign up with:', {
+      console.log('Attempting register via service endpoint:', {
         email,
         username,
-        redirectUrl,
-        supabaseUrl: import.meta.env.VITE_SUPABASE_URL ? 'configured' : 'missing',
-        supabaseKey: import.meta.env.VITE_SUPABASE_ANON_KEY ? 'configured' : 'missing'
+        hasSiteUrl: !!import.meta.env.VITE_SUPABASE_URL,
+        hasAnonKey: !!import.meta.env.VITE_SUPABASE_ANON_KEY
       });
 
-      const { data, error: signUpError } = await supabase.auth.signUp({
+      const registerResult = await registerUser({
         email,
         password,
-        options: {
-          data: { username },
-          emailRedirectTo: redirectUrl
-        }
+        username,
+        locale: language
       });
 
-      if (signUpError) {
-        console.error('❌ 注册失败 - Sign up error details:', {
-          message: signUpError.message,
-          status: signUpError.status,
-          code: signUpError.code,
-          name: signUpError.name,
-          error: signUpError
-        });
-        console.error('📋 错误堆栈:', signUpError.stack || 'No stack trace');
-        console.error('🔍 请求详情:', {
-          email,
-          redirectUrl,
-          supabaseUrl: import.meta.env.VITE_SUPABASE_URL,
-          hasAnonKey: !!import.meta.env.VITE_SUPABASE_ANON_KEY
-        });
-        setError(signUpError.message || t('login.registerFailed'));
-        return;
+      console.log('✅ 用户创建成功，等待邮箱验证:', registerResult);
+
+      if (typeof window !== 'undefined') {
+        window.localStorage.setItem(PENDING_EMAIL_KEY, email);
+        window.localStorage.setItem(PENDING_USERNAME_KEY, username);
       }
 
-      // 记录注册结果用于调试
-      console.log('✅ 注册API调用成功 - Sign up result:', {
-        hasUser: !!data?.user,
-        hasSession: !!data?.session,
-        userId: data?.user?.id,
-        email: data?.user?.email,
-        emailConfirmed: data?.user?.email_confirmed_at,
-        createdAt: data?.user?.created_at,
-        lastSignInAt: data?.user?.last_sign_in_at,
-        confirmedAt: data?.user?.confirmed_at,
-        fullData: data
-      });
-      
-      // 检查邮件发送状态
-      if (data?.user) {
-        console.log('📧 用户创建成功，检查邮件发送状态...');
-        console.log('   用户ID:', data.user.id);
-        console.log('   邮箱:', data.user.email);
-        console.log('   邮箱确认时间:', data.user.email_confirmed_at || '未确认');
-        console.log('   创建时间:', data.user.created_at);
-        console.log('   是否有Session:', !!data?.session);
-        
-        if (!data?.session) {
-          console.log('   ⚠️ 没有Session，说明需要邮箱确认');
-        } else {
-          console.log('   ✅ 有Session，说明邮箱确认已禁用或已完成');
-        }
-      }
-
-      // 使用 Resend 发送验证邮件，绕过 Supabase SMTP
-      try {
-        console.log('🚀 通过 Resend 发送验证邮件...');
-        await sendVerificationEmail(email, {
-          type: 'signup',
-          locale: language
-        });
-        console.log('✅ Resend 验证邮件发送成功');
-      } catch (emailErr) {
-        console.error('❌ 调用 Resend 发送验证邮件失败:', emailErr);
-        setResendStatus(
-          emailErr.message || t('login.verificationResendError') || '验证邮件发送失败，请稍后重试'
-        );
-        setResendStatusType('error');
-      }
-
-      // 如果注册成功但没有 session，说明需要邮箱确认
-      if (data?.user && !data?.session) {
-        console.log('✓ User created, awaiting email confirmation');
-        console.log('User ID:', data.user.id);
-        console.log('Email:', data.user.email);
-        console.log('Email confirmed at:', data.user.email_confirmed_at);
-        
-        // 检查邮件是否真的被发送
-        console.log('');
-        console.log('⚠️ ⚠️ ⚠️ 重要诊断信息 ⚠️ ⚠️ ⚠️');
-        console.log('');
-        console.log('📊 当前状态分析：');
-        console.log('   ✅ 用户创建成功');
-        console.log('   ❌ 没有 Session（需要邮箱确认）');
-        console.log('   ❓ 邮件发送状态：未知（需要检查 Supabase Logs）');
-        console.log('');
-        console.log('🔍 如果 Supabase Logs 中显示：');
-        console.log('   - mail_from: null');
-        console.log('   - mail_to: null');
-        console.log('   - mail_type: null');
-        console.log('   说明邮件根本没有被发送！');
-        console.log('');
-        console.log('📋 请立即检查以下配置（按优先级排序）：');
-        console.log('');
-        console.log('1️⃣ 【最重要】检查 SMTP 配置：');
-        console.log('   Project Settings → Auth → SMTP Settings');
-        console.log('   ✅ 必须配置自定义 SMTP（SendGrid/Resend/Mailgun等）');
-        console.log('   ❌ 免费计划没有默认邮件服务！');
-        console.log('');
-        console.log('2️⃣ 检查邮件确认功能：');
-        console.log('   Authentication → Settings → Enable email confirmations');
-        console.log('   ✅ 必须启用');
-        console.log('');
-        console.log('3️⃣ 检查邮件模板：');
-        console.log('   Authentication → Email Templates → Confirm signup');
-        console.log('   ✅ 确认模板存在且配置正确');
-        console.log('');
-        console.log('4️⃣ 检查 Site URL：');
-        console.log('   Project Settings → API → Site URL');
-        console.log('   ✅ 应该设置为: https://nanobanana2.online');
-        console.log('');
-        console.log('5️⃣ 检查 Redirect URLs：');
-        console.log('   Project Settings → API → Redirect URLs');
-        console.log('   ✅ 应该包含: https://nanobanana2.online/login');
-        console.log('');
-        console.log('💡 临时解决方案（仅用于测试）：');
-        console.log('   如果只是测试，可以临时禁用邮件确认：');
-        console.log('   Authentication → Settings → 关闭 "Enable email confirmations"');
-        console.log('   这样注册后会直接登录，无需邮件确认');
-        console.log('');
-        
-        if (typeof window !== 'undefined') {
-          window.localStorage.setItem(PENDING_EMAIL_KEY, email);
-          window.localStorage.setItem(PENDING_USERNAME_KEY, username);
-        }
-        setVerificationEmail(email);
-        setAwaitingEmailConfirmation(true);
-        setResendStatus('');
-        setError('');
-          return;
-        }
-
-      // 如果有 session，说明邮箱确认被禁用，直接登录
-      if (data?.session?.user?.id) {
-        try {
-          await supabase.from('profiles').update({ username }).eq('user_id', data.session.user.id);
-        } catch (updateError) {
-          console.warn('Failed to update profile username after signup', updateError);
-        }
-        window.localStorage.removeItem(PENDING_EMAIL_KEY);
-        window.localStorage.removeItem(PENDING_USERNAME_KEY);
-        setAwaitingEmailConfirmation(false);
-        navigate(getLocalizedPath('/'));
-        return;
-      }
-
-      // 如果既没有 user 也没有 session，可能是配置问题
-      console.warn('Unexpected sign up result: no user and no session', data);
-      setError(t('login.registerUnexpectedError') || '注册过程中出现意外错误，请检查 Supabase 配置');
+      setVerificationEmail(email);
+      setAwaitingEmailConfirmation(true);
+      setResendStatus('');
+      setError('');
+      setIsResending(false);
+      setPassword('');
+      setConfirmPassword('');
     } catch (err) {
       console.error('❌ 注册过程发生异常 - Auth error:', {
         message: err.message,
