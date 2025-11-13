@@ -16,7 +16,7 @@ export async function sendVerificationEmail(email, options = {}) {
       body: JSON.stringify({
         email,
         type: options.type || 'signup',
-        locale: options.locale || 'zh'
+        locale: options.locale || 'en'
       })
     })
 

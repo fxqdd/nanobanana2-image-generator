@@ -18,10 +18,26 @@ const ResetPassword = () => {
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const hashParams = useMemo(() => {
+    const params = new URLSearchParams()
+
+    const appendParams = (source) => {
+      if (!source) return
+      const iterable = new URLSearchParams(source.replace(/^([#?])/, ''))
+      iterable.forEach((value, key) => {
+        if (!params.has(key)) {
+          params.set(key, value)
+        }
+      })
+    }
+
     const hash = location.hash || (typeof window !== 'undefined' ? window.location.hash : '')
-    if (!hash) return null
-    return new URLSearchParams(hash.replace('#', ''))
-  }, [location.hash])
+    const search = location.search || (typeof window !== 'undefined' ? window.location.search : '')
+
+    appendParams(hash)
+    appendParams(search)
+
+    return params.keys().next().done ? null : params
+  }, [location.hash, location.search])
 
   useEffect(() => {
     const verifyRecoveryLink = async () => {
@@ -60,6 +76,13 @@ const ResetPassword = () => {
         setCanReset(true)
         setStatusType('')
         setStatusMessage('')
+
+        if (typeof window !== 'undefined') {
+          if (window.location.search) {
+            const cleanUrl = `${window.location.pathname}${window.location.hash || ''}`
+            window.history.replaceState({}, document.title, cleanUrl)
+          }
+        }
       } catch (err) {
         console.error('Unexpected error while verifying recovery link:', err)
         setStatusType('error')

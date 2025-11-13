@@ -11,7 +11,7 @@ export const onRequestPost = async (context) => {
   try {
     const { request, env } = context
     const body = await request.json()
-    const { email, type = 'signup', locale = 'zh' } = body || {}
+    const { email, type = 'signup', locale = 'en' } = body || {}
 
     if (!email || typeof email !== 'string') {
       return jsonResponse({ error: 'Missing email' }, 400)
@@ -51,7 +51,7 @@ export async function sendVerificationEmail({
   env,
   email,
   type = 'signup',
-  locale = 'zh',
+  locale = 'en',
   origin
 }) {
   const serviceRole = env.SUPABASE_SERVICE_ROLE_KEY
@@ -167,7 +167,7 @@ const resolveRedirectUrl = (env, origin, type, locale) => {
       : null
 
   const baseUrl = normalizedSiteUrl || origin
-  const normalizedLocale = SUPPORTED_LOCALES.includes(locale) ? locale : 'zh'
+  const normalizedLocale = SUPPORTED_LOCALES.includes(locale) ? locale : 'en'
 
   if (type === 'recovery') {
     return `${baseUrl}/${normalizedLocale}/reset-password`
@@ -189,7 +189,7 @@ const jsonResponse = (data, status = 200) =>
     }
   })
 
-const getEmailTemplate = ({ actionLink, locale = 'zh', type = 'signup' }) => {
+const getEmailTemplate = ({ actionLink, locale = 'en', type = 'signup' }) => {
   const copy = getEmailCopy(locale, type)
   return `
   <div style="font-family: 'Segoe UI', Helvetica, Arial, sans-serif; background:#f7f7f9; padding:32px;">
@@ -274,13 +274,13 @@ const EMAIL_COPY = {
 }
 
 const getEmailCopy = (locale, type) => {
-  const normalizedLocale = EMAIL_COPY[locale] ? locale : 'zh'
+  const normalizedLocale = EMAIL_COPY[locale] ? locale : 'en'
   if (EMAIL_COPY[normalizedLocale][type]) {
     return EMAIL_COPY[normalizedLocale][type]
   }
   if (EMAIL_COPY[normalizedLocale].signup) {
     return EMAIL_COPY[normalizedLocale].signup
   }
-  return EMAIL_COPY.zh.signup
+  return EMAIL_COPY.en.signup
 }
 

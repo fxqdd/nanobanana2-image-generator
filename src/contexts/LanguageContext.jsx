@@ -27,7 +27,7 @@ export const useLanguage = () => {
 }
 
 export const LanguageProvider = ({ children }) => {
-  const [language, setLanguage] = useState('zh')
+  const [language, setLanguage] = useState('en')
   const location = useLocation()
   const navigate = useNavigate()
 
@@ -40,10 +40,10 @@ export const LanguageProvider = ({ children }) => {
     if (langCode && translations[langCode]) {
       setLanguage(langCode)
     } else {
-      // 如果没有语言代码，默认使用中文，并重定向到 /zh
+      // 如果没有语言代码，默认使用英文，并重定向到 /en
       const currentPath = location.pathname
       if (currentPath === '/' || !translations[pathParts[0]]) {
-        navigate(`/zh${currentPath === '/' ? '' : currentPath}`, { replace: true })
+        navigate(`/en${currentPath === '/' ? '' : currentPath}`, { replace: true })
       }
     }
   }, [location.pathname, navigate])
@@ -90,8 +90,8 @@ export const LanguageProvider = ({ children }) => {
         const currentPath = location.pathname
         navigate(`/${savedLang}${currentPath === '/' ? '' : currentPath}`, { replace: true })
       } else if (location.pathname === '/') {
-        // 如果访问根路径且没有保存的语言偏好，默认重定向到中文
-        navigate('/zh', { replace: true })
+        // 如果访问根路径且没有保存的语言偏好，默认重定向到英文
+        navigate('/en', { replace: true })
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
