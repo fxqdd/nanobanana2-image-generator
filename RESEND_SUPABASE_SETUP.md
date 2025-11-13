@@ -28,6 +28,7 @@
 2. Cloudflare Function 使用 Service Role 生成 Supabase 验证链接。
 3. 通过 Resend API 发送 HTML 验证邮件给用户。
 4. “重新发送邮件”按钮同样调用此函数。
+5. “忘记密码”面板会调用同一个函数（`type: recovery`），发送 Resend 样式的密码重置邮件。
 
 ### 验证步骤
 
@@ -36,6 +37,7 @@
 3. 注册新账号 → Network 面板可看到 `/api/register-user` 和 `/api/send-signup-email` 200。
 4. Resend Dashboard → Logs 能看到唯一一封确认邮件（不再有 Supabase 默认邮件）。
 5. 邮箱收到 Resend 邮件，点击链接后 Supabase `email_confirmed_at` 更新为时间戳。
+6. 通过“忘记密码”发送的邮件会生成 Supabase Recovery Link，同样由 Resend 送达。
 
 ---
 

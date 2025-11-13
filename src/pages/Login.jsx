@@ -24,6 +24,11 @@ const Login = () => {
   const [resendStatus, setResendStatus] = useState('');
   const [resendStatusType, setResendStatusType] = useState('');
   const [isResending, setIsResending] = useState(false);
+  const [showResetPassword, setShowResetPassword] = useState(false);
+  const [resetEmail, setResetEmail] = useState('');
+  const [resetStatus, setResetStatus] = useState('');
+  const [resetStatusType, setResetStatusType] = useState('');
+  const [isResetting, setIsResetting] = useState(false);
   
   // 注册表单额外字段
   const [username, setUsername] = useState('');
@@ -301,8 +306,50 @@ const Login = () => {
   };
 
   const handleForgotPassword = () => {
-    // 实现忘记密码功能
-    alert(t('login.forgotPasswordFeature') || '忘记密码功能开发中...');
+    setShowResetPassword(true);
+    setResetEmail(email || '');
+    setResetStatus('');
+    setResetStatusType('');
+  };
+
+  const handleResetPassword = async (e) => {
+    e.preventDefault();
+    if (!resetEmail) {
+      setResetStatus(t('login.invalidEmail') || '请输入有效的邮箱地址');
+      setResetStatusType('error');
+      return;
+    }
+
+    try {
+      setIsResetting(true);
+      setResetStatus('');
+      setResetStatusType('');
+
+      await sendVerificationEmail(resetEmail, {
+        type: 'recovery',
+        locale: language
+      });
+
+      setResetStatus(t('login.resetPasswordSuccess') || '密码重置邮件已发送，请查收邮箱。');
+      setResetStatusType('success');
+    } catch (resetErr) {
+      console.error('❌ Password reset email send error:', resetErr);
+      setResetStatus(
+        resetErr.message ||
+          t('login.resetPasswordError') ||
+          '密码重置邮件发送失败，请稍后重试。'
+      );
+      setResetStatusType('error');
+    } finally {
+      setIsResetting(false);
+    }
+  };
+
+  const closeResetPanel = () => {
+    setShowResetPassword(false);
+    setResetEmail('');
+    setResetStatus('');
+    setResetStatusType('');
   };
 
   // 社交媒体登录处理函数
@@ -415,6 +462,98 @@ const Login = () => {
       />
       
       <div className="login-container">
+        {showResetPassword && (
+          <div
+            className="reset-password-overlay"
+            style={{
+              position: 'fixed',
+              inset: 0,
+              background: 'rgba(0,0,0,0.45)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 1000
+            }}
+          >
+            <div
+              className="reset-password-card"
+              style={{
+                background: '#ffffff',
+                borderRadius: '14px',
+                padding: '28px 32px',
+                maxWidth: '420px',
+                width: '90%',
+                boxShadow: '0 18px 48px rgba(0,0,0,0.18)',
+                position: 'relative'
+              }}
+            >
+              <button
+                onClick={closeResetPanel}
+                style={{
+                  position: 'absolute',
+                  right: '16px',
+                  top: '16px',
+                  border: 'none',
+                  background: 'transparent',
+                  fontSize: '1.2rem',
+                  cursor: 'pointer',
+                  color: 'var(--text-secondary)'
+                }}
+                aria-label={t('common.close') || '关闭'}
+              >
+                ×
+              </button>
+              <h3 style={{ margin: '0 0 12px', fontSize: '1.4rem' }}>
+                {t('login.resetPasswordTitle') || '重置密码'}
+              </h3>
+              <p style={{ margin: '0 0 20px', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+                {t('login.resetPasswordDescription') ||
+                  '输入注册邮箱，我们将发送密码重置链接。'}
+              </p>
+              <form onSubmit={handleResetPassword}>
+                <div className="form-group" style={{ marginBottom: '16px' }}>
+                  <label htmlFor="reset-email">{t('login.email')}</label>
+                  <input
+                    type="email"
+                    id="reset-email"
+                    value={resetEmail}
+                    onChange={(e) => setResetEmail(e.target.value)}
+                    placeholder={t('login.email')}
+                    required
+                  />
+                </div>
+                {resetStatus && (
+                  <div
+                    style={{
+                      background:
+                        resetStatusType === 'success'
+                          ? 'rgba(76, 175, 80, 0.12)'
+                          : 'rgba(244, 67, 54, 0.12)',
+                      color: resetStatusType === 'success' ? '#256029' : '#b71c1c',
+                      padding: '10px 12px',
+                      borderRadius: '8px',
+                      marginBottom: '16px',
+                      lineHeight: 1.5
+                    }}
+                  >
+                    {resetStatus}
+                  </div>
+                )}
+                <button
+                  type="submit"
+                  className="login-button"
+                  style={{ width: '100%' }}
+                  disabled={isResetting}
+                >
+                  {isResetting
+                    ? t('common.loading') || '发送中...'
+                    : t('login.resetPasswordAction') || '发送重置邮件'}
+                </button>
+              </form>
+            </div>
+          </div>
+        )}
+
         <div className="login-header">
           <h2>{isLoginForm ? t('login.title') : t('login.registerTitle')}</h2>
           <p className="login-subtitle">
