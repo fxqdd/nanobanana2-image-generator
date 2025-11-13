@@ -128,8 +128,8 @@ const Login = () => {
             setAwaitingEmailConfirmation(false);
             setVerificationEmail('');
             
-            // 跳转到首页
-            navigate(getLocalizedPath('/'));
+            // 返回登录页，让用户自行登录
+            navigate(getLocalizedPath('/login'));
             return;
           } else {
             // 没有 session，可能是 token 还未处理完成，等待一下再试
@@ -137,7 +137,7 @@ const Login = () => {
               const { data: { session: retrySession } } = await supabase.auth.getSession();
               if (retrySession) {
                 window.location.hash = '';
-                navigate(getLocalizedPath('/'));
+                navigate(getLocalizedPath('/login'));
               } else {
                 setError(t('login.loginFailed') || '登录失败，请重试');
               }
