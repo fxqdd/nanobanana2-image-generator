@@ -398,7 +398,7 @@ export default {
     },
     home: {
       title: 'Nano Banana 2 - 最佳AI图像生成器 | Text to Image | SeeDream 4.0',
-      description: 'Nano Banana 2是最强大的AI图像编辑工具，支持text to image、图像生成和编辑。使用SeeDream 4.0和最新AI技术，超越Flux Kontext，提供专业级图像编辑体验。',
+      description: 'Nano Banana 2是最强大的AI图像编辑工具，支持text to image、图像生成和编辑。使用SeeDream 4.0和最新AI技术，超越Flux Kontext，提供专业级图像编辑体验。免费试用，立即开始创作高质量AI艺术作品，体验Gemini 3 Pro驱动的智能图像生成。',
       keywords: 'nanobanana, Nano Banana 2, SeeDream 4.0, best image generator, text to image, AI image editor, AI image generator, image editing, text to image generator, AI art generator'
     },
     editor: {

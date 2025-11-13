@@ -90,6 +90,9 @@ function Home() {
             <p className="nb2-subtitle">
               {t('home.nb2Subtitle') || '由 Google 先进的 Gemini 3 Pro 模型驱动的新一代图像生成引擎'}
             </p>
+            <h3 className="nb2-features-heading" style={{ fontSize: '1.1rem', fontWeight: '600', marginTop: '1.5rem', marginBottom: '1rem' }}>
+              核心特性
+            </h3>
             <ul className="nb2-list">
               <li>✓ {t('home.nb2Gemini') || 'Gemini 3 Pro 支持，语义理解更深'}</li>
               <li>✓ {t('home.nb22k') || '2K 原生（2048×2048）'}</li>
@@ -220,6 +223,13 @@ function Home() {
               </p>
             </div>
           </div>
+          
+          <h2 className="section-title" style={{ marginTop: '3rem', marginBottom: '1.5rem' }}>
+            技术优势
+          </h2>
+          <p className="section-description" style={{ marginBottom: '2rem' }}>
+            Nano Banana 2 采用最新的 AI 技术，为您提供卓越的图像编辑体验
+          </p>
         </div>
       </section>
 
