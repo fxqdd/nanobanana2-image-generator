@@ -89,25 +89,30 @@ export default {
     nb2Blend: 'Fusion sans couture (mélange 2–5 images)'
   },
   footer: {
-    description: 'Transformez n\'importe quelle image avec de simples invites textuelles. Découvrez l\'avenir de l\'édition d\'images IA.',
+    description: 'Transformez n\'importe quelle image avec de simples invites textuelles. Découvrez l\'avenir de l\'édition d\'images par IA.',
     product: 'Produit',
-    resources: 'Ressources',
     company: 'Entreprise',
     contact: 'Nous contacter',
+    shareMessage: 'Partagez Nano Banana 2 et découvrez la prochaine génération d’édition d’images par IA.',
     imageEditor: 'Éditeur d\'images',
     pricing: 'Tarifs',
     showcase: 'Galerie',
-    docs: 'Documentation',
-    blog: 'Blog',
-    tutorials: 'Tutoriels',
-    community: 'Communauté',
     about: 'À propos',
+    aboutDescription: 'Nano Banana 2 est conçu par des créateurs pour les créateurs. Notre mission est de rendre l’édition d’images professionnelle accessible à chacun.',
     careers: 'Carrières',
+    careersAction: 'Envoyer votre CV',
+    careersDescription: 'Nous recherchons des talents à distance en design, ingénierie et storytelling pour construire ensemble la prochaine plateforme créative.',
     privacy: 'Politique de confidentialité',
     terms: 'Conditions d\'utilisation',
+    contactEmailLabel: 'Support',
+    contactEmailAction: 'Écrire à l’équipe',
+    contactEmailDescription: 'Des questions concernant votre compte ou le produit ? Contactez-nous et nous répondrons sous 24 heures.',
+    contactSupportLabel: 'Partenariats',
+    contactSupportAction: 'Soumettre une demande',
+    contactSupportDescription: 'Pour toute collaboration ou demande média, remplissez le formulaire et nous vous recontacterons rapidement.',
     contactForm: 'Formulaire de contact',
     allRightsReserved: 'Tous droits réservés',
-    cookiePolicy: 'Politique des cookies'
+    cookiePolicy: 'Politique de cookies'
   },
   editor: {
     title: 'Édition d\'images',
@@ -427,6 +432,41 @@ export default {
       description: 'Connectez-vous ou inscrivez-vous pour un compte Nano Banana 2 pour commencer à utiliser les puissantes fonctionnalités d\'édition d\'images IA.',
       keywords: 'login, register, Nano Banana 2, AI image editor'
     }
+  },
+  cookies: {
+    title: 'Politique de cookies',
+    description: 'Découvrez comment Nano Banana 2 utilise les cookies pour offrir une expérience sécurisée et personnalisée.',
+    sections: [
+      {
+        title: '1. Qu’est-ce qu’un cookie ?',
+        paragraphs: [
+          'Un cookie est un petit fichier texte enregistré sur votre appareil lorsque vous visitez un site web. Il permet de mémoriser vos préférences de navigation et d’améliorer votre expérience.'
+        ]
+      },
+      {
+        title: '2. Comment nous utilisons les cookies',
+        paragraphs: [
+          'Nous utilisons des cookies nécessaires, de performance et fonctionnels afin d’assurer le bon fonctionnement du service.'
+        ],
+        list: [
+          'Assurer la sécurité des sessions de connexion et de paiement',
+          'Mémoriser vos préférences de langue et d’interface',
+          'Analyser des indicateurs d’utilisation anonymes afin d’améliorer les fonctionnalités'
+        ]
+      },
+      {
+        title: '3. Gestion des cookies',
+        paragraphs: [
+          'Vous pouvez contrôler ou supprimer les cookies via les paramètres de votre navigateur. La désactivation de certains cookies peut limiter des fonctions comme la connexion ou la personnalisation.'
+        ]
+      },
+      {
+        title: '4. Nous contacter',
+        paragraphs: [
+          'Pour toute question concernant l’utilisation des cookies, contactez-nous à l’adresse support@nanobanana.ai.'
+        ]
+      }
+    ]
   }
 }
 

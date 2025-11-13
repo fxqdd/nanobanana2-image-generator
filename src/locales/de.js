@@ -89,22 +89,27 @@ export default {
     nb2Blend: 'Nahtloses Blending (2–5 Bilder mischen)'
   },
   footer: {
-    description: 'Transformieren Sie jedes Bild mit einfachen Textaufforderungen. Erleben Sie die Zukunft der KI-Bildbearbeitung.',
+    description: 'Transformieren Sie jedes Bild mit einfachen Texteingaben. Erleben Sie die Zukunft der KI-Bildbearbeitung.',
     product: 'Produkt',
-    resources: 'Ressourcen',
     company: 'Unternehmen',
     contact: 'Kontakt',
+    shareMessage: 'Teile Nano Banana 2 und entdecke die nächste Generation der KI-Bildbearbeitung.',
     imageEditor: 'Bildeditor',
     pricing: 'Preise',
     showcase: 'Galerie',
-    docs: 'Dokumentation',
-    blog: 'Blog',
-    tutorials: 'Tutorials',
-    community: 'Community',
     about: 'Über uns',
+    aboutDescription: 'Nano Banana 2 wird von Kreativen für Kreative entwickelt. Unsere Mission ist es, professionelle Bildgenerierung für alle zugänglich zu machen.',
     careers: 'Karriere',
+    careersAction: 'Lebenslauf senden',
+    careersDescription: 'Wir suchen Remote-Talente in Design, Engineering und Storytelling, um gemeinsam die nächste kreative Plattform aufzubauen.',
     privacy: 'Datenschutzrichtlinie',
     terms: 'Nutzungsbedingungen',
+    contactEmailLabel: 'Support',
+    contactEmailAction: 'E-Mail an das Team',
+    contactEmailDescription: 'Fragen zu deinem Konto oder Produkt? Schreib uns und wir antworten innerhalb von 24 Stunden.',
+    contactSupportLabel: 'Partnerschaften',
+    contactSupportAction: 'Anfrage senden',
+    contactSupportDescription: 'Für Kooperationen oder Medienanfragen nutze bitte das Formular – wir melden uns zeitnah.',
     contactForm: 'Kontaktformular',
     allRightsReserved: 'Alle Rechte vorbehalten',
     cookiePolicy: 'Cookie-Richtlinie'
@@ -427,6 +432,41 @@ export default {
       description: 'Melden Sie sich an oder registrieren Sie sich für ein Nano Banana 2-Konto, um leistungsstarke KI-Bildbearbeitungsfunktionen zu nutzen.',
       keywords: 'login, register, Nano Banana 2, AI image editor'
     }
+  },
+  cookies: {
+    title: 'Cookie-Richtlinie',
+    description: 'Erfahre, wie Nano Banana 2 Cookies nutzt, um ein sicheres und personalisiertes Erlebnis zu ermöglichen.',
+    sections: [
+      {
+        title: '1. Was sind Cookies',
+        paragraphs: [
+          'Cookies sind kleine Textdateien, die beim Besuch einer Website auf deinem Gerät gespeichert werden. Sie merken sich Browsereinstellungen und verbessern die Nutzungserfahrung.'
+        ]
+      },
+      {
+        title: '2. Wie wir Cookies nutzen',
+        paragraphs: [
+          'Wir verwenden notwendige, Performance- und Funktions-Cookies, damit der Dienst zuverlässig funktioniert.'
+        ],
+        list: [
+          'Sichere Anmelde- und Zahlungssitzungen aufrechterhalten',
+          'Sprach- und Oberflächeneinstellungen merken',
+          'Anonyme Nutzungs- und Leistungskennzahlen analysieren, um Funktionen zu verbessern'
+        ]
+      },
+      {
+        title: '3. Cookies verwalten',
+        paragraphs: [
+          'Du kannst Cookies über die Einstellungen deines Browsers steuern oder löschen. Das Deaktivieren bestimmter Cookies kann Auswirkungen auf Login-Status, Spracheinstellungen oder personalisierte Funktionen haben.'
+        ]
+      },
+      {
+        title: '4. Kontakt',
+        paragraphs: [
+          'Bei Fragen zur Verwendung von Cookies schreibe uns an support@nanobanana.ai.'
+        ]
+      }
+    ]
   }
 }
 

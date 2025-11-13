@@ -91,20 +91,25 @@ export default {
   footer: {
     description: 'Transform any image with simple text prompts. Experience the future of AI image editing.',
     product: 'Product',
-    resources: 'Resources',
     company: 'Company',
     contact: 'Contact Us',
+    shareMessage: 'Discover Nano Banana 2 – next-gen AI image editing for everyone.',
     imageEditor: 'Image Editor',
     pricing: 'Pricing',
     showcase: 'Showcase',
-    docs: 'Documentation',
-    blog: 'Blog',
-    tutorials: 'Tutorials',
-    community: 'Community',
     about: 'About Us',
+    aboutDescription: 'Nano Banana 2 is built by creators for creators. Our mission is to make professional-grade image generation approachable.',
     careers: 'Careers',
+    careersAction: 'Send your résumé',
+    careersDescription: 'We welcome remote designers, engineers, and storytellers to build the next creative platform with us.',
     privacy: 'Privacy Policy',
     terms: 'Terms of Service',
+    contactEmailLabel: 'Support',
+    contactEmailAction: 'Email our team',
+    contactEmailDescription: 'Questions about your account or product? Reach out and we will respond within 24 hours.',
+    contactSupportLabel: 'Partnerships',
+    contactSupportAction: 'Share partnership details',
+    contactSupportDescription: 'For business collaborations or media enquiries, use the form and we will get back to you shortly.',
     contactForm: 'Contact Form',
     allRightsReserved: 'All rights reserved',
     cookiePolicy: 'Cookie Policy'
@@ -681,6 +686,41 @@ export default {
       intro: 'If you have any questions, comments, or requests regarding this privacy policy, or wish to exercise your data subject rights, please contact us through the following methods:',
       email: 'Email: privacy@nanobanana-ai.com'
     }
+  },
+  cookies: {
+    title: 'Cookie Policy',
+    description: 'Learn how Nano Banana 2 uses cookies to provide a secure and personalised experience.',
+    sections: [
+      {
+        title: '1. What Are Cookies',
+        paragraphs: [
+          'Cookies are small text files stored on your device that help remember your browser preferences and improve your experience on our website.'
+        ]
+      },
+      {
+        title: '2. How We Use Cookies',
+        paragraphs: [
+          'We use essential, performance, and functional cookies to ensure the product operates smoothly.'
+        ],
+        list: [
+          'Maintain secure authentication and payment sessions',
+          'Remember language and interface preferences',
+          'Measure anonymous usage and performance metrics to improve the product'
+        ]
+      },
+      {
+        title: '3. Managing Cookies',
+        paragraphs: [
+          'You can control or delete cookies through your browser settings. Disabling some cookies may affect login sessions, language preferences, or personalised features.'
+        ]
+      },
+      {
+        title: '4. Contact',
+        paragraphs: [
+          'If you have any questions about how we use cookies, please contact us at support@nanobanana.ai.'
+        ]
+      }
+    ]
   }
 }
 

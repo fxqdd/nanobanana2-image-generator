@@ -8,6 +8,7 @@ import Showcase from './pages/Showcase'
 import Login from './pages/Login'
 import Terms from './pages/Terms'
 import Privacy from './pages/Privacy'
+import Cookies from './pages/Cookies'
 import NotFound from './pages/NotFound'
 import APITest from './pages/APITest'
 import Account from './pages/Account'
@@ -68,6 +69,7 @@ function App() {
               } />
               <Route path="/:lang/terms" element={<Terms />} />
               <Route path="/:lang/privacy" element={<Privacy />} />
+              <Route path="/:lang/cookies" element={<Cookies />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </main>

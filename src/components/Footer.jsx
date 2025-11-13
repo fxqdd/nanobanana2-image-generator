@@ -1,10 +1,27 @@
 import { Link } from 'react-router-dom'
+import { useMemo } from 'react'
 import { useLanguage } from '../contexts/LanguageContext'
 import '../styles/Footer.css'
 import logo from '../assets/banana.svg'
 
+const DEFAULT_SITE_URL = 'https://nanobanana2.online'
+const SUPPORT_EMAIL = 'support@nanobanana.ai'
+const CAREERS_EMAIL = 'jobs@nanobanana.ai'
+const CONTACT_FORM_URL = 'https://nanobanana2.online/contact'
+
 function Footer() {
   const { t, getLocalizedPath } = useLanguage()
+
+  const { encodedUrl, shareMessage } = useMemo(() => {
+    const rawUrl =
+      (import.meta.env.VITE_BASE_URL && import.meta.env.VITE_BASE_URL.trim()) ||
+      DEFAULT_SITE_URL
+    const normalizedUrl = rawUrl.replace(/\/$/, '')
+    return {
+      encodedUrl: encodeURIComponent(normalizedUrl),
+      shareMessage: encodeURIComponent(t('footer.shareMessage'))
+    }
+  }, [t])
 
   return (
     <footer className="footer">
@@ -19,26 +36,50 @@ function Footer() {
               {t('footer.description')}
             </p>
             <div className="footer-social">
-              <Link to="#" className="social-link" aria-label="Twitter">
+              <a
+                href={`https://twitter.com/intent/tweet?url=${encodedUrl}&text=${shareMessage}`}
+                className="social-link"
+                aria-label="Share on X"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"/>
+                  <path d="M4.5 3h5.1l3.47 5.14L17.93 3H22l-6.84 8.91L22 21h-5.1l-3.74-5.51L9.18 21H4l7-9.06L4.5 3z" />
                 </svg>
-              </Link>
-              <Link to="#" className="social-link" aria-label="Facebook">
+              </a>
+              <a
+                href={`https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`}
+                className="social-link"
+                aria-label="Share on Facebook"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>
                 </svg>
-              </Link>
-              <Link to="#" className="social-link" aria-label="Instagram">
+              </a>
+              <a
+                href={`https://www.linkedin.com/shareArticle?mini=true&url=${encodedUrl}&title=${shareMessage}`}
+                className="social-link"
+                aria-label="Share on LinkedIn"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                  <path d="M4.98 3.5a2.5 2.5 0 11-.02 5 2.5 2.5 0 01.02-5zM3 9h4v12H3zM9 9h3.8v1.71h.05c.53-1 1.83-2.05 3.77-2.05 4.03 0 4.78 2.52 4.78 5.8V21h-4v-5.37c0-1.28-.03-2.93-1.79-2.93-1.8 0-2.07 1.4-2.07 2.84V21H9z"/>
                 </svg>
-              </Link>
-              <Link to="#" className="social-link" aria-label="GitHub">
+              </a>
+              <a
+                href={`https://www.reddit.com/submit?url=${encodedUrl}&title=${shareMessage}`}
+                className="social-link"
+                aria-label="Share on Reddit"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                  <path d="M22 12c0-1.1-.9-2-2-2-.55 0-1.05.23-1.41.59-1.64-1.05-3.87-1.73-6.33-1.82l1.35-3.16 2.87.68c0 1.1.9 2 2 2a2 2 0 10-1.74-2.96l-3.25-.77a.5.5 0 00-.59.3l-1.6 3.76c-2.61.03-4.97.72-6.68 1.85A2 2 0 004 10a2 2 0 000 4h.06c-.04.33-.06.66-.06 1 0 3.31 3.13 6 7 6s7-2.69 7-6c0-.34-.02-.67-.06-1H20a2 2 0 002-2zm-13.5 1.5a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm7.75 3.35C15.08 17.63 13.63 18 12 18c-1.63 0-3.08-.37-4.25-1.15a.5.5 0 01.5-.86C9.22 16.67 10.53 17 12 17c1.47 0 2.78-.33 3.75-.99a.5.5 0 01.5.86zM16.5 12a1.5 1.5 0 110 3 1.5 1.5 0 010-3z"/>
                 </svg>
-              </Link>
+              </a>
             </div>
           </div>
 
@@ -53,30 +94,50 @@ function Footer() {
             </div>
 
             <div className="footer-links-group">
-              <h4 className="footer-heading">{t('footer.resources')}</h4>
-              <ul className="footer-links">
-                <li><Link to={getLocalizedPath('/docs')} className="footer-link">{t('footer.docs')}</Link></li>
-                <li><Link to={getLocalizedPath('/blog')} className="footer-link">{t('footer.blog')}</Link></li>
-                <li><Link to={getLocalizedPath('/tutorials')} className="footer-link">{t('footer.tutorials')}</Link></li>
-                <li><Link to={getLocalizedPath('/community')} className="footer-link">{t('footer.community')}</Link></li>
-              </ul>
-            </div>
-
-            <div className="footer-links-group">
               <h4 className="footer-heading">{t('footer.company')}</h4>
-              <ul className="footer-links">
-                <li><Link to={getLocalizedPath('/about')} className="footer-link">{t('footer.about')}</Link></li>
-                <li><Link to={getLocalizedPath('/careers')} className="footer-link">{t('footer.careers')}</Link></li>
-                <li><Link to={getLocalizedPath('/privacy')} className="footer-link">{t('footer.privacy')}</Link></li>
-                <li><Link to={getLocalizedPath('/terms')} className="footer-link">{t('footer.terms')}</Link></li>
+              <ul className="footer-info-list">
+                <li className="footer-info-item">
+                  <span className="footer-link-title">{t('footer.about')}</span>
+                  <p className="footer-link-description">{t('footer.aboutDescription')}</p>
+                </li>
+                <li className="footer-info-item">
+                  <span className="footer-link-title">{t('footer.careers')}</span>
+                  <a
+                    href={`mailto:${CAREERS_EMAIL}`}
+                    className="footer-action-link"
+                  >
+                    {t('footer.careersAction')}
+                  </a>
+                  <p className="footer-link-description">{t('footer.careersDescription')}</p>
+                </li>
               </ul>
             </div>
 
             <div className="footer-links-group">
               <h4 className="footer-heading">{t('footer.contact')}</h4>
-              <ul className="footer-links">
-                <li><Link to="mailto:support@nanobanana.ai" className="footer-link">support@nanobanana.ai</Link></li>
-                <li><Link to={getLocalizedPath('/contact')} className="footer-link">{t('footer.contactForm')}</Link></li>
+              <ul className="footer-info-list">
+                <li className="footer-info-item">
+                  <span className="footer-link-title">{t('footer.contactEmailLabel')}</span>
+                  <a
+                    href={`mailto:${SUPPORT_EMAIL}`}
+                    className="footer-action-link"
+                  >
+                    {t('footer.contactEmailAction')}
+                  </a>
+                  <p className="footer-link-description">{t('footer.contactEmailDescription')}</p>
+                </li>
+                <li className="footer-info-item">
+                  <span className="footer-link-title">{t('footer.contactSupportLabel')}</span>
+                  <a
+                    href={CONTACT_FORM_URL}
+                    className="footer-action-link"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {t('footer.contactSupportAction')}
+                  </a>
+                  <p className="footer-link-description">{t('footer.contactSupportDescription')}</p>
+                </li>
               </ul>
             </div>
           </div>

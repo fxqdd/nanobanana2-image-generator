@@ -88,20 +88,25 @@ export default {
   footer: {
     description: 'シンプルなテキストプロンプトで任意の画像を変換。AI画像編集の未来を体験してください。',
     product: '製品',
-    resources: 'リソース',
     company: '会社',
     contact: 'お問い合わせ',
+    shareMessage: 'Nano Banana 2 を共有して、次世代のAI画像編集を体験しましょう。',
     imageEditor: '画像エディター',
     pricing: '料金',
     showcase: 'ショーケース',
-    docs: 'ドキュメント',
-    blog: 'ブログ',
-    tutorials: 'チュートリアル',
-    community: 'コミュニティ',
     about: '私たちについて',
+    aboutDescription: 'Nano Banana 2はクリエイターによって創られたプロジェクトで、誰もがプロレベルの画像生成を扱える世界を目指しています。',
     careers: '採用情報',
+    careersAction: '履歴書を送る',
+    careersDescription: 'リモートで活躍できるデザイナー、エンジニア、ストーリーテラーを募集しています。一緒に次世代のクリエイティブ基盤を構築しましょう。',
     privacy: 'プライバシーポリシー',
     terms: '利用規約',
+    contactEmailLabel: 'サポート',
+    contactEmailAction: 'メールでお問い合わせ',
+    contactEmailDescription: 'アカウントや製品に関するご質問はメールでお気軽にご連絡ください。通常24時間以内に返信いたします。',
+    contactSupportLabel: '提携・パートナー',
+    contactSupportAction: 'フォームを送信する',
+    contactSupportDescription: 'ビジネス提携やメディア取材のご相談はフォームからご連絡ください。できるだけ早く担当者よりご連絡いたします。',
     contactForm: 'お問い合わせフォーム',
     allRightsReserved: '全著作権所有',
     cookiePolicy: 'Cookieポリシー'
@@ -424,6 +429,41 @@ export default {
       description: 'Nano Banana 2アカウントにログインまたは登録して、強力なAI画像編集機能の使用を開始します。',
       keywords: 'login, register, Nano Banana 2, AI image editor'
     }
+  },
+  cookies: {
+    title: 'Cookieポリシー',
+    description: 'Nano Banana 2 が安全で個別化された体験を提供するために Cookie をどのように利用しているかをご説明します。',
+    sections: [
+      {
+        title: '1. Cookie とは',
+        paragraphs: [
+          'Cookie は、ウェブサイト訪問時にデバイスへ保存される小さなテキストファイルで、ブラウザ設定を記憶し、体験を向上させる目的で利用されます。'
+        ]
+      },
+      {
+        title: '2. 当社による Cookie の利用',
+        paragraphs: [
+          'Nano Banana 2 では、必須 Cookie・パフォーマンス Cookie・機能 Cookie を利用し、サービスを安定的に提供しています。'
+        ],
+        list: [
+          'ログインおよび決済フローの安全性を確保する',
+          '言語やインターフェースの設定を記憶する',
+          '匿名の利用データを把握し、機能とパフォーマンスを改善する'
+        ]
+      },
+      {
+        title: '3. Cookie の管理',
+        paragraphs: [
+          'ブラウザの設定から Cookie を制御または削除できます。ただし一部の Cookie を無効にすると、ログイン状態やパーソナライズ機能が正しく動作しない場合があります。'
+        ]
+      },
+      {
+        title: '4. お問い合わせ',
+        paragraphs: [
+          'Cookie の利用に関するご質問は support@nanobanana.ai までお気軽にご連絡ください。'
+        ]
+      }
+    ]
   }
 }
 

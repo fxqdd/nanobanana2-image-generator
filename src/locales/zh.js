@@ -91,20 +91,25 @@ export default {
   footer: {
     description: '用简单的文字提示变换任何图像。体验AI图像编辑的未来。',
     product: '产品',
-    resources: '资源',
     company: '公司',
     contact: '联系我们',
+    shareMessage: '共享 Nano Banana 2，体验下一代 AI 图像编辑。',
     imageEditor: '图片编辑器',
     pricing: '定价',
     showcase: '展示案例',
-    docs: '文档',
-    blog: '博客',
-    tutorials: '教程',
-    community: '社区',
     about: '关于我们',
+    aboutDescription: 'Nano Banana 2 由创作者社区驱动，我们致力于让每个人都能轻松掌握专业级图像生成。',
     careers: '招贤纳士',
+    careersAction: '投递简历',
+    careersDescription: '我们正在寻找远程产品、设计与工程人才，欢迎与我们一起打造下一代创意工具。',
     privacy: '隐私政策',
     terms: '服务条款',
+    contactEmailLabel: '客户支持',
+    contactEmailAction: '发送邮件',
+    contactEmailDescription: '有任何账号或产品问题，都可以发送邮件给我们，通常会在 24 小时内回复。',
+    contactSupportLabel: '商务合作',
+    contactSupportAction: '提交合作表单',
+    contactSupportDescription: '如果您希望与我们开展合作或媒体采访，请通过表单留下需求，我们会尽快与您联系。',
     contactForm: '联系表单',
     allRightsReserved: '保留所有权利',
     cookiePolicy: 'Cookie政策'
@@ -681,6 +686,41 @@ export default {
       intro: '如果您对本隐私政策有任何疑问、意见或请求，或希望行使您的数据主体权利，请通过以下方式联系我们：',
       email: '电子邮件：privacy@nanobanana-ai.com'
     }
+  },
+  cookies: {
+    title: 'Cookie 政策',
+    description: '了解我们如何使用 Cookie 提升 Nano Banana 2 的体验和安全性。',
+    sections: [
+      {
+        title: '1. 什么是 Cookie',
+        paragraphs: [
+          'Cookie 是在您访问网站时存储在设备上的小型文本文件，用于记住您的浏览器偏好设置并改善整体体验。'
+        ]
+      },
+      {
+        title: '2. 我们如何使用 Cookie',
+        paragraphs: [
+          '我们使用必要、性能和功能性 Cookie 来确保网站稳定运行。'
+        ],
+        list: [
+          '保障登录和支付过程的安全性',
+          '记住语言与界面偏好设置',
+          '收集匿名的使用数据以改进功能和性能'
+        ]
+      },
+      {
+        title: '3. 管理 Cookie',
+        paragraphs: [
+          '您可以通过浏览器设置控制或删除 Cookie。禁用部分 Cookie 可能会影响登录状态、语言记忆和某些个性化功能。'
+        ]
+      },
+      {
+        title: '4. 联系我们',
+        paragraphs: [
+          '如对 Cookie 的使用有任何疑问或建议，请发送邮件至 support@nanobanana.ai。'
+        ]
+      }
+    ]
   }
 }
 
