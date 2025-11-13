@@ -37,6 +37,14 @@ const ResetPassword = () => {
     appendParams(search)
 
     const hasParams = !combinedParams.keys().next().done
+    if (import.meta.env.DEV) {
+      console.info('[ResetPassword] location snapshot', {
+        href: typeof window !== 'undefined' ? window.location.href : '',
+        hash,
+        search,
+        params: hasParams ? Object.fromEntries(combinedParams.entries()) : null
+      })
+    }
 
     const verifyRecoveryLink = async () => {
       if (!hasParams) {
@@ -49,8 +57,11 @@ const ResetPassword = () => {
       const type = combinedParams.get('type')
       const accessToken = combinedParams.get('access_token')
       const refreshToken = combinedParams.get('refresh_token')
+      const code = combinedParams.get('code')
+      const tokenHash = combinedParams.get('token_hash')
+      const email = combinedParams.get('email')
 
-      if (type !== 'recovery' || !accessToken || !refreshToken) {
+      if (type !== 'recovery') {
         setStatusType('error')
         setStatusMessage(t('resetPassword.invalidLink'))
         setIsVerifying(false)
@@ -58,13 +69,34 @@ const ResetPassword = () => {
       }
 
       try {
-        const { error } = await supabase.auth.setSession({
-          access_token: accessToken,
-          refresh_token: refreshToken
-        })
+        let sessionError = null
 
-        if (error) {
-          console.error('Failed to set session from recovery link:', error)
+        if (accessToken && refreshToken) {
+          const { error } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken
+          })
+          sessionError = error || null
+        } else if (code) {
+          const { error } = await supabase.auth.exchangeCodeForSession(code)
+          sessionError = error || null
+        } else if (tokenHash && email) {
+          const { error } = await supabase.auth.verifyOtp({
+            type: 'recovery',
+            token: tokenHash,
+            email
+          })
+          sessionError = error || null
+        } else {
+          sessionError = new Error('Missing tokens for password recovery')
+        }
+
+        if (import.meta.env.DEV) {
+          console.info('[ResetPassword] session attempt result:', sessionError ?? 'success')
+        }
+
+        if (sessionError) {
+          console.error('Failed to establish session from recovery link:', sessionError)
           setStatusType('error')
           setStatusMessage(t('resetPassword.invalidLink'))
           setIsVerifying(false)
