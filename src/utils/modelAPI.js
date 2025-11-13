@@ -260,6 +260,8 @@ class ModelAPIService {
       });
       
       // 详细记录响应结构以便调试
+      console.log('🔍 完整响应结构:', resp.data);
+      
       if (resp.data?.choices?.[0]?.message) {
         const msg = resp.data.choices[0].message;
         console.log('📋 Message 结构:', {
@@ -267,11 +269,34 @@ class ModelAPIService {
           isArray: Array.isArray(msg.content),
           contentLength: typeof msg.content === 'string' ? msg.content.length : (Array.isArray(msg.content) ? msg.content.length : 'N/A'),
           contentPreview: typeof msg.content === 'string' 
-            ? msg.content.substring(0, 100) 
+            ? msg.content.substring(0, 200) 
             : (Array.isArray(msg.content) 
-              ? JSON.stringify(msg.content.map(p => ({ type: p.type, hasUrl: !!p.image_url?.url, hasText: !!p.text })))
-              : 'N/A')
+              ? JSON.stringify(msg.content.map(p => ({ 
+                  type: p.type, 
+                  hasUrl: !!p.image_url?.url, 
+                  hasText: !!p.text,
+                  textPreview: p.text ? p.text.substring(0, 100) : null,
+                  urlPreview: p.image_url?.url ? p.image_url.url.substring(0, 100) : null
+                })), null, 2)
+              : 'N/A'),
+          fullContent: msg.content // 输出完整内容以便在控制台展开查看
         });
+        
+        // 如果是数组，详细记录每个部分
+        if (Array.isArray(msg.content)) {
+          msg.content.forEach((part, index) => {
+            console.log(`📦 Content Part ${index}:`, {
+              type: part.type,
+              keys: Object.keys(part),
+              hasImageUrl: !!part.image_url,
+              hasText: !!part.text,
+              textLength: part.text?.length,
+              imageUrlLength: part.image_url?.url?.length,
+              textPreview: part.text ? part.text.substring(0, 200) : null,
+              imageUrlPreview: part.image_url?.url ? part.image_url.url.substring(0, 200) : null
+            });
+          });
+        }
       }
       
       // 解析响应 - Gemini 2.5 Flash Image 返回的图像在 content 中
@@ -341,6 +366,25 @@ class ModelAPIService {
       } else if (Array.isArray(message.content)) {
         // content 是数组，查找图像部分
         for (const part of message.content) {
+          console.log('🔍 检查 content part:', { type: part.type, keys: Object.keys(part) });
+          
+          // 检查 inlineData（Gemini 格式）
+          if (part.inlineData && part.inlineData.data) {
+            console.log('✅ 找到 inlineData');
+            const base64Data = part.inlineData.data;
+            const mimeType = part.inlineData.mimeType || 'image/png';
+            
+            if (isValidBase64(base64Data)) {
+              imageUrl = `data:${mimeType};base64,${base64Data}`;
+              console.log('✅ 使用 inlineData 创建 imageUrl');
+              break;
+            } else {
+              console.error('❌ inlineData 包含无效的 base64 数据');
+              console.error('inlineData.data 前200字符:', base64Data.substring(0, 200));
+            }
+          }
+          
+          // 检查 image_url（OpenAI 格式）
           if (part.type === 'image_url' && part.image_url?.url) {
             const url = part.image_url.url;
             // 验证 data URL 格式
@@ -348,6 +392,7 @@ class ModelAPIService {
               const cleaned = cleanBase64(url);
               if (isValidBase64(cleaned)) {
                 imageUrl = url;
+                console.log('✅ 使用 image_url 创建 imageUrl');
               } else {
                 console.error('❌ 检测到无效的 base64 数据（image_url 格式）');
                 console.error('URL 前200字符:', url.substring(0, 200));
@@ -355,6 +400,7 @@ class ModelAPIService {
               }
             } else {
               imageUrl = url;
+              console.log('✅ 使用 image_url (HTTP URL)');
             }
             if (imageUrl) break;
           } else if (part.type === 'text' && part.text) {
@@ -364,10 +410,17 @@ class ModelAPIService {
               const cleaned = cleanBase64(text);
               if (isValidBase64(cleaned)) {
                 imageUrl = text;
+                console.log('✅ 从 text 中提取 data URL');
                 break;
               }
             } else if (text.startsWith('http://') || text.startsWith('https://')) {
               imageUrl = text;
+              console.log('✅ 从 text 中提取 HTTP URL');
+              break;
+            } else if (isValidBase64(text)) {
+              // 纯 base64 字符串（没有前缀）
+              imageUrl = `data:image/png;base64,${text}`;
+              console.log('✅ 从 text 中提取纯 base64');
               break;
             }
           }
@@ -408,8 +461,24 @@ class ModelAPIService {
       // 最终验证 imageUrl
       if (!imageUrl) {
         console.error('❌ 无法从响应中提取有效的图像 URL');
+        console.error('🔍 调试信息:');
+        console.error('- message.content 类型:', typeof message.content);
+        console.error('- message.content 是否为数组:', Array.isArray(message.content));
+        console.error('- message 的所有键:', Object.keys(message));
+        console.error('- choice 的所有键:', Object.keys(choice));
+        console.error('- resp.data 的所有键:', Object.keys(resp.data));
+        
+        // 尝试查找所有可能包含图像数据的字段
+        const possibleImageFields = [];
+        if (message.content) possibleImageFields.push('message.content');
+        if (message.image) possibleImageFields.push('message.image');
+        if (choice.image) possibleImageFields.push('choice.image');
+        if (resp.data.data) possibleImageFields.push('resp.data.data');
+        if (resp.data.images) possibleImageFields.push('resp.data.images');
+        
+        console.error('- 可能包含图像的字段:', possibleImageFields);
         console.error('完整响应:', JSON.stringify(resp.data, null, 2));
-        throw new Error('无法从 API 响应中提取图像数据');
+        throw new Error('无法从 API 响应中提取图像数据。请检查控制台日志查看详细的响应结构。');
       }
       
       // 如果是 data URL，再次验证
