@@ -612,8 +612,12 @@ function Editor() {
               isGenerating ? (
                 <div className="generating-container">
                   <div className="loading-spinner"></div>
-                  <p className="generating-text">正在使用 {model} {activeTab === 'imageEdit' ? '编辑图像...' : '生成图像...'}</p>
-                  <p className="generating-subtext">请稍候，这可能需要几秒钟</p>
+                  <p className="generating-text">
+                    {activeTab === 'imageEdit' 
+                      ? t('editor.editingWithModel', { model }) 
+                      : t('editor.generatingWithModel', { model })}
+                  </p>
+                  <p className="generating-subtext">{t('editor.pleaseWait')}</p>
                 </div>
               ) : generatedImages.length > 0 ? (
                 <div className="output-gallery">

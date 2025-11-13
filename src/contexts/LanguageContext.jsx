@@ -121,7 +121,7 @@ export const LanguageProvider = ({ children }) => {
     }
   }, [location.pathname, navigate, language])
 
-  const t = (key) => {
+  const t = (key, params = {}) => {
     const keys = key.split('.')
     let value = translations[language]
     
@@ -133,7 +133,16 @@ export const LanguageProvider = ({ children }) => {
       }
     }
     
-    return value || key
+    let result = value || key
+    
+    // 支持参数替换，例如 t('editor.generatingWithModel', { model: 'GPT-5' })
+    if (typeof result === 'string' && params && Object.keys(params).length > 0) {
+      Object.keys(params).forEach(paramKey => {
+        result = result.replace(new RegExp(`\\{${paramKey}\\}`, 'g'), params[paramKey])
+      })
+    }
+    
+    return result
   }
 
   const getCurrentPath = () => {

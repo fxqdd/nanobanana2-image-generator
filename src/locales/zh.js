@@ -170,6 +170,8 @@ export default {
     optimizationHint: '优化提示',
     clear: '清除',
     optimizingWithGemini: '正在使用 Gemini 优化提示词...',
+    generatingWithModel: '正在使用 {model} 生成图像...',
+    editingWithModel: '正在使用 {model} 编辑图像...',
     pleaseWait: '请稍候，这可能需要几秒钟',
     downloadImage: '下载图像',
     costDisplayTitle: '积分消耗（仅展示，不可选择）',

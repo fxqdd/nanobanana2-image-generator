@@ -170,6 +170,8 @@ export default {
     optimizationHint: 'Optimierungshinweis',
     clear: 'Löschen',
     optimizingWithGemini: 'Prompt mit Gemini optimieren...',
+    generatingWithModel: 'Bild wird mit {model} generiert...',
+    editingWithModel: 'Bild wird mit {model} bearbeitet...',
     pleaseWait: 'Bitte warten Sie, dies kann einige Sekunden dauern',
     downloadImage: 'Bild herunterladen',
     costDisplayTitle: 'Guthabenverbrauch (nur Anzeige, nicht auswählbar)',

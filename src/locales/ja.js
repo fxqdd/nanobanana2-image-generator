@@ -167,6 +167,8 @@ export default {
     optimizationHint: '最適化ヒント',
     clear: 'クリア',
     optimizingWithGemini: 'Geminiでプロンプトを最適化中...',
+    generatingWithModel: '{model} を使用して画像を生成中...',
+    editingWithModel: '{model} を使用して画像を編集中...',
     pleaseWait: 'お待ちください。数秒かかる場合があります',
     downloadImage: '画像をダウンロード',
     costDisplayTitle: 'クレジット消費（表示のみ、選択不可）',

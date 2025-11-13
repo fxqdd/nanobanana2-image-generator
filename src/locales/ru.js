@@ -170,6 +170,8 @@ export default {
     optimizationHint: 'Подсказка по оптимизации',
     clear: 'Очистить',
     optimizingWithGemini: 'Оптимизация промпта с Gemini...',
+    generatingWithModel: 'Генерация изображения с помощью {model}...',
+    editingWithModel: 'Редактирование изображения с помощью {model}...',
     pleaseWait: 'Пожалуйста, подождите, это может занять несколько секунд',
     downloadImage: 'Скачать изображение',
     costDisplayTitle: 'Расход баллов (только для отображения, не выбирается)',
