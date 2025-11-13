@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import SEO from '../components/SEO'
@@ -17,40 +17,38 @@ const ResetPassword = () => {
   const [statusMessage, setStatusMessage] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const hashParams = useMemo(() => {
-    const params = new URLSearchParams()
+  useEffect(() => {
+    const hash = location.hash || (typeof window !== 'undefined' ? window.location.hash : '')
+    const search = location.search || (typeof window !== 'undefined' ? window.location.search : '')
+    const combinedParams = new URLSearchParams()
 
     const appendParams = (source) => {
       if (!source) return
-      const iterable = new URLSearchParams(source.replace(/^([#?])/, ''))
-      iterable.forEach((value, key) => {
-        if (!params.has(key)) {
-          params.set(key, value)
+      const normalized = source.replace(/^([#?])/, '')
+      const entries = new URLSearchParams(normalized)
+      entries.forEach((value, key) => {
+        if (!combinedParams.has(key)) {
+          combinedParams.set(key, value)
         }
       })
     }
 
-    const hash = location.hash || (typeof window !== 'undefined' ? window.location.hash : '')
-    const search = location.search || (typeof window !== 'undefined' ? window.location.search : '')
-
     appendParams(hash)
     appendParams(search)
 
-    return params.keys().next().done ? null : params
-  }, [location.hash, location.search])
+    const hasParams = !combinedParams.keys().next().done
 
-  useEffect(() => {
     const verifyRecoveryLink = async () => {
-      if (!hashParams) {
+      if (!hasParams) {
         setStatusType('error')
         setStatusMessage(t('resetPassword.invalidLink'))
         setIsVerifying(false)
         return
       }
 
-      const type = hashParams.get('type')
-      const accessToken = hashParams.get('access_token')
-      const refreshToken = hashParams.get('refresh_token')
+      const type = combinedParams.get('type')
+      const accessToken = combinedParams.get('access_token')
+      const refreshToken = combinedParams.get('refresh_token')
 
       if (type !== 'recovery' || !accessToken || !refreshToken) {
         setStatusType('error')
@@ -78,10 +76,10 @@ const ResetPassword = () => {
         setStatusMessage('')
 
         if (typeof window !== 'undefined') {
-          if (window.location.search) {
-            const cleanUrl = `${window.location.pathname}${window.location.hash || ''}`
-            window.history.replaceState({}, document.title, cleanUrl)
-          }
+          const cleanUrl = `${window.location.pathname}${
+            window.location.hash?.startsWith('#') ? window.location.hash : ''
+          }`
+          window.history.replaceState({}, document.title, cleanUrl)
         }
       } catch (err) {
         console.error('Unexpected error while verifying recovery link:', err)
@@ -93,7 +91,7 @@ const ResetPassword = () => {
     }
 
     verifyRecoveryLink()
-  }, [hashParams, t])
+  }, [location.hash, location.search, t])
 
   const handleSubmit = async (event) => {
     event.preventDefault()
