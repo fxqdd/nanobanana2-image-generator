@@ -548,35 +548,6 @@ const Login = () => {
                   </span>
                 )}
               </div>
-              <div className="verification-tips" style={{ marginTop: '16px', padding: '12px', background: 'rgba(255, 165, 0, 0.1)', borderRadius: '8px', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                <strong style={{ display: 'block', marginBottom: '8px' }}>💡 如果未收到邮件，请按以下步骤检查：</strong>
-                <ol style={{ margin: '0', paddingLeft: '20px', lineHeight: '1.6' }}>
-                  <li><strong>检查正确的日志位置：</strong><br />
-                      Supabase Dashboard → Logs → 左侧选择 <strong>"Auth"</strong> 集合（不是 edge_logs）<br />
-                      查询：<code style={{ background: 'rgba(0,0,0,0.1)', padding: '2px 4px', borderRadius: '3px' }}>select * from auth_logs limit 10</code></li>
-                  <li><strong>检查邮件确认是否启用：</strong><br />
-                      Authentication → Settings → 确认 <strong>"Enable email confirmations"</strong> 已启用<br />
-                      ⚠️ 如果未启用，注册后会直接登录，不需要邮件确认</li>
-                  <li><strong>检查邮件服务配置（最重要）：</strong><br />
-                      Project Settings → Auth → SMTP Settings<br />
-                      ⚠️ <strong>免费计划可能没有默认邮件服务</strong>，需要配置自定义 SMTP（SendGrid/Mailgun）</li>
-                  <li><strong>检查邮件模板：</strong><br />
-                      Authentication → Email Templates → Confirm signup → 确认模板存在</li>
-                  <li><strong>检查 Site URL：</strong><br />
-                      Project Settings → API → Site URL 设置为 <code style={{ background: 'rgba(0,0,0,0.1)', padding: '2px 4px', borderRadius: '3px' }}>http://localhost:5173</code></li>
-                  <li><strong>临时解决方案（仅测试）：</strong><br />
-                      如果只是测试，可以临时禁用邮件确认：<br />
-                      Authentication → Settings → 关闭 "Enable email confirmations" → 保存<br />
-                      这样注册后会直接登录，无需邮件确认</li>
-                </ol>
-                <div style={{ marginTop: '12px', padding: '8px', background: 'rgba(255, 0, 0, 0.1)', borderRadius: '4px', fontSize: '0.8rem' }}>
-                  <strong>⚠️ 关键问题：</strong> 如果 Logs 中完全没有邮件发送记录，说明邮件根本没有被发送。最可能的原因是：
-                  <ul style={{ margin: '8px 0 0 20px', padding: 0 }}>
-                    <li>邮件确认功能未启用</li>
-                    <li>免费计划没有配置 SMTP，邮件服务不可用</li>
-                  </ul>
-                </div>
-              </div>
             </div>
           )}
 
