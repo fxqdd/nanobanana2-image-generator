@@ -77,7 +77,7 @@ export async function sendVerificationEmail({
     type,
     email,
     options: {
-      emailRedirectTo: redirectUrl,
+      redirectTo: redirectUrl,
       data: { locale }
     }
   })

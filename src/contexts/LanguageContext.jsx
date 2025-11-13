@@ -97,6 +97,24 @@ export const LanguageProvider = ({ children }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  // 统一处理包含 Supabase 恢复链接哈希的情况，确保始终跳转到重置密码页面
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    const { hash } = window.location
+    if (!hash || !hash.includes('type=')) return
+
+    const params = new URLSearchParams(hash.replace('#', ''))
+    const type = params.get('type')
+
+    if (type === 'recovery') {
+      const targetPath = `/${language}/reset-password`
+      if (!location.pathname.startsWith(targetPath)) {
+        navigate(`${targetPath}${hash}`, { replace: true })
+      }
+    }
+  }, [language, location.pathname, navigate])
+
   const t = (key) => {
     const keys = key.split('.')
     let value = translations[language]
