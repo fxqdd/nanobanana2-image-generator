@@ -49,51 +49,80 @@ const ResetPassword = () => {
     }
 
     const verifyRecoveryLink = async () => {
-      if (!hasParams) {
-        setStatusType('error')
-        setStatusMessage(t('resetPassword.invalidLink'))
-        setIsVerifying(false)
-        return
-      }
-
-      const type = params.get('type')
-      const accessToken = params.get('access_token')
-      const refreshToken = params.get('refresh_token')
-      const code = params.get('code')
-      const tokenHash = params.get('token_hash')
-      const email = params.get('email')
-
-      if (type !== 'recovery') {
-        setStatusType('error')
-        setStatusMessage(t('resetPassword.invalidLink'))
-        setIsVerifying(false)
-        return
-      }
+      let timeoutCleared = false
+      // 设置总超时，避免无限等待
+      const timeoutId = setTimeout(() => {
+        if (!timeoutCleared) {
+          console.error('⚠️ Recovery link verification timeout')
+          setStatusType('error')
+          setStatusMessage(t('resetPassword.invalidLink'))
+          setIsVerifying(false)
+        }
+      }, 10000)
 
       try {
+        if (!hasParams) {
+          timeoutCleared = true
+          clearTimeout(timeoutId)
+          setStatusType('error')
+          setStatusMessage(t('resetPassword.invalidLink'))
+          setIsVerifying(false)
+          return
+        }
+
+        const type = params.get('type')
+        const accessToken = params.get('access_token')
+        const refreshToken = params.get('refresh_token')
+        const code = params.get('code')
+        const tokenHash = params.get('token_hash')
+        const email = params.get('email')
+
+        if (type !== 'recovery') {
+          timeoutCleared = true
+          clearTimeout(timeoutId)
+          setStatusType('error')
+          setStatusMessage(t('resetPassword.invalidLink'))
+          setIsVerifying(false)
+          return
+        }
+
         let sessionError = null
+        let sessionPromise = null
 
         if (accessToken && refreshToken) {
-          const { error } = await supabase.auth.setSession({
+          sessionPromise = supabase.auth.setSession({
             access_token: accessToken,
             refresh_token: refreshToken
           })
-          sessionError = error || null
         } else if (code) {
-          const { error } = await supabase.auth.exchangeCodeForSession(code)
-          sessionError = error || null
+          sessionPromise = supabase.auth.exchangeCodeForSession(code)
         } else if (tokenHash && email) {
-          const { error } = await supabase.auth.verifyOtp({
+          sessionPromise = supabase.auth.verifyOtp({
             type: 'recovery',
             token: tokenHash,
             email
           })
-          sessionError = error || null
         } else {
           sessionError = new Error('Missing tokens for password recovery')
         }
 
+        if (sessionPromise) {
+          // 添加超时保护
+          const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Session verification timeout')), 8000)
+          )
+
+          const result = await Promise.race([sessionPromise, timeoutPromise]).catch((err) => {
+            console.error('Session verification failed or timed out:', err)
+            return { error: err }
+          })
+
+          sessionError = result?.error || null
+        }
+
         if (sessionError) {
+          timeoutCleared = true
+          clearTimeout(timeoutId)
           console.error('Failed to establish session from recovery link:', sessionError)
           setStatusType('error')
           setStatusMessage(t('resetPassword.invalidLink'))
@@ -110,10 +139,15 @@ const ResetPassword = () => {
           window.history.replaceState({}, document.title, cleanUrl)
         }
       } catch (err) {
+        timeoutCleared = true
+        clearTimeout(timeoutId)
         console.error('Unexpected error while verifying recovery link:', err)
         setStatusType('error')
         setStatusMessage(t('resetPassword.invalidLink'))
       } finally {
+        if (!timeoutCleared) {
+          clearTimeout(timeoutId)
+        }
         setIsVerifying(false)
       }
     }

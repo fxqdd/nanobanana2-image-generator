@@ -15,12 +15,24 @@ export const AuthProvider = ({ children }) => {
     if (!supabaseUser) return null;
 
     try {
-      // 从 profiles 表获取用户信息
-      const { data: profile, error } = await supabase
+      // 从 profiles 表获取用户信息，添加超时保护
+      const profilePromise = supabase
         .from('profiles')
         .select('*')
         .eq('user_id', supabaseUser.id)
         .single();
+
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Profile fetch timeout')), 5000)
+      );
+
+      const { data: profile, error } = await Promise.race([
+        profilePromise,
+        timeoutPromise
+      ]).catch((err) => {
+        console.warn('Profile fetch failed or timed out:', err);
+        return { data: null, error: err };
+      });
 
       if (error && error.code !== 'PGRST116') {
         console.warn('Failed to fetch profile:', error);
@@ -128,16 +140,32 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     let isMounted = true;
     let subscription = null;
+    let timeoutId = null;
 
     const initAuth = async () => {
       try {
         console.log('🔍 初始化认证状态...');
-        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        // 添加超时保护，避免无限等待
+        const sessionPromise = supabase.auth.getSession();
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Session fetch timeout')), 10000)
+        );
+
+        const { data: { session }, error } = await Promise.race([
+          sessionPromise,
+          timeoutPromise
+        ]).catch((err) => {
+          console.error('Session fetch failed or timed out:', err);
+          return { data: { session: null }, error: err };
+        });
         
         if (error) {
           console.error('❌ Error getting session:', error);
           if (isMounted) {
             setLoading(false);
+            setIsLoggedIn(false);
+            setUser(null);
           }
           return;
         }
@@ -150,11 +178,25 @@ export const AuthProvider = ({ children }) => {
         console.error('❌ Error initializing auth:', err);
         if (isMounted) {
           setLoading(false);
+          setIsLoggedIn(false);
+          setUser(null);
         }
       }
     };
 
-    initAuth();
+    // 设置总超时，确保 loading 状态不会永远为 true
+    timeoutId = setTimeout(() => {
+      if (isMounted) {
+        console.warn('⚠️ Auth initialization timeout, forcing loading to false');
+        setLoading(false);
+      }
+    }, 15000);
+
+    initAuth().finally(() => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    });
 
     // 监听 Supabase auth 状态变化
     try {
@@ -176,6 +218,9 @@ export const AuthProvider = ({ children }) => {
       isMounted = false;
       if (subscription) {
         subscription.unsubscribe();
+      }
+      if (timeoutId) {
+        clearTimeout(timeoutId);
       }
     };
   }, []);
