@@ -219,10 +219,15 @@ class ModelAPIService {
         });
       }
     } else {
-      // 纯文本提示词
+      // 纯文本提示词 - 对于 Gemini 2.5 Flash Image，需要使用明确的图像生成指令
+      // 注意：Gemini 2.5 Flash Image 需要明确的图像生成请求
+      const imagePrompt = modelId.includes('gemini-2.5-flash-image') 
+        ? `Generate an image of: ${prompt}. Return only the image data, no text description.`
+        : `生成以下描述的图像：${prompt}`;
+      
       messages.push({
         role: 'user',
-        content: `生成以下描述的图像：${prompt}`
+        content: imagePrompt
       });
     }
     
@@ -232,6 +237,14 @@ class ModelAPIService {
       messages: messages,
       max_tokens: 4096
     };
+    
+    // 对于 Gemini 2.5 Flash Image，可能需要特殊配置
+    if (modelId.includes('gemini-2.5-flash-image')) {
+      // 尝试添加额外的参数来确保返回图像
+      body.temperature = 0.7;
+      // 某些模型可能需要 response_format
+      // 但 Gemini 2.5 Flash Image 可能不支持，所以先不设置
+    }
     
     // 添加图像配置（如果模型支持）
     if (options.aspectRatio || options.size) {
@@ -349,20 +362,54 @@ class ModelAPIService {
         } else if (message.content.startsWith('http://') || message.content.startsWith('https://')) {
           imageUrl = message.content;
         } else {
-          // 尝试作为 base64 处理
-          const cleaned = cleanBase64(message.content);
-          if (isValidBase64(cleaned)) {
-            imageUrl = `data:image/png;base64,${cleaned}`;
-          } else {
-            // 不是有效的 base64，可能是文本消息
-            console.error('❌ Content 不是有效的 base64 数据');
-            console.error('Content 类型:', typeof message.content);
-            console.error('Content 长度:', message.content.length);
-            console.error('Content 前200字符:', message.content.substring(0, 200));
-            console.error('完整响应:', JSON.stringify(resp.data, null, 2));
-            throw new Error(`API 返回的不是图像数据，而是文本消息: ${message.content.substring(0, 100)}...`);
+            // 尝试作为 base64 处理
+            const cleaned = cleanBase64(message.content);
+            if (isValidBase64(cleaned)) {
+              imageUrl = `data:image/png;base64,${cleaned}`;
+            } else {
+              // 不是有效的 base64，可能是文本消息
+              // 尝试从文本中提取 base64 数据或 URL
+              console.warn('⚠️ Content 不是纯 base64，尝试从文本中提取图像数据');
+              
+              // 尝试查找 data:image URL
+              const dataUrlMatch = message.content.match(/data:image\/[^;]+;base64,[A-Za-z0-9+/=]+/);
+              if (dataUrlMatch) {
+                const foundUrl = dataUrlMatch[0];
+                const cleaned = cleanBase64(foundUrl);
+                if (isValidBase64(cleaned)) {
+                  imageUrl = foundUrl;
+                  console.log('✅ 从文本中提取到 data URL');
+                }
+              }
+              
+              // 尝试查找 HTTP URL
+              if (!imageUrl) {
+                const httpUrlMatch = message.content.match(/https?:\/\/[^\s]+\.(jpg|jpeg|png|webp|gif)/i);
+                if (httpUrlMatch) {
+                  imageUrl = httpUrlMatch[0];
+                  console.log('✅ 从文本中提取到 HTTP URL:', imageUrl);
+                }
+              }
+              
+              // 尝试查找纯 base64 字符串（可能被文本包围）
+              if (!imageUrl) {
+                const base64Match = message.content.match(/[A-Za-z0-9+/]{100,}={0,2}/);
+                if (base64Match && isValidBase64(base64Match[0])) {
+                  imageUrl = `data:image/png;base64,${base64Match[0]}`;
+                  console.log('✅ 从文本中提取到 base64 字符串');
+                }
+              }
+              
+              if (!imageUrl) {
+                console.error('❌ 无法从文本消息中提取图像数据');
+                console.error('Content 类型:', typeof message.content);
+                console.error('Content 长度:', message.content.length);
+                console.error('Content 前500字符:', message.content.substring(0, 500));
+                console.error('完整响应:', JSON.stringify(resp.data, null, 2));
+                throw new Error(`API 返回的不是图像数据，而是文本消息。这可能是因为 Gemini 2.5 Flash Image 通过 OpenRouter 不支持图像生成，请尝试直接使用 Gemini API。文本内容: ${message.content.substring(0, 200)}...`);
+              }
+            }
           }
-        }
       } else if (Array.isArray(message.content)) {
         // content 是数组，查找图像部分
         for (const part of message.content) {
