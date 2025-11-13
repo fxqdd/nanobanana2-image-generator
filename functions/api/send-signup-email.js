@@ -158,6 +158,8 @@ const sendViaResend = async ({ resendApiKey, fromEmail, fromName, email, locale,
   }
 }
 
+const SUPPORTED_LOCALES = ['zh', 'en', 'ja', 'fr', 'de', 'ru']
+
 const resolveRedirectUrl = (env, origin, type, locale) => {
   const normalizedSiteUrl =
     typeof env.PUBLIC_SITE_URL === 'string' && env.PUBLIC_SITE_URL.trim().length > 0
@@ -165,16 +167,17 @@ const resolveRedirectUrl = (env, origin, type, locale) => {
       : null
 
   const baseUrl = normalizedSiteUrl || origin
+  const normalizedLocale = SUPPORTED_LOCALES.includes(locale) ? locale : 'zh'
 
   if (type === 'recovery') {
-    return `${baseUrl}/reset-password`
+    return `${baseUrl}/${normalizedLocale}/reset-password`
   }
 
   if (type === 'email_change') {
-    return `${baseUrl}/settings`
+    return `${baseUrl}/${normalizedLocale}/settings`
   }
 
-  return `${baseUrl}/login`
+  return `${baseUrl}/${normalizedLocale}/login`
 }
 
 const jsonResponse = (data, status = 200) =>
