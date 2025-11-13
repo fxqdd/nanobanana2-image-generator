@@ -101,19 +101,25 @@ export const LanguageProvider = ({ children }) => {
   useEffect(() => {
     if (typeof window === 'undefined') return
 
-    const { hash } = window.location
+    const { hash, pathname } = window.location
     if (!hash || !hash.includes('type=')) return
 
     const params = new URLSearchParams(hash.replace('#', ''))
     const type = params.get('type')
 
     if (type === 'recovery') {
-      const targetPath = `/${language}/reset-password`
-      if (!location.pathname.startsWith(targetPath)) {
+      // 从当前路径中提取语言代码，如果路径中没有语言代码，使用当前语言状态
+      const pathParts = pathname.split('/').filter(Boolean)
+      const pathLang = pathParts[0]
+      const targetLang = translations[pathLang] ? pathLang : language
+      const targetPath = `/${targetLang}/reset-password`
+      
+      // 只有当路径不匹配时才重定向，避免循环
+      if (!pathname.startsWith(targetPath)) {
         navigate(`${targetPath}${hash}`, { replace: true })
       }
     }
-  }, [language, location.pathname, navigate])
+  }, [location.pathname, navigate, language])
 
   const t = (key) => {
     const keys = key.split('.')

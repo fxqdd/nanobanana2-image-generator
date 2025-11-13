@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import SEO from '../components/SEO'
@@ -16,8 +16,22 @@ const ResetPassword = () => {
   const [statusType, setStatusType] = useState('')
   const [statusMessage, setStatusMessage] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  
+  // 使用 ref 防止重复验证
+  const hasVerifiedRef = useRef(false)
+  const isVerifyingRef = useRef(false)
 
   useEffect(() => {
+    // 如果已经验证过或正在验证，直接返回
+    if (hasVerifiedRef.current || isVerifyingRef.current) {
+      return
+    }
+    
+    // 如果已经可以重置密码，说明验证成功，不需要再次验证
+    if (canReset) {
+      return
+    }
+    
     const hash = location.hash || (typeof window !== 'undefined' ? window.location.hash : '')
     const search = location.search || (typeof window !== 'undefined' ? window.location.search : '')
 
@@ -49,6 +63,10 @@ const ResetPassword = () => {
     }
 
     const verifyRecoveryLink = async () => {
+      // 标记正在验证，防止重复执行
+      isVerifyingRef.current = true
+      setIsVerifying(true)
+      
       let timeoutCleared = false
       // 设置总超时，避免无限等待
       const timeoutId = setTimeout(() => {
@@ -57,6 +75,7 @@ const ResetPassword = () => {
           setStatusType('error')
           setStatusMessage(t('resetPassword.invalidLink'))
           setIsVerifying(false)
+          isVerifyingRef.current = false
         }
       }, 10000)
 
@@ -64,6 +83,8 @@ const ResetPassword = () => {
         if (!hasParams) {
           timeoutCleared = true
           clearTimeout(timeoutId)
+          hasVerifiedRef.current = true
+          isVerifyingRef.current = false
           setStatusType('error')
           setStatusMessage(t('resetPassword.invalidLink'))
           setIsVerifying(false)
@@ -80,6 +101,8 @@ const ResetPassword = () => {
         if (type !== 'recovery') {
           timeoutCleared = true
           clearTimeout(timeoutId)
+          hasVerifiedRef.current = true
+          isVerifyingRef.current = false
           setStatusType('error')
           setStatusMessage(t('resetPassword.invalidLink'))
           setIsVerifying(false)
@@ -123,6 +146,8 @@ const ResetPassword = () => {
         if (sessionError) {
           timeoutCleared = true
           clearTimeout(timeoutId)
+          hasVerifiedRef.current = true
+          isVerifyingRef.current = false
           console.error('Failed to establish session from recovery link:', sessionError)
           setStatusType('error')
           setStatusMessage(t('resetPassword.invalidLink'))
@@ -130,17 +155,24 @@ const ResetPassword = () => {
           return
         }
 
+        // 验证成功
+        hasVerifiedRef.current = true
+        isVerifyingRef.current = false
         setCanReset(true)
         setStatusType('')
         setStatusMessage('')
 
+        // 清理 URL，但保留必要的 hash 以避免重复触发
         if (typeof window !== 'undefined') {
+          // 只保留 type=recovery，移除所有 token
           const cleanUrl = `${window.location.pathname}#type=recovery`
           window.history.replaceState({}, document.title, cleanUrl)
         }
       } catch (err) {
         timeoutCleared = true
         clearTimeout(timeoutId)
+        hasVerifiedRef.current = true
+        isVerifyingRef.current = false
         console.error('Unexpected error while verifying recovery link:', err)
         setStatusType('error')
         setStatusMessage(t('resetPassword.invalidLink'))
@@ -153,7 +185,12 @@ const ResetPassword = () => {
     }
 
     verifyRecoveryLink()
-  }, [location.hash, location.search, t])
+    
+    // 清理函数
+    return () => {
+      isVerifyingRef.current = false
+    }
+  }, []) // 只在组件挂载时执行一次
 
   const handleSubmit = async (event) => {
     event.preventDefault()
