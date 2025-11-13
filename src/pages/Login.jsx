@@ -48,6 +48,16 @@ const Login = () => {
       
       // 检查是否是 OAuth 回调（包含 access_token）
       const hash = window.location.hash;
+      if (hash) {
+        const params = new URLSearchParams(hash.replace('#', ''));
+        const hashType = params.get('type');
+        if (hashType === 'recovery') {
+          const origin = window.location.origin;
+          const recoveryPath = `${origin}${getLocalizedPath('/reset-password')}${hash}`;
+          window.location.replace(recoveryPath);
+          return;
+        }
+      }
       
       // 处理 Supabase OAuth 回调（包括 Google 登录和邮箱确认）
       if (hash && (hash.includes('access_token') || hash.includes('type=email'))) {

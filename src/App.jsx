@@ -13,6 +13,7 @@ import APITest from './pages/APITest'
 import Account from './pages/Account'
 import Billing from './pages/Billing'
 import Settings from './pages/Settings'
+import ResetPassword from './pages/ResetPassword'
 import Footer from './components/Footer'
 import ProtectedRoute from './components/ProtectedRoute'
 import { AuthProvider } from './contexts/AuthContext'
@@ -47,6 +48,8 @@ function App() {
               <Route path="/:lang/showcase" element={<Showcase />} />
               <Route path="/:lang/pricing" element={<Pricing />} />
               <Route path="/:lang/api-test" element={<APITest />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
+              <Route path="/:lang/reset-password" element={<ResetPassword />} />
               <Route path="/:lang/login" element={<Login />} />
               <Route path="/:lang/account" element={
                 <ProtectedRoute>

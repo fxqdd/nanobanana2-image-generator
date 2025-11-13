@@ -336,6 +336,18 @@ export default {
     verificationResendError: 'Failed to send email. Please try again later.',
     registerUnexpectedError: 'An unexpected error occurred during registration. Please check Supabase configuration or contact administrator'
   },
+  resetPassword: {
+    pageTitle: 'Reset password',
+    pageDescription: 'Set a new password to regain access to your account.',
+    verifying: 'Verifying link, please wait...',
+    invalidLink: 'The link is invalid or has expired. Please request a new password reset email.',
+    newPassword: 'New password',
+    confirmPassword: 'Confirm new password',
+    requirements: 'Password must be at least 6 characters. A mix of letters and numbers is recommended.',
+    submit: 'Update password',
+    submitSuccess: 'Password updated successfully. Please log in with your new password.',
+    submitError: 'Failed to update password. Please try again later.'
+  },
   notFound: {
     title: '404',
     message: 'Sorry, the page you requested does not exist',

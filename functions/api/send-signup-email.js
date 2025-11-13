@@ -72,7 +72,7 @@ export async function sendVerificationEmail({
     auth: { persistSession: false }
   })
 
-  const redirectUrl = resolveRedirectUrl(env, origin)
+  const redirectUrl = resolveRedirectUrl(env, origin, type, locale)
   const { data, error } = await supabaseAdmin.auth.admin.generateLink({
     type,
     email,
@@ -158,13 +158,23 @@ const sendViaResend = async ({ resendApiKey, fromEmail, fromName, email, locale,
   }
 }
 
-const resolveRedirectUrl = (env, origin) => {
+const resolveRedirectUrl = (env, origin, type, locale) => {
   const normalizedSiteUrl =
     typeof env.PUBLIC_SITE_URL === 'string' && env.PUBLIC_SITE_URL.trim().length > 0
       ? env.PUBLIC_SITE_URL.trim().replace(/\/$/, '')
       : null
 
-  return normalizedSiteUrl ? `${normalizedSiteUrl}/login` : `${origin}/login`
+  const baseUrl = normalizedSiteUrl || origin
+
+  if (type === 'recovery') {
+    return `${baseUrl}/reset-password`
+  }
+
+  if (type === 'email_change') {
+    return `${baseUrl}/settings`
+  }
+
+  return `${baseUrl}/login`
 }
 
 const jsonResponse = (data, status = 200) =>

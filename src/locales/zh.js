@@ -336,6 +336,18 @@ export default {
     verificationResendError: '发送失败，请稍后重试。',
     registerUnexpectedError: '注册过程中出现意外错误，请检查 Supabase 配置或联系管理员'
   },
+  resetPassword: {
+    pageTitle: '重置密码',
+    pageDescription: '请设置一个新的登录密码，确保账户安全。',
+    verifying: '正在验证链接，请稍候...',
+    invalidLink: '链接无效或已过期，请重新申请密码重置邮件。',
+    newPassword: '新密码',
+    confirmPassword: '确认新密码',
+    requirements: '密码至少 6 个字符，建议包含字母和数字的组合。',
+    submit: '更新密码',
+    submitSuccess: '密码更新成功，请使用新密码登录。',
+    submitError: '密码更新失败，请稍后重试。'
+  },
   notFound: {
     title: '404',
     message: '抱歉，您请求的页面不存在',
