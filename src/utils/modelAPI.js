@@ -537,7 +537,11 @@ class ModelAPIService {
             if (part.inlineData && part.inlineData.data) {
               imageData = part.inlineData.data;
               imageMimeType = part.inlineData.mimeType || 'image/png';
-              console.log('✅ 找到图像数据 (inlineData)');
+              console.log('✅ 找到图像数据 (inlineData):', {
+                mimeType: imageMimeType,
+                dataLength: imageData.length,
+                dataPreview: imageData.substring(0, 50) + '...'
+              });
               break;
             }
             // 有些模型可能返回图像URL
@@ -579,14 +583,52 @@ class ModelAPIService {
         throw new Error('该模型不支持图像生成功能，请使用支持图像生成的模型');
       }
 
-      // 将Base64图像数据转换为Blob URL
-      const imageBlob = this.base64ToBlob(imageData, 'image/png');
+      // 清理 base64 数据：移除可能的 data URL 前缀
+      let cleanBase64 = imageData;
+      const originalLength = cleanBase64.length;
+      
+      if (cleanBase64.includes(',')) {
+        // 如果包含逗号，可能是 data URL 格式，提取 base64 部分
+        cleanBase64 = cleanBase64.split(',')[1];
+        console.log('🔧 检测到 data URL 格式，已提取 base64 部分');
+      }
+      // 移除可能的空白字符
+      cleanBase64 = cleanBase64.trim().replace(/\s/g, '');
+      
+      console.log('🔧 Base64 数据清理:', {
+        originalLength,
+        cleanedLength: cleanBase64.length,
+        removedChars: originalLength - cleanBase64.length
+      });
+      
+      // 验证 base64 字符串格式
+      if (!/^[A-Za-z0-9+/=]+$/.test(cleanBase64)) {
+        console.error('❌ 无效的 base64 数据格式');
+        console.error('数据前100字符:', cleanBase64.substring(0, 100));
+        throw new Error('API返回的图像数据格式无效');
+      }
+      
+      console.log('✅ Base64 数据验证通过');
+
+      // 将Base64图像数据转换为Blob URL，使用正确的 MIME 类型
+      let imageBlob;
+      try {
+        imageBlob = this.base64ToBlob(cleanBase64, imageMimeType);
+      } catch (blobError) {
+        console.error('❌ 转换 base64 到 Blob 失败:', blobError);
+        // 如果转换失败，尝试使用 PNG 格式
+        console.warn('⚠️ 尝试使用 PNG 格式重新转换');
+        imageBlob = this.base64ToBlob(cleanBase64, 'image/png');
+        imageMimeType = 'image/png';
+      }
+      
       const imageUrl = URL.createObjectURL(imageBlob);
 
       console.log('✅ 图像生成完成:', {
         model: usedModel,
         generationTime: generationTime.toFixed(2) + 's',
-        imageSize: (imageData.length * 3 / 4 / 1024).toFixed(2) + 'KB'
+        imageSize: (cleanBase64.length * 3 / 4 / 1024).toFixed(2) + 'KB',
+        mimeType: imageMimeType
       });
 
       return {
@@ -652,13 +694,26 @@ class ModelAPIService {
 
   // Base64转Blob
   base64ToBlob(base64, mimeType = 'image/png') {
-    const byteCharacters = atob(base64);
-    const byteNumbers = new Array(byteCharacters.length);
-    for (let i = 0; i < byteCharacters.length; i++) {
-      byteNumbers[i] = byteCharacters.charCodeAt(i);
+    try {
+      // 确保 base64 字符串是有效的
+      if (!base64 || typeof base64 !== 'string') {
+        throw new Error('Base64 数据无效：不是字符串');
+      }
+      
+      // 解码 base64
+      const byteCharacters = atob(base64);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      return new Blob([byteArray], { type: mimeType });
+    } catch (error) {
+      console.error('❌ base64ToBlob 转换失败:', error);
+      console.error('Base64 数据长度:', base64?.length);
+      console.error('Base64 数据前100字符:', base64?.substring(0, 100));
+      throw new Error(`Base64 转换失败: ${error.message}`);
     }
-    const byteArray = new Uint8Array(byteNumbers);
-    return new Blob([byteArray], { type: mimeType });
   }
 
   // SeeDream模型调用 - 火山引擎 Doubao-SeeDream-4.0
