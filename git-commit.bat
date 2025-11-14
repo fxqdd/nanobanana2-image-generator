@@ -1,9 +1,28 @@
 @echo off
+REM ========================================
+REM 注意：此脚本已过时，请使用 commit.bat
+REM ========================================
+echo.
+echo [警告] git-commit.bat 已过时
+echo [建议] 请使用 commit.bat 代替（更简单、更安全）
+echo.
+echo 是否继续使用旧脚本? (y/n)
+set /p continue="> "
+if /i not "%continue%"=="y" (
+    echo 已取消，请运行 commit.bat
+    pause
+    exit /b 0
+)
+echo.
+echo [注意] 继续使用旧脚本...
+echo.
+
 setlocal enabledelayedexpansion
 chcp 65001 >nul
-REM Git commit script - Universal version
+REM Git commit script - Universal version (DEPRECATED)
 REM This script will commit code, but exclude .env.local and dist/ directory
 REM Supports multiple commit types: security fixes, multilingual updates, etc.
+REM ⚠️ DEPRECATED: Use commit.bat instead
 
 echo [INFO] Checking Git status...
 git status
