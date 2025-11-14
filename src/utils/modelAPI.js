@@ -343,6 +343,62 @@ class ModelAPIService {
         return str.trim().replace(/\s/g, '').replace(/^data:image\/[^;]+;base64,/, '');
       };
       
+      // 辅助函数：从文本中提取 base64 图像数据（更强大的提取逻辑）
+      const extractBase64FromText = (text) => {
+        if (!text || typeof text !== 'string') return null;
+        
+        // 方法1: 查找完整的 data:image URL
+        const dataUrlPattern = /data:image\/([^;]+);base64,([A-Za-z0-9+/=\s]+)/g;
+        let match;
+        while ((match = dataUrlPattern.exec(text)) !== null) {
+          const mimeType = match[1];
+          const base64Data = match[2].replace(/\s/g, '');
+          if (isValidBase64(base64Data) && base64Data.length > 100) {
+            return `data:image/${mimeType};base64,${base64Data}`;
+          }
+        }
+        
+        // 方法2: 查找被引号或特殊字符包围的 base64（可能是 JSON 格式）
+        const jsonBase64Pattern = /["']([A-Za-z0-9+/]{500,}={0,2})["']/g;
+        while ((match = jsonBase64Pattern.exec(text)) !== null) {
+          const base64Data = match[1].replace(/\s/g, '');
+          if (isValidBase64(base64Data)) {
+            return `data:image/png;base64,${base64Data}`;
+          }
+        }
+        
+        // 方法3: 查找长 base64 字符串（可能包含换行符）
+        const longBase64Pattern = /([A-Za-z0-9+/=\s]{500,})/g;
+        while ((match = longBase64Pattern.exec(text)) !== null) {
+          const candidate = match[1].replace(/\s/g, '').replace(/\n/g, '');
+          if (isValidBase64(candidate) && candidate.length > 500) {
+            return `data:image/png;base64,${candidate}`;
+          }
+        }
+        
+        // 方法4: 尝试解析为 JSON，查找 base64 字段
+        try {
+          const jsonMatch = text.match(/\{[\s\S]*\}/);
+          if (jsonMatch) {
+            const parsed = JSON.parse(jsonMatch[0]);
+            // 查找常见的 base64 字段名
+            const base64Fields = ['data', 'image', 'base64', 'b64', 'image_data', 'imageData'];
+            for (const field of base64Fields) {
+              if (parsed[field] && typeof parsed[field] === 'string') {
+                const cleaned = parsed[field].replace(/\s/g, '');
+                if (isValidBase64(cleaned) && cleaned.length > 100) {
+                  return `data:image/png;base64,${cleaned}`;
+                }
+              }
+            }
+          }
+        } catch (e) {
+          // 不是有效的 JSON，继续其他方法
+        }
+        
+        return null;
+      };
+      
       if (typeof message.content === 'string') {
         // 如果 content 是字符串，可能是 base64 编码的图像数据
         // 或者包含图像 URL
@@ -354,62 +410,48 @@ class ModelAPIService {
             const mimeMatch = message.content.match(/data:image\/([^;]+)/);
             const mimeType = mimeMatch ? `image/${mimeMatch[1]}` : 'image/png';
             imageUrl = `data:${mimeType};base64,${cleaned}`;
+            console.log('✅ 从 content 中提取到 data URL');
           } else {
             console.error('❌ 检测到无效的 base64 数据（data URL 格式）');
             console.error('Content 前200字符:', message.content.substring(0, 200));
-            throw new Error('API 返回的图像数据格式无效：包含非 base64 字符');
+            // 继续尝试其他提取方法
           }
         } else if (message.content.startsWith('http://') || message.content.startsWith('https://')) {
           imageUrl = message.content;
-        } else {
-            // 尝试作为 base64 处理
-            const cleaned = cleanBase64(message.content);
-            if (isValidBase64(cleaned)) {
-              imageUrl = `data:image/png;base64,${cleaned}`;
+          console.log('✅ 从 content 中提取到 HTTP URL');
+        }
+        
+        // 如果还没有找到，尝试从文本中提取 base64
+        if (!imageUrl) {
+          // 首先尝试作为纯 base64 处理
+          const cleaned = cleanBase64(message.content);
+          if (isValidBase64(cleaned) && cleaned.length > 100) {
+            imageUrl = `data:image/png;base64,${cleaned}`;
+            console.log('✅ Content 是纯 base64 数据');
+          } else {
+            // 使用强大的文本提取函数
+            console.log('🔍 尝试从文本内容中提取 base64 图像数据...');
+            const extracted = extractBase64FromText(message.content);
+            if (extracted) {
+              imageUrl = extracted;
+              console.log('✅ 从文本中成功提取到 base64 图像数据');
             } else {
-              // 不是有效的 base64，可能是文本消息
-              // 尝试从文本中提取 base64 数据或 URL
-              console.warn('⚠️ Content 不是纯 base64，尝试从文本中提取图像数据');
-              
-              // 尝试查找 data:image URL
-              const dataUrlMatch = message.content.match(/data:image\/[^;]+;base64,[A-Za-z0-9+/=]+/);
-              if (dataUrlMatch) {
-                const foundUrl = dataUrlMatch[0];
-                const cleaned = cleanBase64(foundUrl);
-                if (isValidBase64(cleaned)) {
-                  imageUrl = foundUrl;
-                  console.log('✅ 从文本中提取到 data URL');
-                }
-              }
-              
               // 尝试查找 HTTP URL
-              if (!imageUrl) {
-                const httpUrlMatch = message.content.match(/https?:\/\/[^\s]+\.(jpg|jpeg|png|webp|gif)/i);
-                if (httpUrlMatch) {
-                  imageUrl = httpUrlMatch[0];
-                  console.log('✅ 从文本中提取到 HTTP URL:', imageUrl);
-                }
-              }
-              
-              // 尝试查找纯 base64 字符串（可能被文本包围）
-              if (!imageUrl) {
-                const base64Match = message.content.match(/[A-Za-z0-9+/]{100,}={0,2}/);
-                if (base64Match && isValidBase64(base64Match[0])) {
-                  imageUrl = `data:image/png;base64,${base64Match[0]}`;
-                  console.log('✅ 从文本中提取到 base64 字符串');
-                }
-              }
-              
-              if (!imageUrl) {
-                console.error('❌ 无法从文本消息中提取图像数据');
-                console.error('Content 类型:', typeof message.content);
-                console.error('Content 长度:', message.content.length);
-                console.error('Content 前500字符:', message.content.substring(0, 500));
-                console.error('完整响应:', JSON.stringify(resp.data, null, 2));
-                throw new Error(`API 返回的不是图像数据，而是文本消息。这可能是因为 Gemini 2.5 Flash Image 通过 OpenRouter 不支持图像生成，请尝试直接使用 Gemini API。文本内容: ${message.content.substring(0, 200)}...`);
+              const httpUrlMatch = message.content.match(/https?:\/\/[^\s"']+\.(jpg|jpeg|png|webp|gif)/i);
+              if (httpUrlMatch) {
+                imageUrl = httpUrlMatch[0];
+                console.log('✅ 从文本中提取到 HTTP URL:', imageUrl);
               }
             }
           }
+        }
+        
+        // 如果仍然没有找到，记录详细信息
+        if (!imageUrl) {
+          console.warn('⚠️ 无法从字符串 content 中提取图像数据');
+          console.warn('Content 长度:', message.content.length);
+          console.warn('Content 前1000字符:', message.content.substring(0, 1000));
+        }
       } else if (Array.isArray(message.content)) {
         // content 是数组，查找图像部分
         for (const part of message.content) {
@@ -457,18 +499,26 @@ class ModelAPIService {
               const cleaned = cleanBase64(text);
               if (isValidBase64(cleaned)) {
                 imageUrl = text;
-                console.log('✅ 从 text 中提取 data URL');
+                console.log('✅ 从 text part 中提取 data URL');
                 break;
               }
             } else if (text.startsWith('http://') || text.startsWith('https://')) {
               imageUrl = text;
-              console.log('✅ 从 text 中提取 HTTP URL');
+              console.log('✅ 从 text part 中提取 HTTP URL');
               break;
-            } else if (isValidBase64(text)) {
-              // 纯 base64 字符串（没有前缀）
-              imageUrl = `data:image/png;base64,${text}`;
-              console.log('✅ 从 text 中提取纯 base64');
-              break;
+            } else {
+              // 尝试从文本中提取 base64（使用强大的提取函数）
+              const extracted = extractBase64FromText(text);
+              if (extracted) {
+                imageUrl = extracted;
+                console.log('✅ 从 text part 中提取到 base64 图像数据');
+                break;
+              } else if (isValidBase64(text.trim().replace(/\s/g, '')) && text.trim().length > 100) {
+                // 纯 base64 字符串（没有前缀）
+                imageUrl = `data:image/png;base64,${text.trim().replace(/\s/g, '')}`;
+                console.log('✅ 从 text part 中提取纯 base64');
+                break;
+              }
             }
           }
         }
@@ -476,32 +526,118 @@ class ModelAPIService {
       
       // 如果还没有找到图像，检查是否有其他字段
       if (!imageUrl) {
-        // 检查是否有 image 字段
-        if (message.image) {
-          const img = message.image;
-          if (img.startsWith('data:image')) {
-            const cleaned = cleanBase64(img);
-            if (isValidBase64(cleaned)) {
-              imageUrl = img;
-            } else {
-              console.error('❌ message.image 包含无效的 base64 数据');
+        // 检查 message 对象的所有字段
+        console.log('🔍 检查 message 对象的所有字段:', Object.keys(message));
+        for (const key of Object.keys(message)) {
+          if (key === 'content' || key === 'role') continue;
+          const value = message[key];
+          if (typeof value === 'string') {
+            // 尝试从字符串字段中提取 base64
+            const extracted = extractBase64FromText(value);
+            if (extracted) {
+              imageUrl = extracted;
+              console.log(`✅ 从 message.${key} 中提取到图像数据`);
+              break;
             }
-          } else {
-            imageUrl = img;
+            // 检查是否是 HTTP URL
+            if (value.startsWith('http://') || value.startsWith('https://')) {
+              imageUrl = value;
+              console.log(`✅ 从 message.${key} 中找到 HTTP URL`);
+              break;
+            }
+          } else if (typeof value === 'object' && value !== null) {
+            // 递归检查对象字段
+            const objStr = JSON.stringify(value);
+            const extracted = extractBase64FromText(objStr);
+            if (extracted) {
+              imageUrl = extracted;
+              console.log(`✅ 从 message.${key} 对象中提取到图像数据`);
+              break;
+            }
           }
-        } else if (resp.data?.data?.[0]?.b64_json) {
-          // 回退到旧的格式（DALL-E 等模型）
-          const b64Data = resp.data.data[0].b64_json;
-          if (isValidBase64(b64Data)) {
-            imageUrl = `data:image/png;base64,${b64Data}`;
-          } else {
-            console.error('❌ b64_json 包含无效的 base64 数据');
-            console.error('b64_json 前200字符:', b64Data.substring(0, 200));
+        }
+        
+        // 检查 choice 对象的其他字段
+        if (!imageUrl) {
+          console.log('🔍 检查 choice 对象的所有字段:', Object.keys(choice));
+          for (const key of Object.keys(choice)) {
+            if (key === 'message' || key === 'index' || key === 'finish_reason') continue;
+            const value = choice[key];
+            if (typeof value === 'string') {
+              const extracted = extractBase64FromText(value);
+              if (extracted) {
+                imageUrl = extracted;
+                console.log(`✅ 从 choice.${key} 中提取到图像数据`);
+                break;
+              }
+            }
           }
-        } else {
+        }
+        
+        // 检查 resp.data 的其他字段
+        if (!imageUrl) {
+          console.log('🔍 检查 resp.data 的所有字段:', Object.keys(resp.data));
+          // 检查 data 数组（DALL-E 格式）
+          if (resp.data?.data?.[0]?.b64_json) {
+            const b64Data = resp.data.data[0].b64_json;
+            if (isValidBase64(b64Data)) {
+              imageUrl = `data:image/png;base64,${b64Data}`;
+              console.log('✅ 从 resp.data.data[0].b64_json 中找到图像数据');
+            }
+          }
+          // 检查 images 数组
+          if (!imageUrl && resp.data?.images?.[0]) {
+            const img = resp.data.images[0];
+            if (typeof img === 'string') {
+              const extracted = extractBase64FromText(img);
+              if (extracted) {
+                imageUrl = extracted;
+                console.log('✅ 从 resp.data.images[0] 中提取到图像数据');
+              } else if (img.startsWith('http://') || img.startsWith('https://')) {
+                imageUrl = img;
+                console.log('✅ 从 resp.data.images[0] 中找到 HTTP URL');
+              }
+            }
+          }
+          // 检查其他可能的字段
+          const possibleFields = ['image', 'image_url', 'imageUrl', 'base64', 'b64', 'data'];
+          for (const field of possibleFields) {
+            if (!imageUrl && resp.data[field]) {
+              const value = resp.data[field];
+              if (typeof value === 'string') {
+                const extracted = extractBase64FromText(value);
+                if (extracted) {
+                  imageUrl = extracted;
+                  console.log(`✅ 从 resp.data.${field} 中提取到图像数据`);
+                  break;
+                }
+              }
+            }
+          }
+        }
+        
+        // 如果仍然没有找到，尝试从整个响应中提取
+        if (!imageUrl) {
+          console.log('🔍 尝试从整个响应 JSON 中提取 base64 数据...');
+          const fullResponseStr = JSON.stringify(resp.data);
+          const extracted = extractBase64FromText(fullResponseStr);
+          if (extracted) {
+            imageUrl = extracted;
+            console.log('✅ 从完整响应 JSON 中提取到图像数据');
+          }
+        }
+        
+        // 最后，如果还是没有找到，抛出详细错误
+        if (!imageUrl) {
           console.error('❌ 未找到图像数据');
           console.error('OpenRouter 完整响应:', JSON.stringify(resp.data, null, 2));
-          throw new Error('OpenRouter 返回数据不包含图像内容。响应结构: ' + JSON.stringify(resp.data, null, 2));
+          console.error('尝试过的提取方法:');
+          console.error('1. message.content (字符串和数组)');
+          console.error('2. message 对象的所有字段');
+          console.error('3. choice 对象的所有字段');
+          console.error('4. resp.data 的所有字段');
+          console.error('5. 完整响应 JSON 解析');
+          throw new Error('OpenRouter 返回数据不包含可识别的图像内容。请检查控制台日志查看详细的响应结构。');
         }
       }
       
