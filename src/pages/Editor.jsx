@@ -15,6 +15,9 @@ function Editor() {
   const [isGenerating, setIsGenerating] = useState(false)
   const [error, setError] = useState(null)
   const [history, setHistory] = useState([])
+  const [showHistory, setShowHistory] = useState(false)
+  const [historySearchTerm, setHistorySearchTerm] = useState('')
+  const [historyFilterModel, setHistoryFilterModel] = useState('all')
   
   // 提示词优化相关状态
   const [optimizedPrompt, setOptimizedPrompt] = useState('')
@@ -94,7 +97,7 @@ function Editor() {
           prompt: finalPrompt, // 保存实际使用的提示词
           originalPrompt: prompt, // 保存原始提示词
           referenceImagesCount: referenceImages.length,
-          time: generationTime,
+          time: Date.now(), // 保存时间戳
           imageUrl: result.data.imageUrl,
           generationTime: result.data.generationTime
         };
@@ -207,6 +210,77 @@ function Editor() {
     setGeneratedImages([]);
   };
 
+  // 历史记录相关函数
+  const formatHistoryTime = (timestamp) => {
+    if (!timestamp) return '';
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diff = now - date;
+    const minutes = Math.floor(diff / 60000);
+    const hours = Math.floor(diff / 3600000);
+    const days = Math.floor(diff / 86400000);
+    
+    if (minutes < 1) return t('editor.justNow');
+    if (minutes < 60) return `${minutes}${t('editor.minutesAgo')}`;
+    if (hours < 24) return `${hours}${t('editor.hoursAgo')}`;
+    if (days < 7) return `${days}${t('editor.daysAgo')}`;
+    return date.toLocaleDateString();
+  };
+
+  const useHistoryItem = (item) => {
+    // 使用历史记录项：填充提示词和模型
+    if (item.originalPrompt) {
+      setPrompt(item.originalPrompt);
+    } else if (item.prompt) {
+      setPrompt(item.prompt);
+    }
+    if (item.model) {
+      setModel(item.model);
+    }
+    // 如果历史记录有图像，显示在生成结果中
+    if (item.imageUrl && item.imageUrl !== '[Base64 Image Data]') {
+      setGeneratedImages([item.imageUrl]);
+    }
+    // 切换到对应的标签页
+    if (item.referenceImagesCount > 0) {
+      setActiveTab('imageEdit');
+    } else {
+      setActiveTab('textToImage');
+    }
+    setShowHistory(false);
+  };
+
+  const deleteHistoryItem = (index) => {
+    const newHistory = history.filter((_, i) => i !== index);
+    setHistory(newHistory);
+    try {
+      localStorage.setItem('generationHistory', JSON.stringify(newHistory));
+    } catch (e) {
+      console.warn('删除历史记录失败:', e);
+    }
+  };
+
+  const clearAllHistory = () => {
+    if (window.confirm(t('editor.confirmClearHistory'))) {
+      setHistory([]);
+      try {
+        localStorage.removeItem('generationHistory');
+      } catch (e) {
+        console.warn('清空历史记录失败:', e);
+      }
+    }
+  };
+
+  // 过滤历史记录
+  const filteredHistory = history.filter(item => {
+    const matchesSearch = !historySearchTerm || 
+      (item.prompt && item.prompt.toLowerCase().includes(historySearchTerm.toLowerCase())) ||
+      (item.originalPrompt && item.originalPrompt.toLowerCase().includes(historySearchTerm.toLowerCase()));
+    const matchesModel = historyFilterModel === 'all' || 
+      (item.model && item.model.toLowerCase() === historyFilterModel.toLowerCase());
+    return matchesSearch && matchesModel;
+  });
+
   return (
     <div className="editor-page">
       <SEO
@@ -250,10 +324,10 @@ function Editor() {
             </li>
             <li>
               <button 
-                className="sidebar-link"
-                onClick={() => alert(t('editor.historyFeature'))}
+                className={`sidebar-link ${showHistory ? 'active' : ''}`}
+                onClick={() => setShowHistory(!showHistory)}
               >
-                📋 {t('editor.history')}
+                📋 {t('editor.history')} {history.length > 0 && `(${history.length})`}
               </button>
             </li>
           </ul>
@@ -706,6 +780,123 @@ function Editor() {
           </div>
         </div>
       </main>
+
+      {/* 历史记录模态框 */}
+      {showHistory && (
+        <div className="history-modal-overlay" onClick={() => setShowHistory(false)}>
+          <div className="history-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="history-modal-header">
+              <h2>📋 {t('editor.history')}</h2>
+              <button 
+                className="history-close-btn"
+                onClick={() => setShowHistory(false)}
+                aria-label={t('common.close')}
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* 搜索和筛选 */}
+            <div className="history-filters">
+              <input
+                type="text"
+                className="history-search"
+                placeholder={t('editor.searchHistory')}
+                value={historySearchTerm}
+                onChange={(e) => setHistorySearchTerm(e.target.value)}
+              />
+              <select
+                className="history-filter"
+                value={historyFilterModel}
+                onChange={(e) => setHistoryFilterModel(e.target.value)}
+              >
+                <option value="all">{t('editor.allModels')}</option>
+                <option value="Nano Banana">Nano Banana</option>
+                <option value="GPT-5 Image">GPT-5 Image</option>
+                <option value="GPT-5 Image Mini">GPT-5 Image Mini</option>
+                <option value="SeeDream-4">SeeDream-4</option>
+              </select>
+              {history.length > 0 && (
+                <button 
+                  className="history-clear-btn"
+                  onClick={clearAllHistory}
+                >
+                  {t('editor.clearAll')}
+                </button>
+              )}
+            </div>
+
+            {/* 历史记录列表 */}
+            <div className="history-list">
+              {filteredHistory.length === 0 ? (
+                <div className="history-empty">
+                  <div className="history-empty-icon">📭</div>
+                  <p>{history.length === 0 ? t('editor.noHistory') : t('editor.noMatchingHistory')}</p>
+                </div>
+              ) : (
+                filteredHistory.map((item, index) => {
+                  const actualIndex = history.findIndex(h => h === item);
+                  return (
+                    <div key={actualIndex} className="history-item">
+                      <div 
+                        className="history-item-image"
+                        onClick={() => useHistoryItem(item)}
+                      >
+                        {item.imageUrl && item.imageUrl !== '[Base64 Image Data]' ? (
+                          <img 
+                            src={item.imageUrl} 
+                            alt={item.prompt || t('editor.generatedImage')}
+                            onError={(e) => {
+                              e.target.style.display = 'none';
+                              e.target.nextSibling.style.display = 'flex';
+                            }}
+                          />
+                        ) : null}
+                        <div className="history-item-placeholder" style={{ display: item.imageUrl && item.imageUrl !== '[Base64 Image Data]' ? 'none' : 'flex' }}>
+                          🖼️
+                        </div>
+                        <div className="history-item-overlay">
+                          <span className="history-item-action">{t('editor.clickToUse')}</span>
+                        </div>
+                      </div>
+                      <div className="history-item-info">
+                        <div className="history-item-header">
+                          <span className="history-item-model">{item.model || 'Unknown'}</span>
+                          <button
+                            className="history-item-delete"
+                            onClick={() => deleteHistoryItem(actualIndex)}
+                            title={t('editor.delete')}
+                          >
+                            🗑️
+                          </button>
+                        </div>
+                        <p className="history-item-prompt" title={item.prompt || item.originalPrompt}>
+                          {item.prompt || item.originalPrompt || t('editor.noPrompt')}
+                        </p>
+                        <div className="history-item-meta">
+                          <span className="history-item-time">
+                            {formatHistoryTime(item.time)}
+                          </span>
+                          {item.generationTime && (
+                            <span className="history-item-duration">
+                              {item.generationTime}s
+                            </span>
+                          )}
+                          {item.referenceImagesCount > 0 && (
+                            <span className="history-item-refs">
+                              📎 {item.referenceImagesCount}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
