@@ -1657,7 +1657,28 @@ class ModelAPIService {
       const fullPrompt = `${this.promptOptimizationSystemPrompt}\n\n用户原始提示词：${userPrompt}\n\n请按照指定格式输出优化结果。`;
 
       // 使用Doubao-seed-1.6 API（火山引擎）
-      const apiUrl = `${this.volcanoBaseURL}/chat/completions`;
+      // 由于 CORS 限制，需要通过代理调用
+      // 开发环境使用 Vite 代理，生产环境使用 Cloudflare Pages Function 代理
+      const isDevelopment = import.meta.env.DEV;
+      let apiUrl;
+      let requestHeaders;
+      
+      if (isDevelopment) {
+        // 开发环境：使用 Vite 代理（避免 CORS 问题）
+        apiUrl = '/api/volcano/chat/completions';
+        requestHeaders = {
+          'Content-Type': 'application/json',
+          'x-volcano-api-key': this.doubaoSeedApiKey  // 通过自定义头传递 API Key
+        };
+      } else {
+        // 生产环境：使用 Cloudflare Pages Function 代理
+        // 代理路径：/api/volcano/chat/completions
+        apiUrl = '/api/volcano/chat/completions';
+        requestHeaders = {
+          'Content-Type': 'application/json',
+          'x-volcano-api-key': this.doubaoSeedApiKey  // 通过自定义头传递 API Key
+        };
+      }
       
       // 构建请求体（符合火山引擎API格式）
       // 根据图片中的API格式，content应该是字符串或对象数组
@@ -1676,17 +1697,16 @@ class ModelAPIService {
       console.log('📤 发送请求到 Doubao-seed-1.6:', {
         url: apiUrl,
         model: this.doubaoSeedModelId,
-        promptLength: fullPrompt.length
+        promptLength: fullPrompt.length,
+        isDevelopment,
+        useProxy: isDevelopment
       });
 
       // 发送请求
       let response;
       try {
         response = await axios.post(apiUrl, requestBody, {
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${this.doubaoSeedApiKey}`
-          },
+          headers: requestHeaders,
           timeout: 60000
         });
       } catch (apiError) {
