@@ -312,17 +312,50 @@ class ModelAPIService {
         }
       }
       
-      // 解析响应 - Gemini 2.5 Flash Image 返回的图像在 content 中
+      // 解析响应 - 检查是否是 GPT-5 Image 或其他特殊格式
+      const isGpt5Image = modelId.includes('gpt-5') || modelId.includes('gpt5');
+      
+      // 记录完整的响应结构以便调试
+      if (isGpt5Image) {
+        console.log('🎯 GPT-5 Image 模型检测到，检查特殊响应格式...');
+        console.log('📋 响应顶层字段:', Object.keys(resp.data || {}));
+        if (resp.data?.reasoning_details) {
+          console.log('⚠️ 检测到 reasoning_details 字段（推理数据，可能包含加密内容）');
+          console.log('reasoning_details 类型:', Array.isArray(resp.data.reasoning_details) ? 'array' : typeof resp.data.reasoning_details);
+        }
+      }
+      
       const choice = resp.data?.choices?.[0];
       if (!choice) {
         console.error('OpenRouter 响应结构:', JSON.stringify(resp.data, null, 2));
         throw new Error('OpenRouter 返回数据不包含 choices');
       }
       
+      // 对于 GPT-5 Image，检查 choice 对象的所有字段
+      if (isGpt5Image) {
+        console.log('📋 Choice 对象字段:', Object.keys(choice));
+        // GPT-5 Image 可能直接在 choice 中返回图像数据
+        if (choice.image) {
+          console.log('✅ 在 choice.image 中找到图像数据');
+        }
+        if (choice.images && Array.isArray(choice.images)) {
+          console.log(`✅ 在 choice.images 中找到 ${choice.images.length} 个图像`);
+        }
+        if (choice.image_url) {
+          console.log('✅ 在 choice.image_url 中找到图像 URL');
+        }
+      }
+      
       const message = choice.message;
       if (!message) {
-        console.error('OpenRouter 响应结构:', JSON.stringify(resp.data, null, 2));
-        throw new Error('OpenRouter 返回数据不包含 message');
+        // 对于 GPT-5 Image，可能没有 message 字段，图像数据可能在 choice 的其他字段中
+        if (isGpt5Image && (choice.image || choice.images || choice.image_url)) {
+          console.log('⚠️ GPT-5 Image 响应没有 message 字段，但找到了图像数据字段');
+          // 继续处理，不抛出错误
+        } else {
+          console.error('OpenRouter 响应结构:', JSON.stringify(resp.data, null, 2));
+          throw new Error('OpenRouter 返回数据不包含 message');
+        }
       }
       
       // 检查 content 类型
@@ -526,33 +559,147 @@ class ModelAPIService {
       
       // 如果还没有找到图像，检查是否有其他字段
       if (!imageUrl) {
-        // 检查 message 对象的所有字段
-        console.log('🔍 检查 message 对象的所有字段:', Object.keys(message));
-        for (const key of Object.keys(message)) {
-          if (key === 'content' || key === 'role') continue;
-          const value = message[key];
-          if (typeof value === 'string') {
-            // 尝试从字符串字段中提取 base64
-            const extracted = extractBase64FromText(value);
-            if (extracted) {
-              imageUrl = extracted;
-              console.log(`✅ 从 message.${key} 中提取到图像数据`);
-              break;
+        // 对于 GPT-5 Image，优先检查 choice 对象的图像字段
+        if (isGpt5Image) {
+          console.log('🔍 GPT-5 Image: 检查 choice 对象的图像字段...');
+          
+          // 检查 choice.image
+          if (choice.image) {
+            const img = choice.image;
+            if (typeof img === 'string') {
+              if (img.startsWith('data:image')) {
+                const cleaned = cleanBase64(img);
+                if (isValidBase64(cleaned)) {
+                  imageUrl = img;
+                  console.log('✅ 从 choice.image 中提取到 data URL');
+                }
+              } else if (img.startsWith('http://') || img.startsWith('https://')) {
+                imageUrl = img;
+                console.log('✅ 从 choice.image 中提取到 HTTP URL');
+              } else {
+                // 尝试提取 base64
+                const extracted = extractBase64FromText(img);
+                if (extracted) {
+                  imageUrl = extracted;
+                  console.log('✅ 从 choice.image 中提取到 base64 数据');
+                }
+              }
             }
-            // 检查是否是 HTTP URL
-            if (value.startsWith('http://') || value.startsWith('https://')) {
-              imageUrl = value;
-              console.log(`✅ 从 message.${key} 中找到 HTTP URL`);
-              break;
+          }
+          
+          // 检查 choice.images 数组
+          if (!imageUrl && choice.images && Array.isArray(choice.images) && choice.images.length > 0) {
+            const firstImage = choice.images[0];
+            if (typeof firstImage === 'string') {
+              if (firstImage.startsWith('data:image')) {
+                const cleaned = cleanBase64(firstImage);
+                if (isValidBase64(cleaned)) {
+                  imageUrl = firstImage;
+                  console.log('✅ 从 choice.images[0] 中提取到 data URL');
+                }
+              } else if (firstImage.startsWith('http://') || firstImage.startsWith('https://')) {
+                imageUrl = firstImage;
+                console.log('✅ 从 choice.images[0] 中提取到 HTTP URL');
+              } else {
+                const extracted = extractBase64FromText(firstImage);
+                if (extracted) {
+                  imageUrl = extracted;
+                  console.log('✅ 从 choice.images[0] 中提取到 base64 数据');
+                }
+              }
+            } else if (typeof firstImage === 'object' && firstImage !== null) {
+              // 可能是对象格式，检查常见字段
+              const objStr = JSON.stringify(firstImage);
+              const extracted = extractBase64FromText(objStr);
+              if (extracted) {
+                imageUrl = extracted;
+                console.log('✅ 从 choice.images[0] 对象中提取到 base64 数据');
+              } else if (firstImage.url) {
+                imageUrl = firstImage.url;
+                console.log('✅ 从 choice.images[0].url 中提取到 URL');
+              } else if (firstImage.data) {
+                const extracted = extractBase64FromText(firstImage.data);
+                if (extracted) {
+                  imageUrl = extracted;
+                  console.log('✅ 从 choice.images[0].data 中提取到 base64 数据');
+                }
+              }
             }
-          } else if (typeof value === 'object' && value !== null) {
-            // 递归检查对象字段
-            const objStr = JSON.stringify(value);
-            const extracted = extractBase64FromText(objStr);
-            if (extracted) {
-              imageUrl = extracted;
-              console.log(`✅ 从 message.${key} 对象中提取到图像数据`);
-              break;
+          }
+          
+          // 检查 choice.image_url
+          if (!imageUrl && choice.image_url) {
+            const imgUrl = choice.image_url;
+            if (typeof imgUrl === 'string') {
+              if (imgUrl.startsWith('data:image')) {
+                const cleaned = cleanBase64(imgUrl);
+                if (isValidBase64(cleaned)) {
+                  imageUrl = imgUrl;
+                  console.log('✅ 从 choice.image_url 中提取到 data URL');
+                }
+              } else if (imgUrl.startsWith('http://') || imgUrl.startsWith('https://')) {
+                imageUrl = imgUrl;
+                console.log('✅ 从 choice.image_url 中提取到 HTTP URL');
+              } else {
+                const extracted = extractBase64FromText(imgUrl);
+                if (extracted) {
+                  imageUrl = extracted;
+                  console.log('✅ 从 choice.image_url 中提取到 base64 数据');
+                }
+              }
+            } else if (typeof imgUrl === 'object' && imgUrl.url) {
+              imageUrl = imgUrl.url;
+              console.log('✅ 从 choice.image_url.url 中提取到 URL');
+            }
+          }
+          
+          // 检查 choice 对象中的其他可能字段
+          if (!imageUrl) {
+            const choiceKeys = Object.keys(choice);
+            for (const key of choiceKeys) {
+              if (['message', 'index', 'finish_reason', 'reasoning_details'].includes(key)) continue;
+              const value = choice[key];
+              if (typeof value === 'string' && value.length > 100) {
+                const extracted = extractBase64FromText(value);
+                if (extracted) {
+                  imageUrl = extracted;
+                  console.log(`✅ 从 choice.${key} 中提取到图像数据`);
+                  break;
+                }
+              }
+            }
+          }
+        }
+        
+        // 检查 message 对象的所有字段（如果存在）
+        if (!imageUrl && message) {
+          console.log('🔍 检查 message 对象的所有字段:', Object.keys(message));
+          for (const key of Object.keys(message)) {
+            if (key === 'content' || key === 'role') continue;
+            const value = message[key];
+            if (typeof value === 'string') {
+              // 尝试从字符串字段中提取 base64
+              const extracted = extractBase64FromText(value);
+              if (extracted) {
+                imageUrl = extracted;
+                console.log(`✅ 从 message.${key} 中提取到图像数据`);
+                break;
+              }
+              // 检查是否是 HTTP URL
+              if (value.startsWith('http://') || value.startsWith('https://')) {
+                imageUrl = value;
+                console.log(`✅ 从 message.${key} 中找到 HTTP URL`);
+                break;
+              }
+            } else if (typeof value === 'object' && value !== null) {
+              // 递归检查对象字段
+              const objStr = JSON.stringify(value);
+              const extracted = extractBase64FromText(objStr);
+              if (extracted) {
+                imageUrl = extracted;
+                console.log(`✅ 从 message.${key} 对象中提取到图像数据`);
+                break;
+              }
             }
           }
         }
@@ -616,14 +763,56 @@ class ModelAPIService {
           }
         }
         
-        // 如果仍然没有找到，尝试从整个响应中提取
+        // 如果仍然没有找到，尝试从整个响应中提取（排除 reasoning_details）
         if (!imageUrl) {
-          console.log('🔍 尝试从整个响应 JSON 中提取 base64 数据...');
-          const fullResponseStr = JSON.stringify(resp.data);
+          console.log('🔍 尝试从整个响应 JSON 中提取 base64 数据（排除 reasoning_details）...');
+          // 创建一个副本，排除 reasoning_details（因为它可能包含大量加密数据）
+          const responseCopy = { ...resp.data };
+          if (responseCopy.reasoning_details) {
+            delete responseCopy.reasoning_details;
+            console.log('⚠️ 已排除 reasoning_details 字段以避免干扰');
+          }
+          const fullResponseStr = JSON.stringify(responseCopy);
           const extracted = extractBase64FromText(fullResponseStr);
           if (extracted) {
             imageUrl = extracted;
             console.log('✅ 从完整响应 JSON 中提取到图像数据');
+          }
+        }
+        
+        // 对于 GPT-5 Image，如果仍然没有找到，检查是否有流式响应或其他格式
+        if (!imageUrl && isGpt5Image) {
+          console.log('🔍 GPT-5 Image: 检查流式响应或其他特殊格式...');
+          // 检查是否有 delta 字段（流式响应）
+          if (choice.delta) {
+            console.log('⚠️ 检测到 delta 字段（流式响应），可能需要特殊处理');
+            if (choice.delta.content) {
+              const extracted = extractBase64FromText(choice.delta.content);
+              if (extracted) {
+                imageUrl = extracted;
+                console.log('✅ 从 choice.delta.content 中提取到图像数据');
+              }
+            }
+          }
+          
+          // 检查响应顶层是否有图像字段
+          if (!imageUrl && resp.data.image) {
+            const extracted = extractBase64FromText(resp.data.image);
+            if (extracted) {
+              imageUrl = extracted;
+              console.log('✅ 从 resp.data.image 中提取到图像数据');
+            }
+          }
+          
+          if (!imageUrl && resp.data.images && Array.isArray(resp.data.images)) {
+            const firstImg = resp.data.images[0];
+            if (typeof firstImg === 'string') {
+              const extracted = extractBase64FromText(firstImg);
+              if (extracted) {
+                imageUrl = extracted;
+                console.log('✅ 从 resp.data.images[0] 中提取到图像数据');
+              }
+            }
           }
         }
         
