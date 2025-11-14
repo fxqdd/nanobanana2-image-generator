@@ -31,14 +31,20 @@ class ModelAPIService {
     this.doubaoSeedApiKey = import.meta.env.VITE_DOUBAO_SEED_API_KEY || this.volcanoApiKey || '';
     this.doubaoSeedModelId = import.meta.env.VITE_DOUBAO_SEED_MODEL_ID || 'doubao-seed-1-6-251015';
     
-    // OpenRouter 配置（用于 NanoBanana 与 GPT-5 系列）
+    // OpenRouter 配置（用于 GPT-5 系列，保留原有配置）
     this.openRouterBase = 'https://openrouter.ai/api/v1';
     this.openRouterApiKey = import.meta.env.VITE_OPENROUTER_API_KEY || '';
     this.siteUrl = import.meta.env.VITE_SITE_URL || (typeof window !== 'undefined' ? window.location.origin : '');
     this.siteName = import.meta.env.VITE_SITE_NAME || 'Nano Banana 2';
-    this.orModelNanoBanana = import.meta.env.VITE_OPENROUTER_MODEL_NANOBANANA || '';
     this.orModelGpt5Image = import.meta.env.VITE_OPENROUTER_MODEL_GPT5_IMAGE || '';
     this.orModelGpt5ImageMini = import.meta.env.VITE_OPENROUTER_MODEL_GPT5_IMAGE_MINI || '';
+    
+    // 新 API 提供商配置（用于 gemini-2.5-flash-image 模型）
+    // 如果配置了新 API，则使用新 API；否则使用原来的 Google Gemini API
+    this.newApiProviderBase = import.meta.env.VITE_NEW_API_PROVIDER_BASE || '';
+    this.newApiProviderKey = import.meta.env.VITE_NEW_API_PROVIDER_KEY || '';
+    this.newApiProviderModel = import.meta.env.VITE_NEW_API_PROVIDER_MODEL || 'gemini-2.5-flash-image';
+    this.useNewApiProvider = !!(this.newApiProviderBase && this.newApiProviderKey);
     
     // 默认禁用代理模式，直接使用 API 密钥
     // 只有在明确设置 VITE_USE_PROXY=true 时才启用代理
@@ -954,11 +960,18 @@ class ModelAPIService {
   // NanoBanana模型调用 - 使用Gemini 2.5 Flash Image模型
   async callNanoBanana(prompt, referenceImages = [], options = {}) {
     try {
-      // 如果配置了 OpenRouter 模型，则优先走 OpenRouter
-      if (this.orModelNanoBanana) {
-        return await this.callOpenRouterImage(this.orModelNanoBanana, prompt, referenceImages, options);
+      // 如果配置了新 API 提供商，则使用新 API
+      if (this.useNewApiProvider) {
+        console.log('🎨 调用NanoBanana模型 (使用新API提供商):', {
+          prompt,
+          referenceImagesCount: referenceImages.length,
+          options,
+          model: this.newApiProviderModel
+        });
+        return await this.callNewApiProvider(prompt, referenceImages, options);
       }
-      console.log('🎨 调用NanoBanana模型 (Gemini 2.5 Flash Image):', {
+      
+      console.log('🎨 调用NanoBanana模型 (Gemini 2.5 Flash Image - Google API):', {
         prompt,
         referenceImagesCount: referenceImages.length,
         options
@@ -1224,6 +1237,242 @@ class ModelAPIService {
         throw new Error(`网络连接失败，请检查网络连接`);
       } else {
         throw new Error(`NanoBanana模型调用失败: ${error.message || '未知错误'}`);
+      }
+    }
+  }
+
+  // 新 API 提供商调用方法（用于 gemini-2.5-flash-image 模型）
+  async callNewApiProvider(prompt, referenceImages = [], options = {}) {
+    try {
+      const startTime = Date.now();
+      
+      // 检查是否使用 Cloudflare Functions 代理
+      // 在生产环境且 API Base URL 包含 /api/ 时使用代理
+      // 开发环境直接调用 API（如果 API 支持 CORS）
+      const useCfProxy = import.meta.env.PROD;
+      const apiBaseUrl = this.newApiProviderBase.replace(/\/+$/, '');
+      const endpoint = useCfProxy 
+        ? '/api/new-api-provider/chat/completions'
+        : `${apiBaseUrl}/chat/completions`;
+      
+      // 构建消息数组
+      const messages = [];
+      
+      // 如果有参考图像（图生图），添加图像部分
+      if (referenceImages.length > 0) {
+        const imageParts = [];
+        for (const img of referenceImages) {
+          try {
+            let imageData;
+            let mimeType = 'image/jpeg';
+            
+            if (img.startsWith('data:image')) {
+              const parts = img.split(',');
+              imageData = parts[1];
+              const mimeMatch = img.match(/data:image\/([^;]+)/);
+              if (mimeMatch) {
+                mimeType = `image/${mimeMatch[1]}`;
+              }
+            } else if (img.startsWith('blob:')) {
+              imageData = await this.imageToBase64(img);
+              try {
+                const response = await fetch(img);
+                const blob = await response.blob();
+                mimeType = blob.type || 'image/png';
+              } catch {
+                mimeType = 'image/png';
+              }
+            } else if (typeof img === 'string' && img.length > 100) {
+              imageData = img;
+              mimeType = 'image/png';
+            } else {
+              continue;
+            }
+            
+            imageParts.push({
+              type: 'image_url',
+              image_url: {
+                url: `data:${mimeType};base64,${imageData}`
+              }
+            });
+          } catch (imgError) {
+            console.warn('处理参考图像失败:', imgError);
+          }
+        }
+        
+        if (imageParts.length > 0) {
+          messages.push({
+            role: 'user',
+            content: [
+              ...imageParts,
+              {
+                type: 'text',
+                text: `基于提供的参考图像，生成以下描述的图像：${prompt}`
+              }
+            ]
+          });
+        } else {
+          messages.push({
+            role: 'user',
+            content: `生成以下描述的图像：${prompt}`
+          });
+        }
+      } else {
+        messages.push({
+          role: 'user',
+          content: `生成以下描述的图像：${prompt}`
+        });
+      }
+      
+      // 构建请求体
+      const requestBody = {
+        model: this.newApiProviderModel,
+        messages: messages,
+        max_tokens: 4096
+      };
+      
+      // 添加图像配置（如果支持）
+      if (options.aspectRatio || options.size) {
+        requestBody.image_config = {
+          aspect_ratio: options.aspectRatio || this.parseSizeToAspectRatio(options.size)
+        };
+      }
+      
+      // 构建请求头
+      const headers = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${this.newApiProviderKey}`
+      };
+      
+      console.log('📤 新API提供商请求:', {
+        endpoint: useCfProxy ? endpoint : endpoint.replace(this.newApiProviderKey, 'API_KEY_HIDDEN'),
+        model: this.newApiProviderModel,
+        messagesCount: messages.length,
+        hasImages: referenceImages.length > 0
+      });
+      
+      // 发送请求
+      const response = await axios.post(endpoint, requestBody, {
+        headers,
+        timeout: 120000
+      });
+      
+      console.log('📥 新API提供商响应:', {
+        status: response.status,
+        dataKeys: Object.keys(response.data || {}),
+        hasChoices: !!response.data?.choices
+      });
+      
+      // 解析响应
+      if (response.data?.choices?.[0]?.message) {
+        const msg = response.data.choices[0].message;
+        let imageData = null;
+        let imageUrl = null;
+        
+        // 检查响应内容
+        if (typeof msg.content === 'string') {
+          // 如果是字符串，可能是 base64 图像数据或 URL
+          if (msg.content.startsWith('data:image')) {
+            imageData = msg.content.split(',')[1];
+          } else if (msg.content.startsWith('http')) {
+            imageUrl = msg.content;
+          } else if (msg.content.length > 1000) {
+            // 可能是 base64 字符串（没有前缀）
+            imageData = msg.content;
+          }
+        } else if (Array.isArray(msg.content)) {
+          // 如果是数组，查找图像部分
+          for (const part of msg.content) {
+            if (part.type === 'image_url' && part.image_url?.url) {
+              const url = part.image_url.url;
+              if (url.startsWith('data:image')) {
+                imageData = url.split(',')[1];
+              } else if (url.startsWith('http')) {
+                imageUrl = url;
+              }
+              break;
+            }
+          }
+        }
+        
+        // 如果有图像 URL，直接返回
+        if (imageUrl) {
+          const generationTime = (Date.now() - startTime) / 1000;
+          return {
+            success: true,
+            data: {
+              imageUrl: imageUrl,
+              model: this.newApiProviderModel,
+              generationTime: generationTime.toFixed(2),
+              parameters: {
+                prompt,
+                referenceImagesCount: referenceImages.length,
+                options
+              }
+            }
+          };
+        }
+        
+        // 如果有 base64 图像数据，转换为 Blob URL
+        if (imageData) {
+          let cleanBase64 = imageData.trim().replace(/\s/g, '');
+          if (cleanBase64.includes(',')) {
+            cleanBase64 = cleanBase64.split(',')[1];
+          }
+          
+          // 验证 base64 格式
+          if (!/^[A-Za-z0-9+/=]+$/.test(cleanBase64)) {
+            throw new Error('API返回的图像数据格式无效');
+          }
+          
+          const imageBlob = this.base64ToBlob(cleanBase64, 'image/png');
+          const blobUrl = URL.createObjectURL(imageBlob);
+          const generationTime = (Date.now() - startTime) / 1000;
+          
+          return {
+            success: true,
+            data: {
+              imageUrl: blobUrl,
+              model: this.newApiProviderModel,
+              generationTime: generationTime.toFixed(2),
+              parameters: {
+                prompt,
+                referenceImagesCount: referenceImages.length,
+                options
+              }
+            }
+          };
+        }
+        
+        throw new Error('API响应中未找到图像数据');
+      }
+      
+      throw new Error('API响应格式不正确');
+    } catch (error) {
+      console.error('❌ 新API提供商调用失败:', error);
+      
+      if (error.response) {
+        const status = error.response.status;
+        const errorData = error.response.data;
+        const errorMessage = errorData?.error?.message || JSON.stringify(errorData);
+        
+        if (status === 401) {
+          throw new Error(`新API提供商认证失败: ${errorMessage}`);
+        } else if (status === 403) {
+          throw new Error(`新API提供商无权限访问此资源`);
+        } else if (status === 429) {
+          throw new Error(`新API提供商配额已用尽，请稍后重试`);
+        } else if (status >= 500) {
+          throw new Error(`新API提供商服务器错误 (${status})，请稍后重试`);
+        } else {
+          throw new Error(`新API提供商错误 (${status}): ${errorMessage}`);
+        }
+      } else if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
+        throw new Error(`新API提供商请求超时，请检查网络连接后重试`);
+      } else if (error.message?.includes('Network Error') || error.message?.includes('ERR_')) {
+        throw new Error(`网络连接失败，请检查网络连接`);
+      } else {
+        throw new Error(`新API提供商调用失败: ${error.message || '未知错误'}`);
       }
     }
   }
