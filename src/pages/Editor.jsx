@@ -658,7 +658,7 @@ function Editor() {
               isOptimizing ? (
                 <div className="generating-container">
                   <div className="loading-spinner"></div>
-                  <p className="generating-text">{t('editor.optimizingWithGemini')}</p>
+                  <p className="generating-text">{t('editor.optimizingWithDoubao')}</p>
                   <p className="generating-subtext">{t('editor.pleaseWait')}</p>
                 </div>
               ) : optimizationResult ? (
@@ -710,8 +710,8 @@ function Editor() {
                         <strong>⚠️ 使用本地优化</strong>
                         <p style={{margin: '5px 0 0 0'}}>
                           {optimizationResult.apiError.status === 429 
-                            ? 'Gemini API配额已用尽，已自动切换到本地优化方案。'
-                            : 'Gemini API服务暂时不可用，已自动切换到本地优化方案。'}
+                            ? 'Doubao-seed-1.6 API配额已用尽，已自动切换到本地优化方案。'
+                            : 'Doubao-seed-1.6 API服务暂时不可用，已自动切换到本地优化方案。'}
                         </p>
                       </div>
                     )}

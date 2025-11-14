@@ -21,6 +21,10 @@ class ModelAPIService {
     this.volcanoBaseURL = 'https://ark.cn-beijing.volces.com/api/v3';
     this.volcanoModelId = 'doubao-seedream-4-0-250828';
     
+    // Doubao-seed-1.6 配置（用于提示词优化）
+    this.doubaoSeedApiKey = import.meta.env.VITE_DOUBAO_SEED_API_KEY || this.volcanoApiKey;
+    this.doubaoSeedModelId = import.meta.env.VITE_DOUBAO_SEED_MODEL_ID || 'doubao-seed-1-6-251015';
+    
     // OpenRouter 配置（用于 NanoBanana 与 GPT-5 系列）
     this.openRouterBase = 'https://openrouter.ai/api/v1';
     this.openRouterApiKey = import.meta.env.VITE_OPENROUTER_API_KEY || '';
@@ -1627,18 +1631,18 @@ class ModelAPIService {
     }
   }
 
-  // 提示词优化功能 - 使用Gemini模型
+  // 提示词优化功能 - 使用Doubao-seed-1.6模型
   async optimizePrompt(userPrompt, options = {}) {
     try {
-      console.log('优化提示词:', {
+      console.log('优化提示词 (Doubao-seed-1.6):', {
         userPrompt,
         options,
-        apiKey: this.geminiApiKey ? '已配置' : '未配置'
+        apiKey: this.doubaoSeedApiKey ? '已配置' : '未配置'
       });
 
       // 验证 API Key
-      if (!this.geminiApiKey && !this.isProxyEnabled) {
-        throw new Error('Gemini API Key 未配置');
+      if (!this.doubaoSeedApiKey) {
+        throw new Error('Doubao-seed-1.6 API Key 未配置');
       }
 
       const startTime = Date.now();
@@ -1646,8 +1650,194 @@ class ModelAPIService {
       // 构建完整的提示词，包含系统提示和用户输入
       const fullPrompt = `${this.promptOptimizationSystemPrompt}\n\n用户原始提示词：${userPrompt}\n\n请按照指定格式输出优化结果。`;
 
-      // 如果启用代理：直接走一次代理请求（模型统一为 Gemini 2.5 Flash Image）
-      if (this.isProxyEnabled) {
+      // 使用Doubao-seed-1.6 API（火山引擎）
+      const apiUrl = `${this.volcanoBaseURL}/chat/completions`;
+      
+      // 构建请求体（符合火山引擎API格式）
+      // 根据图片中的API格式，content应该是字符串或对象数组
+      const requestBody = {
+        model: this.doubaoSeedModelId,
+        messages: [
+          {
+            role: 'user',
+            content: fullPrompt  // 直接使用字符串，符合火山引擎API格式
+          }
+        ],
+        max_completion_tokens: 65535,
+        temperature: 0.7
+      };
+
+      console.log('📤 发送请求到 Doubao-seed-1.6:', {
+        url: apiUrl,
+        model: this.doubaoSeedModelId,
+        promptLength: fullPrompt.length
+      });
+
+      // 发送请求
+      let response;
+      try {
+        response = await axios.post(apiUrl, requestBody, {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${this.doubaoSeedApiKey}`
+          },
+          timeout: 60000
+        });
+      } catch (apiError) {
+        // 如果API调用失败，使用本地优化作为降级方案
+        console.error('Doubao-seed-1.6 API调用失败:', apiError);
+        console.log('💡 使用本地优化方案作为降级...');
+        const localResult = this.localOptimizePrompt(userPrompt, options);
+        localResult.data.parameters = localResult.data.parameters || {};
+        localResult.data.parameters.isLocalOptimization = true;
+        localResult.data.apiError = {
+          message: apiError.message,
+          status: apiError.response?.status,
+          code: apiError.code
+        };
+        localResult.data.model = '本地智能优化引擎';
+        return localResult;
+      }
+
+      // 解析响应
+      const generationTime = (Date.now() - startTime) / 1000;
+      const apiResponse = response.data;
+      
+      console.log('API响应数据:', JSON.stringify(apiResponse, null, 2));
+
+      // 提取生成的文本内容
+      let generatedText = '';
+      if (apiResponse.choices && apiResponse.choices.length > 0) {
+        const choice = apiResponse.choices[0];
+        if (choice.message && choice.message.content) {
+          // 处理content可能是字符串或数组的情况
+          if (typeof choice.message.content === 'string') {
+            generatedText = choice.message.content.trim();
+          } else if (Array.isArray(choice.message.content)) {
+            generatedText = choice.message.content
+              .filter(item => item.type === 'text')
+              .map(item => item.text || '')
+              .join('\n')
+              .trim();
+          }
+        }
+      }
+
+      console.log('提取的生成文本:', generatedText);
+
+      // 解析优化结果（使用与原来相同的解析逻辑）
+      let optimizedPrompt = '';
+      let optimizationNotes = '';
+
+      if (generatedText) {
+        // 尝试多种格式匹配
+        let match = generatedText.match(/(?:优化提示词|优化结果|优化后的提示词)[：:]\s*([^\n]+(?:\n(?!优化说明|优化分析|原始提示词)[^\n]+)*)/i);
+        if (match && match[1]) {
+          optimizedPrompt = match[1].trim();
+        }
+
+        if (!optimizedPrompt) {
+          match = generatedText.match(/-?\s*(?:优化提示词|优化结果)[：:]\s*([^\n]+(?:\n(?!优化说明|优化分析|-)[^\n]+)*)/i);
+          if (match && match[1]) {
+            optimizedPrompt = match[1].trim();
+          }
+        }
+
+        if (!optimizedPrompt) {
+          const lines = generatedText.split('\n');
+          for (let i = 0; i < lines.length; i++) {
+            if (lines[i].match(/(?:优化提示词|优化结果|优化后的提示词)/i)) {
+              optimizedPrompt = lines.slice(i, i + 3).join(' ').replace(/(?:优化提示词|优化结果|优化后的提示词)[：:]\s*/i, '').trim();
+              break;
+            }
+          }
+        }
+
+        match = generatedText.match(/(?:优化说明|优化分析|优化建议)[：:]\s*([^\n]+(?:\n(?!优化提示词|原始提示词)[^\n]+)*)/i);
+        if (match && match[1]) {
+          optimizationNotes = match[1].trim();
+        }
+
+        if (!optimizedPrompt) {
+          const lines = generatedText.split('\n').filter(line => line.trim() && !line.match(/^(原始提示词|优化说明|优化分析)/i));
+          if (lines.length > 0) {
+            optimizedPrompt = lines.reduce((longest, line) => 
+              line.length > longest.length ? line : longest, lines[0]
+            ).trim();
+            
+            const otherLines = lines.filter(line => line.trim() !== optimizedPrompt);
+            if (otherLines.length > 0) {
+              optimizationNotes = otherLines.join(' ').trim();
+            }
+          }
+        }
+
+        if (!optimizedPrompt) {
+          optimizedPrompt = generatedText.trim();
+          optimizationNotes = 'Doubao-seed-1.6 AI生成的详细优化提示词';
+        }
+
+        optimizedPrompt = optimizedPrompt
+          .replace(/^(优化提示词|优化结果|优化后的提示词)[：:]\s*/i, '')
+          .replace(/^[-*]\s*/, '')
+          .trim();
+      } else {
+        optimizedPrompt = `优化的${userPrompt}描述，包含详细的视觉元素、色彩方案和构图建议。`;
+        optimizationNotes = '根据AI模型专业知识生成的优化提示词';
+      }
+
+      console.log('解析结果:', {
+        optimizedPrompt: optimizedPrompt.substring(0, 100) + '...',
+        optimizationNotes: optimizationNotes.substring(0, 50) + '...'
+      });
+
+      return {
+        success: true,
+        data: {
+          originalPrompt: userPrompt,
+          optimizedPrompt: optimizedPrompt,
+          optimizationNotes: optimizationNotes,
+          model: 'Doubao-seed-1.6',
+          generationTime: generationTime.toFixed(2),
+          parameters: {
+            userPrompt,
+            options
+          }
+        }
+      };
+    } catch (error) {
+      console.error('Doubao-seed-1.6 API调用失败:', {
+        error: error.message || error,
+        userPrompt: userPrompt,
+        apiKey: this.doubaoSeedApiKey ? '已配置' : '未配置'
+      });
+      
+      console.log('使用本地智能优化引擎...');
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
+      const localResult = this.localOptimizePrompt(userPrompt, options);
+      if (!localResult.data.parameters) {
+        localResult.data.parameters = {};
+      }
+      localResult.data.parameters.isLocalOptimization = true;
+      localResult.data.apiError = {
+        message: error.message,
+        status: error.response?.status,
+        code: error.code
+      };
+      localResult.data.model = '本地智能优化引擎';
+      
+      return localResult;
+    }
+  }
+
+  // 旧版Gemini优化方法（已弃用，保留作为参考）
+  async optimizePromptGemini(userPrompt, options = {}) {
+    // 此方法已弃用，保留仅作为参考
+    console.warn('⚠️ optimizePromptGemini 已弃用，请使用 optimizePrompt (Doubao-seed-1.6)');
+    
+    // 如果启用代理：直接走一次代理请求（模型统一为 Gemini 2.5 Flash Image）
+    if (this.isProxyEnabled) {
         const proxyUrl = `${this.baseURL.replace(/\/+$/, '')}/ai/gemini/generate`;
         const requestBody = {
           contents: [

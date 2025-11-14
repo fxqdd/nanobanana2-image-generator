@@ -175,6 +175,7 @@ export default {
     optimizedPrompt: '优化提示词：',
     optimizationNotes: '优化说明：',
     usingLocalEngine: '当前使用本地优化引擎',
+    optimizingWithDoubao: '正在使用 Doubao-seed-1.6 优化提示词...',
     apiQuotaExhausted: 'Gemini API配额已用尽，已自动切换到本地优化方案。请稍后重试或检查API配额使用情况。',
     apiUnavailable: 'Gemini API服务暂时不可用，已自动切换到本地优化方案。请检查网络连接和API配置。',
     copiedToClipboard: '优化提示词已复制到剪贴板',

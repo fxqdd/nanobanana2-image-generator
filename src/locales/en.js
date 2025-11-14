@@ -175,6 +175,7 @@ export default {
     optimizedPrompt: 'Optimized Prompt:',
     optimizationNotes: 'Optimization Notes:',
     usingLocalEngine: 'Currently using local optimization engine',
+    optimizingWithDoubao: 'Optimizing prompt with Doubao-seed-1.6...',
     apiQuotaExhausted: 'Gemini API quota exhausted, automatically switched to local optimization. Please try again later or check API quota usage.',
     apiUnavailable: 'Gemini API service temporarily unavailable, automatically switched to local optimization. Please check network connection and API configuration.',
     copiedToClipboard: 'Optimized prompt copied to clipboard',
