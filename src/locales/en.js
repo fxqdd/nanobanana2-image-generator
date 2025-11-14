@@ -451,6 +451,11 @@ export default {
       title: 'Login - Nano Banana 2',
       description: 'Login or register for Nano Banana 2 account to start using powerful AI image editing features.',
       keywords: 'login, register, Nano Banana 2, AI image editor'
+    },
+    resetPassword: {
+      title: 'Reset Password - Nano Banana 2',
+      description: 'Reset your Nano Banana 2 account password to regain access to your account.',
+      keywords: 'reset password, recovery, account security'
     }
   },
   terms: {

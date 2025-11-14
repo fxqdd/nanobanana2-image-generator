@@ -433,6 +433,11 @@ export default {
       title: 'Connexion - Nano Banana 2',
       description: 'Connectez-vous ou inscrivez-vous pour un compte Nano Banana 2 pour commencer à utiliser les puissantes fonctionnalités d\'édition d\'images IA.',
       keywords: 'login, register, Nano Banana 2, AI image editor'
+    },
+    resetPassword: {
+      title: 'Réinitialiser le mot de passe - Nano Banana 2',
+      description: 'Réinitialisez le mot de passe de votre compte Nano Banana 2 pour retrouver l\'accès à votre compte.',
+      keywords: 'réinitialiser le mot de passe, récupération, sécurité du compte, reset password, recovery, account security'
     }
   },
   cookies: {

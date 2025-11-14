@@ -433,6 +433,11 @@ export default {
       title: 'Anmelden - Nano Banana 2',
       description: 'Melden Sie sich an oder registrieren Sie sich für ein Nano Banana 2-Konto, um leistungsstarke KI-Bildbearbeitungsfunktionen zu nutzen.',
       keywords: 'login, register, Nano Banana 2, AI image editor'
+    },
+    resetPassword: {
+      title: 'Passwort zurücksetzen - Nano Banana 2',
+      description: 'Setzen Sie das Passwort Ihres Nano Banana 2-Kontos zurück, um wieder Zugriff auf Ihr Konto zu erhalten.',
+      keywords: 'Passwort zurücksetzen, Wiederherstellung, Kontosicherheit, reset password, recovery, account security'
     }
   },
   cookies: {

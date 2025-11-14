@@ -451,6 +451,11 @@ export default {
       title: '登录 - Nano Banana 2',
       description: '登录或注册Nano Banana 2账号，开始使用强大的AI图像编辑功能。',
       keywords: 'login, register, Nano Banana 2, AI image editor'
+    },
+    resetPassword: {
+      title: '重置密码 - Nano Banana 2',
+      description: '重置您的Nano Banana 2账户密码，恢复账户访问权限。',
+      keywords: '重置密码, 密码恢复, 账户安全, reset password, recovery, account security'
     }
   },
   terms: {

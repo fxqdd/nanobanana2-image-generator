@@ -433,6 +433,11 @@ export default {
       title: 'Вход - Nano Banana 2',
       description: 'Войдите или зарегистрируйтесь для аккаунта Nano Banana 2, чтобы начать использовать мощные функции редактирования изображений ИИ.',
       keywords: 'login, register, Nano Banana 2, AI image editor'
+    },
+    resetPassword: {
+      title: 'Сбросить пароль - Nano Banana 2',
+      description: 'Сбросьте пароль вашего аккаунта Nano Banana 2, чтобы восстановить доступ к аккаунту.',
+      keywords: 'сброс пароля, восстановление, безопасность аккаунта, reset password, recovery, account security'
     }
   },
   cookies: {

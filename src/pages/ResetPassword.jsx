@@ -251,10 +251,10 @@ const ResetPassword = () => {
   return (
     <div className="reset-password-page">
       <SEO
-        title={t('resetPassword.pageTitle')}
-        description={t('resetPassword.pageDescription')}
+        title={t('seo.resetPassword.title')}
+        description={t('seo.resetPassword.description')}
         path={getLocalizedPath('/reset-password')}
-        keywords="reset password, recovery, account security"
+        keywords={t('seo.resetPassword.keywords')}
       />
 
       <div className="auth-wrapper" style={{ padding: '80px 16px' }}>

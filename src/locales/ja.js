@@ -430,6 +430,11 @@ export default {
       title: 'ログイン - Nano Banana 2',
       description: 'Nano Banana 2アカウントにログインまたは登録して、強力なAI画像編集機能の使用を開始します。',
       keywords: 'login, register, Nano Banana 2, AI image editor'
+    },
+    resetPassword: {
+      title: 'パスワードをリセット - Nano Banana 2',
+      description: 'Nano Banana 2アカウントのパスワードをリセットして、アカウントへのアクセスを回復します。',
+      keywords: 'パスワードリセット, パスワード回復, アカウントセキュリティ, reset password, recovery, account security'
     }
   },
   cookies: {
