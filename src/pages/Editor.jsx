@@ -100,8 +100,52 @@ function Editor() {
         };
         setHistory([newHistoryItem, ...history]);
         
+        // 安全地保存历史记录到 localStorage，处理配额超限错误
         const updatedHistory = [newHistoryItem, ...history];
-        localStorage.setItem('generationHistory', JSON.stringify(updatedHistory.slice(0, 50)));
+        const historyToSave = updatedHistory.slice(0, 50);
+        
+        try {
+          localStorage.setItem('generationHistory', JSON.stringify(historyToSave));
+        } catch (storageError) {
+          // 处理存储配额超限错误
+          if (storageError.name === 'QuotaExceededError' || storageError.code === 22) {
+            console.warn('⚠️ 存储配额超限，尝试清理旧历史记录...');
+            
+            // 尝试减少历史记录数量
+            let reducedHistory = historyToSave.slice(0, 20); // 减少到 20 条
+            let saved = false;
+            
+            try {
+              localStorage.setItem('generationHistory', JSON.stringify(reducedHistory));
+              saved = true;
+              console.log('✅ 已清理旧历史记录，保留最近 20 条');
+            } catch (retryError) {
+              // 如果还是失败，尝试只保留最近 10 条
+              try {
+                reducedHistory = historyToSave.slice(0, 10);
+                localStorage.setItem('generationHistory', JSON.stringify(reducedHistory));
+                saved = true;
+                console.log('✅ 已清理旧历史记录，保留最近 10 条');
+              } catch (finalError) {
+                // 如果还是失败，尝试清理所有历史记录
+                try {
+                  localStorage.removeItem('generationHistory');
+                  console.warn('⚠️ 已清除所有历史记录以释放存储空间');
+                } catch (removeError) {
+                  console.error('❌ 无法清理历史记录:', removeError);
+                }
+              }
+            }
+            
+            if (saved) {
+              // 更新状态以反映保存的历史记录
+              setHistory(reducedHistory);
+            }
+          } else {
+            // 其他类型的存储错误
+            console.warn('⚠️ 保存历史记录失败（不影响图像生成）:', storageError);
+          }
+        }
 
         // 计算扣点
         const isTextToImage = activeTab === 'textToImage';
