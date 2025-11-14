@@ -247,7 +247,10 @@ function Editor() {
     } else {
       setActiveTab('textToImage');
     }
+    // 关闭历史记录模态框
     setShowHistory(false);
+    // 滚动到顶部以便用户看到填充的内容
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const deleteHistoryItem = (index) => {
@@ -783,8 +786,23 @@ function Editor() {
 
       {/* 历史记录模态框 */}
       {showHistory && (
-        <div className="history-modal-overlay" onClick={() => setShowHistory(false)}>
-          <div className="history-modal" onClick={(e) => e.stopPropagation()}>
+        <div 
+          className="history-modal-overlay" 
+          onClick={() => setShowHistory(false)}
+          style={{ 
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 9999
+          }}
+        >
+          <div 
+            className="history-modal" 
+            onClick={(e) => e.stopPropagation()}
+            style={{ zIndex: 10000 }}
+          >
             <div className="history-modal-header">
               <h2>📋 {t('editor.history')}</h2>
               <button 
