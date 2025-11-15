@@ -18,7 +18,8 @@ const Account = () => {
 
   useEffect(() => {
     let mounted = true;
-    (async () => {
+    
+    const loadData = async () => {
       const [p, s, m] = await Promise.all([
         getMyProfile(),
         getMySubscription(),
@@ -28,9 +29,21 @@ const Account = () => {
       if (p) setProfile(p);
       if (s) setSubscription(s);
       if (typeof m === 'number') setMonthlyCount(m);
-    })();
+    };
+    
+    // 立即加载一次
+    loadData();
+    
+    // 每30秒更新一次（实时更新点数）
+    const interval = setInterval(() => {
+      if (mounted) {
+        loadData();
+      }
+    }, 30000);
+    
     return () => {
       mounted = false;
+      clearInterval(interval);
     };
   }, []);
 
@@ -88,29 +101,6 @@ const Account = () => {
           <div className="col">
             <label>{t('account.recentActivity') || 'Recent activity'}</label>
             <span>{t('account.recentActivityDesc') || t('common.notAvailable')}</span>
-          </div>
-        </div>
-      </div>
-
-      {/* 安全状态 */}
-      <div className="card list-card">
-        <h3>{t('account.security') || 'Security'}</h3>
-        <div className="row">
-          <div className="col">
-            <label>{t('account.loginDevices') || 'Logged-in devices'}</label>
-            <span>{t('account.loginDevicesDesc') || t('common.notAvailable')}</span>
-          </div>
-        </div>
-        <div className="row">
-          <div className="col">
-            <label>{t('account.lastActivity') || 'Last activity'}</label>
-            <span>{user?.lastActivity ?? (t('common.notAvailable') || '—')}</span>
-          </div>
-        </div>
-        <div className="row">
-          <div className="col">
-            <label>{t('account.securityTips') || 'Security tips'}</label>
-            <span>{t('account.securityDesc') || 'Keep your account secure.'}</span>
           </div>
         </div>
       </div>

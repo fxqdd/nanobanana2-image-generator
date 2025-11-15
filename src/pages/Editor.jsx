@@ -3,10 +3,12 @@ import { useLanguage } from '../contexts/LanguageContext'
 import SEO from '../components/SEO'
 import '../styles/Editor.css'
 import modelAPI from '../utils/modelAPI'
-import { createGenerationAndCharge } from '../services/db'
+import { createGenerationAndCharge, checkCreditsSufficient, getMyCredits } from '../services/db'
+import { useAuth } from '../contexts/AuthContext'
 
 function Editor() {
   const { t, getLocalizedPath } = useLanguage()
+  const { isLoggedIn } = useAuth()
   const [activeTab, setActiveTab] = useState('imageEdit')
   const [model, setModel] = useState('Nano Banana')
   const [referenceImages, setReferenceImages] = useState([])
@@ -18,6 +20,7 @@ function Editor() {
   const [showHistory, setShowHistory] = useState(false)
   const [historySearchTerm, setHistorySearchTerm] = useState('')
   const [historyFilterModel, setHistoryFilterModel] = useState('all')
+  const [currentCredits, setCurrentCredits] = useState(null) // 当前点数
   
   const seoData = t('seo.editor')
 
@@ -95,6 +98,16 @@ function Editor() {
 
   const handleGenerate = async () => {
     if (!prompt && referenceImages.length === 0) return;
+    
+    // 检查点数是否足够
+    if (isLoggedIn) {
+      const sufficient = await checkCreditsSufficient(currentCost);
+      if (!sufficient) {
+        const credits = await getMyCredits();
+        setError(t('editor.insufficientCredits') || `点数不足！需要 ${currentCost} 点，当前只有 ${credits} 点。`);
+        return;
+      }
+    }
     
     setIsGenerating(true);
     setError(null);
@@ -196,6 +209,11 @@ function Editor() {
             durationMs: result.data.generationTime || 0,
             cost
           });
+          // 更新点数显示
+          if (isLoggedIn) {
+            const newCredits = await getMyCredits();
+            setCurrentCredits(newCredits);
+          }
         } catch (chargeErr) {
           console.warn('记录生成与扣点失败（不中断前端展示）:', chargeErr);
         }
@@ -219,6 +237,28 @@ function Editor() {
       }
     }
   }, []);
+
+  // 定期更新点数（每30秒）
+  useEffect(() => {
+    if (!isLoggedIn) return;
+    
+    const updateCredits = async () => {
+      try {
+        const credits = await getMyCredits();
+        setCurrentCredits(credits);
+      } catch (err) {
+        console.warn('更新点数失败:', err);
+      }
+    };
+    
+    // 立即更新一次
+    updateCredits();
+    
+    // 每30秒更新一次
+    const interval = setInterval(updateCredits, 30000);
+    
+    return () => clearInterval(interval);
+  }, [isLoggedIn]);
 
   const downloadImage = (imageUrl) => {
     const link = document.createElement('a');

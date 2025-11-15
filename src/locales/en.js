@@ -204,7 +204,8 @@ export default {
     prepareEditImage: 'Prepare to edit image',
     prepareGenerateImage: 'Prepare to generate image',
     uploadReferenceAndPrompt: 'Upload reference image and enter editing prompt',
-    enterDescriptionToGenerate: 'Enter detailed description to generate image'
+    enterDescriptionToGenerate: 'Enter detailed description to generate image',
+    insufficientCredits: 'Insufficient credits'
   },
   showcase: {
     title: 'Showcase',
@@ -411,6 +412,28 @@ export default {
     invoicesDesc: 'Download past invoices and reconciliation info',
     paymentMethods: 'Payment Methods',
     paymentMethodsDesc: 'Manage cards, PayPal and other methods'
+  },
+  admin: {
+    title: 'Admin Panel',
+    subtitle: 'Manage users, credits, and plans',
+    description: 'Admin control panel',
+    accessDenied: 'Access denied: Admin only',
+    users: 'Users',
+    noUsers: 'No users found',
+    userId: 'User ID',
+    username: 'Username',
+    email: 'Email',
+    plan: 'Plan',
+    credits: 'Credits',
+    actions: 'Actions',
+    edit: 'Edit',
+    editUser: 'Edit User',
+    save: 'Save',
+    cancel: 'Cancel',
+    refresh: 'Refresh',
+    searchPlaceholder: 'Search by username, email, or user ID...',
+    invalidCredits: 'Invalid credits value',
+    updateSuccess: 'User updated successfully'
   },
   settings: {
     title: 'Settings',

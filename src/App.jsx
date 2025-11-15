@@ -15,6 +15,7 @@ import Account from './pages/Account'
 import Billing from './pages/Billing'
 import Settings from './pages/Settings'
 import ResetPassword from './pages/ResetPassword'
+import Admin from './pages/Admin'
 import Footer from './components/Footer'
 import ProtectedRoute from './components/ProtectedRoute'
 import { AuthProvider } from './contexts/AuthContext'
@@ -65,6 +66,11 @@ function App() {
               <Route path="/:lang/settings" element={
                 <ProtectedRoute>
                   <Settings />
+                </ProtectedRoute>
+              } />
+              <Route path="/:lang/admin" element={
+                <ProtectedRoute>
+                  <Admin />
                 </ProtectedRoute>
               } />
               <Route path="/:lang/terms" element={<Terms />} />

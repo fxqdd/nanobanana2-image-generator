@@ -204,7 +204,8 @@ export default {
     prepareEditImage: '准备编辑图像',
     prepareGenerateImage: '准备生成图像',
     uploadReferenceAndPrompt: '上传参考图像并输入编辑提示',
-    enterDescriptionToGenerate: '输入详细描述生成图像'
+    enterDescriptionToGenerate: '输入详细描述生成图像',
+    insufficientCredits: '点数不足'
   },
   showcase: {
     title: '展示案例',
@@ -411,6 +412,28 @@ export default {
     invoicesDesc: '下载历史发票与对账信息',
     paymentMethods: '支付方式',
     paymentMethodsDesc: '管理银行卡、PayPal 等支付方式'
+  },
+  admin: {
+    title: '管理员面板',
+    subtitle: '管理用户、积分和计划',
+    description: '管理员控制面板',
+    accessDenied: '访问被拒绝：仅限管理员',
+    users: '用户',
+    noUsers: '未找到用户',
+    userId: '用户ID',
+    username: '用户名',
+    email: '邮箱',
+    plan: '计划',
+    credits: '积分',
+    actions: '操作',
+    edit: '编辑',
+    editUser: '编辑用户',
+    save: '保存',
+    cancel: '取消',
+    refresh: '刷新',
+    searchPlaceholder: '按用户名、邮箱或用户ID搜索...',
+    invalidCredits: '无效的积分值',
+    updateSuccess: '用户更新成功'
   },
   settings: {
     title: '账号设置',
