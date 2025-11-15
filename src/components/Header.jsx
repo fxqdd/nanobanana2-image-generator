@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { useLanguage } from '../contexts/LanguageContext'
 import LanguageSwitcher from './LanguageSwitcher'
+import { getMyProfile } from '../services/db'
 import '../styles/Header.css'
 import logo from '../assets/banana.svg'
 
@@ -10,9 +11,28 @@ function Header() {
   const [isDarkMode, setIsDarkMode] = useState(false)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
+  const [isAdmin, setIsAdmin] = useState(false)
   const { isLoggedIn, user, logout } = useAuth()
   const { t, getLocalizedPath } = useLanguage()
   const navigate = useNavigate()
+
+  // 检查是否为管理员
+  useEffect(() => {
+    const checkAdmin = async () => {
+      if (isLoggedIn && user) {
+        try {
+          const profile = await getMyProfile()
+          setIsAdmin(profile?.is_admin || false)
+        } catch (err) {
+          console.warn('检查管理员权限失败:', err)
+          setIsAdmin(false)
+        }
+      } else {
+        setIsAdmin(false)
+      }
+    }
+    checkAdmin()
+  }, [isLoggedIn, user])
 
   // 处理主题切换
   useEffect(() => {
@@ -108,6 +128,14 @@ function Header() {
                   <Link to={getLocalizedPath('/settings')} className="dropdown-item">
                     {t('nav.settings')}
                   </Link>
+                  {isAdmin && (
+                    <>
+                      <div className="dropdown-divider"></div>
+                      <Link to={getLocalizedPath('/admin')} className="dropdown-item" style={{ color: '#ff9800', fontWeight: '600' }}>
+                        {t('nav.admin') || '管理员面板'}
+                      </Link>
+                    </>
+                  )}
                   <div className="dropdown-divider"></div>
                   <button 
                     className="dropdown-item logout-item"

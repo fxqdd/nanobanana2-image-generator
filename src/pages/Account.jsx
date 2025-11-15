@@ -57,7 +57,7 @@ const Account = () => {
       />
 
       <h1>{t('account.title') || t('nav.account')}</h1>
-      <p>{t('account.subtitle')}</p>
+      <p>{t('account.subtitle') || 'View your account information and usage statistics'}</p>
 
       {/* 账户信息 */}
       <div className="card list-card">
@@ -88,19 +88,30 @@ const Account = () => {
         <div className="row">
           <div className="col">
             <label>{t('account.creditsRemaining') || 'Credits remaining'}</label>
-            <span>{profile?.credits_remaining ?? (t('common.notAvailable') || '—')}</span>
+            <span style={{ 
+              color: (profile?.credits_remaining ?? 0) < 0 ? '#e53935' : 'inherit',
+              fontWeight: (profile?.credits_remaining ?? 0) < 0 ? '600' : 'normal'
+            }}>
+              {profile?.credits_remaining !== null && profile?.credits_remaining !== undefined 
+                ? profile.credits_remaining 
+                : (t('common.notAvailable') || '—')}
+            </span>
           </div>
         </div>
         <div className="row">
           <div className="col">
             <label>{t('account.monthlyGeneration') || 'Monthly generations'}</label>
-            <span>{monthlyCount ?? (t('common.notAvailable') || '—')}</span>
+            <span>
+              {monthlyCount !== null && monthlyCount !== undefined 
+                ? monthlyCount 
+                : (t('common.notAvailable') || '—')}
+            </span>
           </div>
         </div>
         <div className="row">
           <div className="col">
             <label>{t('account.recentActivity') || 'Recent activity'}</label>
-            <span>{t('account.recentActivityDesc') || t('common.notAvailable')}</span>
+            <span>{t('account.recentActivityDesc') || 'No recent activity'}</span>
           </div>
         </div>
       </div>

@@ -20,7 +20,8 @@ export default {
     no: '否',
     view: '查看大图',
     show: '显示',
-    hide: '隐藏'
+    hide: '隐藏',
+    notAvailable: '暂无'
   },
   nav: {
     home: '首页',
@@ -33,6 +34,7 @@ export default {
     account: '个人中心',
     billing: '账单管理',
     settings: '账号设置',
+    admin: '管理员面板',
     startNow: '立即启动'
   },
   home: {
@@ -395,11 +397,18 @@ export default {
   },
   account: {
     title: '个人中心',
-    subtitle: '查看账户信息、使用情况与安全状态',
+    subtitle: '查看账户信息、使用情况',
     profile: '账户信息',
     profileDesc: '用户名、邮箱、所属计划等基础信息',
+    username: '用户名',
+    email: '邮箱',
+    plan: '计划',
     usage: '使用情况',
     usageDesc: '剩余积分、当月生成配额与近期活动',
+    creditsRemaining: '剩余积分',
+    monthlyGeneration: '本月生成数',
+    recentActivity: '最近活动',
+    recentActivityDesc: '暂无最近活动',
     security: '安全状态',
     securityDesc: '登录设备、最近活动与安全建议'
   },
@@ -407,10 +416,17 @@ export default {
     title: '账单管理',
     subtitle: '查看订阅、发票与支付方式',
     plan: '订阅计划',
+    currentPlan: '当前计划',
+    renewalDate: '续费日期',
+    actions: '操作',
     planDesc: '当前套餐、到期时间与升级/降级',
     invoices: '发票记录',
+    lastInvoice: '最近发票',
+    download: '下载',
     invoicesDesc: '下载历史发票与对账信息',
     paymentMethods: '支付方式',
+    primaryMethod: '主要支付方式',
+    manage: '管理',
     paymentMethodsDesc: '管理银行卡、PayPal 等支付方式'
   },
   admin: {

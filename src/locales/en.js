@@ -20,7 +20,8 @@ export default {
     no: 'No',
     view: 'View Full Size',
     show: 'Show',
-    hide: 'Hide'
+    hide: 'Hide',
+    notAvailable: 'Not available'
   },
   nav: {
     home: 'Home',
@@ -33,6 +34,7 @@ export default {
     account: 'Account',
     billing: 'Billing',
     settings: 'Settings',
+    admin: 'Admin Panel',
     startNow: 'Start Now'
   },
   home: {
@@ -395,11 +397,18 @@ export default {
   },
   account: {
     title: 'Account',
-    subtitle: 'View your account info, usage and security status',
+    subtitle: 'View your account info and usage',
     profile: 'Account Info',
     profileDesc: 'Username, email, current plan and basic details',
+    username: 'Username',
+    email: 'Email',
+    plan: 'Plan',
     usage: 'Usage',
     usageDesc: 'Remaining credits, monthly quota and recent activity',
+    creditsRemaining: 'Credits remaining',
+    monthlyGeneration: 'Monthly generations',
+    recentActivity: 'Recent activity',
+    recentActivityDesc: 'No recent activity',
     security: 'Security',
     securityDesc: 'Login devices, recent sessions and security tips'
   },
@@ -407,10 +416,17 @@ export default {
     title: 'Billing',
     subtitle: 'Manage subscription, invoices and payment methods',
     plan: 'Subscription Plan',
+    currentPlan: 'Current plan',
+    renewalDate: 'Renewal date',
+    actions: 'Actions',
     planDesc: 'Current plan, renewal date and upgrade/downgrade',
     invoices: 'Invoices',
+    lastInvoice: 'Last invoice',
+    download: 'Download',
     invoicesDesc: 'Download past invoices and reconciliation info',
     paymentMethods: 'Payment Methods',
+    primaryMethod: 'Primary payment method',
+    manage: 'Manage',
     paymentMethodsDesc: 'Manage cards, PayPal and other methods'
   },
   admin: {
