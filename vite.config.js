@@ -15,6 +15,8 @@ export default defineConfig({
         target: 'https://ark.cn-beijing.volces.com',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/volcano/, '/api/v3'),
+        timeout: 120000,  // 增加代理超时时间到120秒
+        proxyTimeout: 120000,  // 代理服务器超时时间
         configure: (proxy, _options) => {
           proxy.on('proxyReq', (proxyReq, req, _res) => {
             // 从请求头中获取 API Key（前端会在请求头中传递）

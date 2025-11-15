@@ -2255,7 +2255,7 @@ class ModelAPIService {
             content: fullPrompt  // 直接使用字符串，符合火山引擎API格式
           }
         ],
-        max_completion_tokens: 65535,
+        max_completion_tokens: 4096,  // 减少到合理值，避免响应时间过长
         temperature: 0.7
       };
 
@@ -2264,14 +2264,57 @@ class ModelAPIService {
         model: this.doubaoSeedModelId,
         promptLength: fullPrompt.length,
         isDevelopment,
-        useProxy: isDevelopment
+        useProxy: isDevelopment,
+        maxTokens: requestBody.max_completion_tokens,
+        hasApiKey: !!this.doubaoSeedApiKey,
+        apiKeyPrefix: this.doubaoSeedApiKey?.substring(0, 8) + '...',
+        timeout: 120000
       });
 
-      // 发送请求
-      const response = await axios.post(apiUrl, requestBody, {
-        headers: requestHeaders,
-        timeout: 60000
-      });
+      // 发送请求（增加超时时间并添加重试机制）
+      let response;
+      const maxRetries = 2;
+      let lastError;
+      
+      for (let attempt = 0; attempt <= maxRetries; attempt++) {
+        try {
+          if (attempt > 0) {
+            console.log(`🔄 重试请求 (第 ${attempt} 次)...`);
+            // 重试前等待一段时间
+            await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+          }
+          
+          response = await axios.post(apiUrl, requestBody, {
+            headers: requestHeaders,
+            timeout: 120000  // 增加到120秒超时（提示词优化可能需要更长时间）
+          });
+          
+          // 请求成功，跳出重试循环
+          break;
+        } catch (error) {
+          lastError = error;
+          
+          // 如果是超时错误且还有重试次数，继续重试
+          if ((error.code === 'ECONNABORTED' || error.message?.includes('timeout')) && attempt < maxRetries) {
+            console.warn(`⚠️ 请求超时，准备重试 (${attempt + 1}/${maxRetries})...`);
+            continue;
+          }
+          
+          // 如果是网络错误且还有重试次数，继续重试
+          if ((error.message?.includes('Network Error') || error.message?.includes('ERR_')) && attempt < maxRetries) {
+            console.warn(`⚠️ 网络错误，准备重试 (${attempt + 1}/${maxRetries})...`);
+            continue;
+          }
+          
+          // 其他错误或重试次数用完，抛出错误
+          throw error;
+        }
+      }
+      
+      // 如果所有重试都失败，抛出最后一个错误
+      if (!response) {
+        throw lastError;
+      }
 
       // 解析响应
       const generationTime = (Date.now() - startTime) / 1000;
