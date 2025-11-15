@@ -1384,30 +1384,64 @@ class ModelAPIService {
         
         // 检查响应内容
         if (typeof msg.content === 'string') {
-          // 如果是字符串，可能是 base64 图像数据或 URL
-          if (msg.content.startsWith('data:image')) {
-            imageData = msg.content.split(',')[1];
-            console.log('✅ 从data:image URL提取图像数据，长度:', imageData?.length);
-          } else if (msg.content.startsWith('http://') || msg.content.startsWith('https://')) {
-            imageUrl = msg.content;
+          const content = msg.content.trim();
+          
+          // 检查是否是data:image格式
+          if (content.startsWith('data:image')) {
+            const commaIndex = content.indexOf(',');
+            if (commaIndex > 0) {
+              imageData = content.substring(commaIndex + 1);
+              console.log('✅ 从data:image URL提取图像数据，长度:', imageData?.length);
+            }
+          } 
+          // 检查是否是HTTP URL
+          else if (content.startsWith('http://') || content.startsWith('https://')) {
+            imageUrl = content;
             console.log('✅ 找到图像URL:', imageUrl.substring(0, 100));
-          } else if (msg.content.length > 1000) {
-            // 可能是 base64 字符串（没有前缀）
-            imageData = msg.content;
-            console.log('✅ 从长字符串提取图像数据，长度:', imageData.length);
-          } else {
-            // 尝试解析JSON格式的URL
+          } 
+          // 检查是否是JSON格式
+          else if (content.startsWith('{') || content.startsWith('[')) {
             try {
-              const parsed = JSON.parse(msg.content);
+              const parsed = JSON.parse(content);
               if (parsed.url && (parsed.url.startsWith('http://') || parsed.url.startsWith('https://'))) {
                 imageUrl = parsed.url;
                 console.log('✅ 从JSON解析图像URL:', imageUrl.substring(0, 100));
               } else if (parsed.image_url) {
                 imageUrl = parsed.image_url;
                 console.log('✅ 从JSON解析image_url:', imageUrl.substring(0, 100));
+              } else if (parsed.data) {
+                imageData = parsed.data;
+                console.log('✅ 从JSON解析data，长度:', imageData?.length);
               }
             } catch (e) {
-              // 不是JSON，继续其他检查
+              // 不是有效的JSON，继续检查
+              console.log('⚠️ 内容看起来像JSON但解析失败:', e.message);
+            }
+          }
+          // 检查是否是纯base64字符串（长度较长）
+          else if (content.length > 500) {
+            // 移除所有空白字符后检查
+            const cleaned = content.replace(/\s+/g, '');
+            // 如果清理后主要是base64字符，且长度足够，可能是base64
+            const base64Like = /^[A-Za-z0-9+/=]+$/.test(cleaned);
+            if (base64Like && cleaned.length > 100) {
+              imageData = cleaned;
+              console.log('✅ 从长字符串提取base64数据，长度:', imageData.length);
+            } else {
+              // 检查是否包含URL模式
+              const urlMatch = content.match(/https?:\/\/[^\s"']+/);
+              if (urlMatch) {
+                imageUrl = urlMatch[0];
+                console.log('✅ 从字符串中提取URL:', imageUrl.substring(0, 100));
+              }
+            }
+          }
+          // 对于较短的字符串，也检查是否包含URL
+          else {
+            const urlMatch = content.match(/https?:\/\/[^\s"']+/);
+            if (urlMatch) {
+              imageUrl = urlMatch[0];
+              console.log('✅ 从短字符串中提取URL:', imageUrl.substring(0, 100));
             }
           }
         } else if (Array.isArray(msg.content)) {
@@ -1434,17 +1468,62 @@ class ModelAPIService {
               break;
             } else if (part.type === 'text' && part.text) {
               // 检查文本中是否包含URL或base64
-              const text = part.text;
+              const text = part.text.trim();
+              
+              // 检查是否是URL
               if (text.startsWith('http://') || text.startsWith('https://')) {
-                imageUrl = text.trim();
+                imageUrl = text;
                 console.log('✅ 从文本部分提取图像URL:', imageUrl.substring(0, 100));
-              } else if (text.startsWith('data:image')) {
-                imageData = text.split(',')[1];
-                console.log('✅ 从文本部分提取图像数据，长度:', imageData?.length);
-              } else if (text.length > 1000 && /^[A-Za-z0-9+/=\s]+$/.test(text.trim())) {
-                // 可能是纯base64字符串
-                imageData = text.trim();
-                console.log('✅ 从文本部分提取base64数据，长度:', imageData.length);
+                break;
+              } 
+              // 检查是否是data:image格式
+              else if (text.startsWith('data:image')) {
+                const commaIndex = text.indexOf(',');
+                if (commaIndex > 0) {
+                  imageData = text.substring(commaIndex + 1);
+                  console.log('✅ 从文本部分提取图像数据，长度:', imageData?.length);
+                  break;
+                }
+              } 
+              // 检查是否是JSON格式的URL
+              else if (text.startsWith('{') || text.startsWith('[')) {
+                try {
+                  const parsed = JSON.parse(text);
+                  if (parsed.url && (parsed.url.startsWith('http://') || parsed.url.startsWith('https://'))) {
+                    imageUrl = parsed.url;
+                    console.log('✅ 从文本JSON解析图像URL:', imageUrl.substring(0, 100));
+                    break;
+                  } else if (parsed.image_url) {
+                    imageUrl = parsed.image_url;
+                    console.log('✅ 从文本JSON解析image_url:', imageUrl.substring(0, 100));
+                    break;
+                  } else if (parsed.data) {
+                    imageData = parsed.data;
+                    console.log('✅ 从文本JSON解析data，长度:', imageData?.length);
+                    break;
+                  }
+                } catch (e) {
+                  // 不是有效的JSON，继续检查
+                }
+              }
+              // 检查是否是纯base64字符串（长度较长且主要是base64字符）
+              else if (text.length > 500) {
+                // 移除所有空白字符后检查
+                const cleaned = text.replace(/\s+/g, '');
+                // 如果清理后主要是base64字符，且长度足够，可能是base64
+                const base64Like = /^[A-Za-z0-9+/=]+$/.test(cleaned);
+                if (base64Like && cleaned.length > 100) {
+                  imageData = cleaned;
+                  console.log('✅ 从文本部分提取base64数据，长度:', imageData.length);
+                  break;
+                }
+                // 或者检查是否包含URL模式
+                const urlMatch = text.match(/https?:\/\/[^\s]+/);
+                if (urlMatch) {
+                  imageUrl = urlMatch[0];
+                  console.log('✅ 从文本中提取URL:', imageUrl.substring(0, 100));
+                  break;
+                }
               }
             }
           }
@@ -1483,28 +1562,50 @@ class ModelAPIService {
         
         // 如果有 base64 图像数据，转换为 Blob URL
         if (imageData) {
-          let cleanBase64 = imageData.trim().replace(/\s/g, '');
+          // 更彻底的清理base64数据
+          let cleanBase64 = imageData.trim();
+          
+          // 移除所有空白字符（包括换行符、制表符等）
+          cleanBase64 = cleanBase64.replace(/\s+/g, '');
+          
+          // 如果包含逗号，说明可能是 data:image/png;base64,xxxxx 格式
           if (cleanBase64.includes(',')) {
-            cleanBase64 = cleanBase64.split(',')[1];
+            cleanBase64 = cleanBase64.split(',').pop(); // 取最后一部分
           }
           
-          // 验证 base64 格式
+          // 移除可能的引号或其他包装字符
+          cleanBase64 = cleanBase64.replace(/^["']|["']$/g, '');
+          
+          console.log('🔧 清理后的base64数据:', {
+            originalLength: imageData.length,
+            cleanedLength: cleanBase64.length,
+            preview: cleanBase64.substring(0, 50) + '...',
+            endsWithEquals: cleanBase64.endsWith('=')
+          });
+          
+          // 验证 base64 格式（更宽松的验证，允许常见的base64字符）
           const base64Pattern = /^[A-Za-z0-9+/=]+$/;
           if (!base64Pattern.test(cleanBase64)) {
             // 添加详细的错误信息
             const preview = cleanBase64.substring(0, 100);
             const invalidChars = cleanBase64.match(/[^A-Za-z0-9+/=]/g);
+            const uniqueInvalidChars = invalidChars ? [...new Set(invalidChars)].slice(0, 10) : [];
             console.error('❌ Base64验证失败:', {
               length: cleanBase64.length,
               preview: preview,
-              invalidChars: invalidChars ? [...new Set(invalidChars)].slice(0, 10) : null,
+              invalidChars: uniqueInvalidChars,
               firstInvalidChar: invalidChars ? invalidChars[0] : null,
-              charCode: invalidChars ? invalidChars[0].charCodeAt(0) : null
+              charCode: invalidChars ? invalidChars[0].charCodeAt(0) : null,
+              // 尝试显示原始数据的前100个字符
+              originalPreview: imageData.substring(0, 100)
             });
-            throw new Error(`API返回的图像数据格式无效: 包含无效字符 (长度: ${cleanBase64.length})`);
+            
+            // 即使验证失败，也尝试创建Blob，因为某些API可能返回非标准格式
+            console.warn('⚠️ Base64格式验证失败，但尝试继续处理...');
           }
           
           try {
+            // 尝试创建Blob，即使格式验证失败
             const imageBlob = this.base64ToBlob(cleanBase64, 'image/png');
             const blobUrl = URL.createObjectURL(imageBlob);
             const generationTime = (Date.now() - startTime) / 1000;
@@ -1526,6 +1627,12 @@ class ModelAPIService {
             };
           } catch (blobError) {
             console.error('❌ 创建Blob失败:', blobError);
+            console.error('❌ 失败的数据信息:', {
+              dataLength: cleanBase64.length,
+              dataPreview: cleanBase64.substring(0, 200),
+              errorMessage: blobError.message,
+              errorStack: blobError.stack
+            });
             throw new Error(`API返回的图像数据格式无效: 无法创建图像 (${blobError.message})`);
           }
         }
