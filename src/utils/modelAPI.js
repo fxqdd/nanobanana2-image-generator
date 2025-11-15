@@ -1386,51 +1386,62 @@ class ModelAPIService {
         if (typeof msg.content === 'string') {
           const content = msg.content.trim();
           
-          // 首先检查是否包含markdown格式的图片: ![alt](data:image/...)
-          // 或者 ![](data:image/...) 或者 [image](data:image/...)
-          // 注意：base64数据可能很长，需要找到data:image之后的所有内容
-          const markdownImageIndex = content.search(/!?\[.*?\]\s*\(data:image\/[^;]+;base64,/i);
-          if (markdownImageIndex >= 0) {
-            // 找到base64数据的开始位置（最后一个逗号之后）
-            const base64Start = content.indexOf('base64,', markdownImageIndex) + 7; // 'base64,' 的长度是7
-            // 找到对应的右括号（从base64开始位置向前查找匹配的左括号）
-            let parenCount = 0;
-            let base64End = content.length;
-            for (let i = markdownImageIndex; i < content.length; i++) {
-              if (content[i] === '(') parenCount++;
-              if (content[i] === ')') {
-                parenCount--;
-                if (parenCount === 0) {
-                  base64End = i;
+          // 首先查找所有 data:image 的位置（无论是否在markdown中）
+          const dataImageIndex = content.indexOf('data:image/');
+          if (dataImageIndex >= 0) {
+            // 找到 base64, 的位置
+            const base64PrefixIndex = content.indexOf('base64,', dataImageIndex);
+            if (base64PrefixIndex >= 0) {
+              const base64Start = base64PrefixIndex + 7; // 'base64,' 的长度是7
+              
+              // 查找base64数据的结束位置
+              // 方法1: 如果在括号内（markdown格式），找到匹配的右括号
+              let base64End = content.length;
+              
+              // 从data:image位置向前查找最近的左括号
+              let leftParenIndex = -1;
+              for (let i = dataImageIndex - 1; i >= 0; i--) {
+                if (content[i] === '(') {
+                  leftParenIndex = i;
+                  break;
+                } else if (content[i] === ')' || content[i] === '[' || content[i] === ']') {
+                  // 如果遇到其他括号，说明不在markdown格式中
                   break;
                 }
               }
-            }
-            if (base64Start < base64End) {
-              imageData = content.substring(base64Start, base64End);
-              console.log('✅ 从Markdown格式提取图像数据，长度:', imageData?.length);
-            }
-          }
-          
-          // 如果还没有找到，检查是否直接包含data:image格式（不在markdown中）
-          if (!imageData && !imageUrl) {
-            // 找到所有data:image的位置
-            const dataImageIndex = content.indexOf('data:image/');
-            if (dataImageIndex >= 0) {
-              const base64Start = content.indexOf('base64,', dataImageIndex);
-              if (base64Start >= 0) {
-                const actualStart = base64Start + 7; // 'base64,' 的长度是7
-                // base64数据可能延续到字符串末尾，或者遇到空格、引号等
-                // 但base64数据本身可能包含很多字符，所以尝试提取到字符串末尾
-                // 然后在清理时移除无效字符
-                let base64End = content.length;
-                // 查找可能的结束位置（空格、引号、换行等，但不包括base64有效字符）
-                const endMatch = content.substring(actualStart).match(/[^A-Za-z0-9+/=\s]/);
-                if (endMatch) {
-                  base64End = actualStart + endMatch.index;
+              
+              // 如果找到了左括号，尝试找到匹配的右括号
+              if (leftParenIndex >= 0) {
+                let parenCount = 1;
+                for (let i = leftParenIndex + 1; i < content.length; i++) {
+                  if (content[i] === '(') parenCount++;
+                  if (content[i] === ')') {
+                    parenCount--;
+                    if (parenCount === 0) {
+                      base64End = i;
+                      break;
+                    }
+                  }
                 }
-                imageData = content.substring(actualStart, base64End);
-                console.log('✅ 从data:image格式提取图像数据，长度:', imageData?.length);
+              } else {
+                // 如果不在括号内，查找第一个非base64字符（空格、引号、换行等）
+                // 但base64数据可能很长，所以先尝试提取大量数据
+                const remainingContent = content.substring(base64Start);
+                // 查找第一个明显的分隔符（但不是base64有效字符）
+                const separatorMatch = remainingContent.match(/[^A-Za-z0-9+/=\s\n\r]/);
+                if (separatorMatch && separatorMatch.index > 100) {
+                  // 只有在找到明显的分隔符且数据足够长时才使用
+                  base64End = base64Start + separatorMatch.index;
+                }
+              }
+              
+              if (base64Start < base64End) {
+                imageData = content.substring(base64Start, base64End);
+                console.log('✅ 提取图像数据，长度:', imageData?.length, {
+                  start: base64Start,
+                  end: base64End,
+                  preview: imageData.substring(0, 50) + '...'
+                });
               }
             }
           }
