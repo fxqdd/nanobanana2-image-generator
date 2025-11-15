@@ -1386,8 +1386,57 @@ class ModelAPIService {
         if (typeof msg.content === 'string') {
           const content = msg.content.trim();
           
-          // 检查是否是data:image格式
-          if (content.startsWith('data:image')) {
+          // 首先检查是否包含markdown格式的图片: ![alt](data:image/...)
+          // 或者 ![](data:image/...) 或者 [image](data:image/...)
+          // 注意：base64数据可能很长，需要找到data:image之后的所有内容
+          const markdownImageIndex = content.search(/!?\[.*?\]\s*\(data:image\/[^;]+;base64,/i);
+          if (markdownImageIndex >= 0) {
+            // 找到base64数据的开始位置（最后一个逗号之后）
+            const base64Start = content.indexOf('base64,', markdownImageIndex) + 7; // 'base64,' 的长度是7
+            // 找到对应的右括号（从base64开始位置向前查找匹配的左括号）
+            let parenCount = 0;
+            let base64End = content.length;
+            for (let i = markdownImageIndex; i < content.length; i++) {
+              if (content[i] === '(') parenCount++;
+              if (content[i] === ')') {
+                parenCount--;
+                if (parenCount === 0) {
+                  base64End = i;
+                  break;
+                }
+              }
+            }
+            if (base64Start < base64End) {
+              imageData = content.substring(base64Start, base64End);
+              console.log('✅ 从Markdown格式提取图像数据，长度:', imageData?.length);
+            }
+          }
+          
+          // 如果还没有找到，检查是否直接包含data:image格式（不在markdown中）
+          if (!imageData && !imageUrl) {
+            // 找到所有data:image的位置
+            const dataImageIndex = content.indexOf('data:image/');
+            if (dataImageIndex >= 0) {
+              const base64Start = content.indexOf('base64,', dataImageIndex);
+              if (base64Start >= 0) {
+                const actualStart = base64Start + 7; // 'base64,' 的长度是7
+                // base64数据可能延续到字符串末尾，或者遇到空格、引号等
+                // 但base64数据本身可能包含很多字符，所以尝试提取到字符串末尾
+                // 然后在清理时移除无效字符
+                let base64End = content.length;
+                // 查找可能的结束位置（空格、引号、换行等，但不包括base64有效字符）
+                const endMatch = content.substring(actualStart).match(/[^A-Za-z0-9+/=\s]/);
+                if (endMatch) {
+                  base64End = actualStart + endMatch.index;
+                }
+                imageData = content.substring(actualStart, base64End);
+                console.log('✅ 从data:image格式提取图像数据，长度:', imageData?.length);
+              }
+            }
+          }
+          
+          // 检查是否是纯data:image格式（在开头）
+          if (!imageData && !imageUrl && content.startsWith('data:image')) {
             const commaIndex = content.indexOf(',');
             if (commaIndex > 0) {
               imageData = content.substring(commaIndex + 1);
@@ -1395,12 +1444,12 @@ class ModelAPIService {
             }
           } 
           // 检查是否是HTTP URL
-          else if (content.startsWith('http://') || content.startsWith('https://')) {
+          else if (!imageData && !imageUrl && (content.startsWith('http://') || content.startsWith('https://'))) {
             imageUrl = content;
             console.log('✅ 找到图像URL:', imageUrl.substring(0, 100));
           } 
           // 检查是否是JSON格式
-          else if (content.startsWith('{') || content.startsWith('[')) {
+          else if (!imageData && !imageUrl && (content.startsWith('{') || content.startsWith('['))) {
             try {
               const parsed = JSON.parse(content);
               if (parsed.url && (parsed.url.startsWith('http://') || parsed.url.startsWith('https://'))) {
@@ -1419,7 +1468,7 @@ class ModelAPIService {
             }
           }
           // 检查是否是纯base64字符串（长度较长）
-          else if (content.length > 500) {
+          else if (!imageData && !imageUrl && content.length > 500) {
             // 移除所有空白字符后检查
             const cleaned = content.replace(/\s+/g, '');
             // 如果清理后主要是base64字符，且长度足够，可能是base64
@@ -1437,7 +1486,7 @@ class ModelAPIService {
             }
           }
           // 对于较短的字符串，也检查是否包含URL
-          else {
+          else if (!imageData && !imageUrl) {
             const urlMatch = content.match(/https?:\/\/[^\s"']+/);
             if (urlMatch) {
               imageUrl = urlMatch[0];
@@ -1573,14 +1622,36 @@ class ModelAPIService {
             cleanBase64 = cleanBase64.split(',').pop(); // 取最后一部分
           }
           
-          // 移除可能的引号或其他包装字符
-          cleanBase64 = cleanBase64.replace(/^["']|["']$/g, '');
+          // 移除可能的引号、括号或其他包装字符（从markdown格式中提取的可能包含括号）
+          // 只移除开头和结尾的包装字符，不要移除中间的内容
+          cleanBase64 = cleanBase64.replace(/^["'()\[\]]+/, '').replace(/["'()\[\]]+$/, '');
+          
+          // 移除base64数据中不应该存在的字符（保留base64有效字符）
+          // 只保留 A-Z, a-z, 0-9, +, /, = 这些字符
+          // 注意：这可能会移除一些有效字符，但base64数据本身不应该包含无效字符
+          // 如果数据很大，先检查是否主要是base64字符
+          const invalidCharCount = (cleanBase64.match(/[^A-Za-z0-9+/=]/g) || []).length;
+          const totalCharCount = cleanBase64.length;
+          const invalidRatio = invalidCharCount / totalCharCount;
+          
+          if (invalidRatio > 0.01) {
+            // 如果无效字符超过1%，说明可能有问题，记录警告但继续处理
+            console.warn('⚠️ Base64数据中包含较多无效字符:', {
+              invalidCount: invalidCharCount,
+              totalCount: totalCharCount,
+              ratio: (invalidRatio * 100).toFixed(2) + '%'
+            });
+          }
+          
+          // 移除无效字符
+          cleanBase64 = cleanBase64.replace(/[^A-Za-z0-9+/=]/g, '');
           
           console.log('🔧 清理后的base64数据:', {
             originalLength: imageData.length,
             cleanedLength: cleanBase64.length,
             preview: cleanBase64.substring(0, 50) + '...',
-            endsWithEquals: cleanBase64.endsWith('=')
+            endsWithEquals: cleanBase64.endsWith('='),
+            lastChars: cleanBase64.substring(Math.max(0, cleanBase64.length - 10))
           });
           
           // 验证 base64 格式（更宽松的验证，允许常见的base64字符）
