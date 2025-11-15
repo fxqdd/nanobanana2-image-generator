@@ -17,19 +17,31 @@ class ModelAPIService {
     }
     
     // 火山引擎 API 配置
+    const isDevelopment = import.meta.env.DEV;
     this.volcanoApiKey = import.meta.env.VITE_VOLCANO_API_KEY;
-    if (!this.volcanoApiKey) {
+    
+    // 只在开发环境检查配置（生产环境使用代理的环境变量）
+    if (isDevelopment && !this.volcanoApiKey) {
       console.error('❌ 错误: VITE_VOLCANO_API_KEY 环境变量未配置！');
       console.error('请在项目根目录创建 .env.local 文件，并添加:');
       console.error('VITE_VOLCANO_API_KEY=你的API密钥');
       console.error('然后重启开发服务器');
+    } else if (!isDevelopment && !this.volcanoApiKey) {
+      // 生产环境：使用代理的环境变量，不需要前端配置
+      console.log('ℹ️ 生产环境: 使用代理服务器的环境变量 VOLCANO_API_KEY');
     }
+    
     this.volcanoBaseURL = 'https://ark.cn-beijing.volces.com/api/v3';
     this.volcanoModelId = 'doubao-seedream-4-0-250828';
     
     // Doubao-seed-1.6 配置（用于提示词优化）
+    // 开发环境需要前端配置，生产环境使用代理的环境变量
     this.doubaoSeedApiKey = import.meta.env.VITE_DOUBAO_SEED_API_KEY || this.volcanoApiKey || '';
     this.doubaoSeedModelId = import.meta.env.VITE_DOUBAO_SEED_MODEL_ID || 'doubao-seed-1-6-251015';
+    
+    if (isDevelopment && !this.doubaoSeedApiKey) {
+      console.warn('⚠️ 开发环境: VITE_VOLCANO_API_KEY 未配置，提示词优化功能将无法使用');
+    }
     
     // OpenRouter 配置（用于 GPT-5 系列，保留原有配置）
     this.openRouterBase = 'https://openrouter.ai/api/v1';
