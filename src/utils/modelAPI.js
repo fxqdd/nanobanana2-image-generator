@@ -2254,18 +2254,13 @@ class ModelAPIService {
         }
       } else {
         // 生产环境：使用 Cloudflare Pages Function 代理
-        // 代理函数会使用环境变量 VOLCANO_API_KEY，不需要前端传递
-        // 如果前端有 API Key 也可以传递，代理会优先使用请求头中的
+        // 代理函数会使用环境变量 VOLCANO_API_KEY
+        // 不发送请求头中的API Key，强制使用环境变量（避免前端Key错误导致的问题）
         apiUrl = '/api/volcano/chat/completions';
         requestHeaders = {
           'Content-Type': 'application/json'
+          // 不传递 x-volcano-api-key，让代理函数使用环境变量 VOLCANO_API_KEY
         };
-        
-        // 如果前端有 API Key，也可以传递（代理会优先使用）
-        // 如果没有，代理会使用环境变量 VOLCANO_API_KEY
-        if (this.doubaoSeedApiKey) {
-          requestHeaders['x-volcano-api-key'] = this.doubaoSeedApiKey;
-        }
       }
       
       // 构建请求体（符合火山引擎API格式）

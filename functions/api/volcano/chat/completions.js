@@ -44,9 +44,30 @@ export async function onRequest(context) {
     body = {};
   }
 
-  // 从请求头或环境变量中获取 API Key（优先使用请求头中的，但必须是有效的）
+  // 从请求头或环境变量中获取 API Key
+  // 生产环境（Cloudflare Pages）优先使用环境变量（更安全可靠）
+  // 开发环境可以使用请求头中的Key（方便本地开发）
   const headerApiKey = context.request.headers.get('x-volcano-api-key');
-  const requestApiKey = (headerApiKey && headerApiKey.trim()) ? headerApiKey : apiKey;
+  
+  // 判断是否为生产环境：Cloudflare Pages Functions 总是生产环境
+  // 如果环境变量存在且有效，优先使用环境变量（更安全）
+  // 这样可以避免前端传递错误的API Key
+  let requestApiKey;
+  
+  // 优先使用环境变量（如果存在且有效）
+  // 这样可以确保生产环境使用正确的API Key，不受前端影响
+  if (apiKey && apiKey.trim()) {
+    requestApiKey = apiKey;
+    if (headerApiKey && headerApiKey.trim()) {
+      console.log('ℹ️ 使用环境变量中的API Key（忽略请求头中的Key，确保使用正确的Key）');
+    }
+  } else if (headerApiKey && headerApiKey.trim()) {
+    // 如果环境变量不存在，才使用请求头中的Key（开发环境场景）
+    requestApiKey = headerApiKey;
+    console.warn('⚠️ 环境变量中未找到API Key，使用请求头中的Key');
+  } else {
+    requestApiKey = null;
+  }
   
   if (!requestApiKey) {
     return new Response(JSON.stringify({ 
@@ -68,7 +89,9 @@ export async function onRequest(context) {
     method: context.request.method,
     targetUrl,
     hasApiKey: !!requestApiKey,
-    apiKeySource: headerApiKey && headerApiKey.trim() ? 'request-header' : 'environment-variable',
+    apiKeySource: (apiKey && apiKey.trim()) ? 'environment-variable' : (headerApiKey && headerApiKey.trim() ? 'request-header' : 'none'),
+    hasEnvKey: !!apiKey,
+    hasHeaderKey: !!headerApiKey,
     model: body.model
   });
 
