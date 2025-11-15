@@ -58,10 +58,12 @@ export async function onRequest(context) {
   });
 
   try {
+    // 火山引擎 API 支持两种认证方式，同时使用以确保兼容性
     const resp = await fetch(targetUrl, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${requestApiKey}`,
+        'X-Volcano-API-Key': requestApiKey,  // 火山引擎专用认证头
         'Content-Type': 'application/json',
         'Accept': 'application/json'
       },

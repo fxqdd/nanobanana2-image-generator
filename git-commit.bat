@@ -36,8 +36,9 @@ echo.
 set /p commitType="Enter choice (1/2/3): "
 
 REM Clean input - remove spaces and newlines
-set "commitType=%commitType: =%"
-set "commitType=%commitType:~0,1%"
+REM Use delayed expansion since enabledelayedexpansion is active
+set "commitType=!commitType: =!"
+set "commitType=!commitType:~0,1!"
 
 echo.
 echo [INFO] Adding modified files (excluding .env.local and dist/)...
@@ -49,12 +50,12 @@ git reset HEAD dist/ 2>nul
 REM Add files based on commit type
 if "!commitType!"=="1" (
     echo [INFO] Adding security fix files...
-    git add src/utils/modelAPI.js
-    git add .gitignore
-    git add SECURITY_FIX.md
-    git add COMMIT_GUIDE.md
-    git add git-commit.bat
-    git add git-commit.sh
+git add src/utils/modelAPI.js
+git add .gitignore
+git add SECURITY_FIX.md
+git add COMMIT_GUIDE.md
+git add git-commit.bat
+git add git-commit.sh
     set "commitMsg=Security fix: Remove hardcoded API keys and fix modelAPI.js errors - Remove hardcoded Volcano API key from modelAPI.js - Fix syntax errors in modelAPI.js (remove duplicate methods) - Update .gitignore to exclude all .env files - Add SECURITY_FIX.md with security guidelines"
 ) else if "!commitType!"=="2" (
     echo [INFO] Adding multilingual support files...
@@ -99,7 +100,7 @@ echo !commitMsg!
 echo.
 set /p confirm="Confirm commit? (y/n): "
 
-if /i "%confirm%"=="y" (
+if /i "!confirm!"=="y" (
     REM Create a temporary file for commit message to handle special characters
     set "tempFile=%temp%\git_commit_msg_%random%.txt"
     echo !commitMsg! > "%tempFile%"
@@ -110,7 +111,7 @@ if /i "%confirm%"=="y" (
     echo [SUCCESS] Commit successful!
     echo.
     set /p push="Push to remote repository? (y/n): "
-    if /i "%push%"=="y" (
+    if /i "!push!"=="y" (
         git push
         echo [SUCCESS] Push successful!
     ) else (

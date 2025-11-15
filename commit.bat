@@ -1,107 +1,132 @@
 @echo off
 setlocal enabledelayedexpansion
-chcp 65001 >nul
+chcp 65001 >nul 2>&1
 REM ========================================
-REM 简化的 Git 提交脚本
-REM 自动检测并提交相关文件，不会删除任何文件
+REM Git Commit Helper Script
 REM ========================================
 
 echo ========================================
-echo Git 提交助手
+echo Git Commit Helper
 echo ========================================
 echo.
 
-REM 检查 Git 状态
-echo [1/5] 检查 Git 状态...
+REM Check if in Git repository
+git rev-parse --git-dir >nul 2>&1
+if !errorlevel! neq 0 (
+    echo [ERROR] Not a Git repository!
+    echo Please run this script in a Git repository root directory.
+    pause
+    exit /b 1
+)
+
+REM Check Git status
+echo [1/5] Checking Git status...
 git status --short
 echo.
 
-REM 清除暂存区，重新开始
-echo [2/5] 清理暂存区...
-git reset HEAD . 2>nul
+REM Clear staging area
+echo [2/5] Clearing staging area...
+git reset HEAD . >nul 2>&1
 echo.
 
-REM 自动添加相关文件（智能检测）
-echo [3/5] 添加相关文件...
+REM Add related files
+echo [3/5] Adding related files...
 
-REM 1. 代码文件（始终添加修改的）
-git add src/ 2>nul
-git add functions/ 2>nul
-
-REM 2. 配置文件
-if exist "package.json" git add package.json 2>nul
-if exist "package-lock.json" git add package-lock.json 2>nul
-if exist "vite.config.js" git add vite.config.js 2>nul
-if exist "index.html" git add index.html 2>nul
-if exist ".gitignore" git add .gitignore 2>nul
-
-REM 3. 脚本文件
-if exist "*.bat" (
-    for %%f in (*.bat) do (
-        if exist "%%f" git add "%%f" 2>nul
-    )
+REM 1. Source code files
+if exist src\ (
+    git add src\ >nul 2>&1
+)
+if exist functions\ (
+    git add functions\ >nul 2>&1
 )
 
-REM 4. 文档文件（只添加存在的）
-if exist "*.md" (
-    for %%f in (*.md) do (
-        if exist "%%f" git add "%%f" 2>nul
-    )
+REM 2. Configuration files
+if exist package.json (
+    git add package.json >nul 2>&1
+)
+if exist package-lock.json (
+    git add package-lock.json >nul 2>&1
+)
+if exist vite.config.js (
+    git add vite.config.js >nul 2>&1
+)
+if exist index.html (
+    git add index.html >nul 2>&1
+)
+if exist .gitignore (
+    git add .gitignore >nul 2>&1
 )
 
-REM 5. 排除敏感文件和目录
-echo [4/5] 排除敏感文件...
-git reset HEAD .env.local 2>nul
-git reset HEAD dist/ 2>nul
-git reset HEAD node_modules/ 2>nul
-
-REM 检查是否有文件被错误标记为删除，如果有则恢复
-echo [5/5] 检查并修复错误标记...
-for /f "tokens=2" %%f in ('git status --porcelain ^| findstr "^D"') do (
+REM 3. Batch files
+for %%f in (*.bat) do (
     if exist "%%f" (
-        echo [修复] 恢复文件: %%f
-        git restore --staged "%%f" 2>nul
-        git add "%%f" 2>nul
+        git add "%%f" >nul 2>&1
+    )
+)
+
+REM 4. Markdown files
+for %%f in (*.md) do (
+    if exist "%%f" (
+        git add "%%f" >nul 2>&1
+    )
+)
+
+REM 5. Exclude sensitive files
+echo [4/5] Excluding sensitive files...
+git reset HEAD .env.local >nul 2>&1
+git reset HEAD dist\ >nul 2>&1
+git reset HEAD node_modules\ >nul 2>&1
+
+REM Check for incorrectly marked deleted files
+echo [5/5] Checking for incorrectly marked files...
+for /f "usebackq tokens=2* delims= " %%a in (`git status --porcelain 2^>nul ^| findstr /b "^D" 2^>nul`) do (
+    set "filePath=%%a"
+    if defined filePath (
+        if exist "!filePath!" (
+            echo [FIX] Restoring file: !filePath!
+            git restore --staged "!filePath!" >nul 2>&1
+            git add "!filePath!" >nul 2>&1
+        )
     )
 )
 
 echo.
 echo ========================================
-echo 暂存的文件列表：
+echo Staged files:
 echo ========================================
 git status --short
 echo.
 
-REM 检查是否有文件要提交
-git diff --cached --quiet
-if %errorlevel% equ 0 (
-    echo [警告] 没有文件需要提交！
-    echo 请检查是否有文件被修改。
+REM Check if there are files to commit
+git diff --cached --quiet >nul 2>&1
+if !errorlevel! equ 0 (
+    echo [WARNING] No files to commit!
+    echo Please check if there are any modified files.
     pause
     exit /b 0
 )
 
 echo ========================================
-echo 准备提交
+echo Ready to commit
 echo ========================================
 echo.
 
-REM 自动生成提交信息
+REM Auto-generate commit message
 set "commitMsg="
 set "hasModelAPI=0"
 set "hasLocales=0"
 set "hasNewAPI=0"
 
-git diff --cached --name-only | findstr /i "modelAPI.js" >nul
+git diff --cached --name-only | findstr /i "modelAPI.js" >nul 2>&1
 if !errorlevel! equ 0 set "hasModelAPI=1"
 
-git diff --cached --name-only | findstr /i "locales" >nul
+git diff --cached --name-only | findstr /i "locales" >nul 2>&1
 if !errorlevel! equ 0 set "hasLocales=1"
 
-git diff --cached --name-only | findstr /i "new-api-provider" >nul
+git diff --cached --name-only | findstr /i "new-api-provider" >nul 2>&1
 if !errorlevel! equ 0 set "hasNewAPI=1"
 
-REM 根据文件类型生成提交信息
+REM Generate commit message based on file types
 if !hasNewAPI! equ 1 (
     set "commitMsg=feat: Add new API provider support for gemini-2.5-flash-image model"
 ) else if !hasLocales! equ 1 (
@@ -112,13 +137,13 @@ if !hasNewAPI! equ 1 (
     set "commitMsg=chore: Update project files"
 )
 
-echo 自动生成的提交信息：
+echo Auto-generated commit message:
 echo !commitMsg!
 echo.
-set /p useAuto="使用此提交信息? (y/n，输入 n 可自定义): "
+set /p useAuto="Use this commit message? (y/n, enter n to customize): "
 
 if /i not "!useAuto!"=="y" (
-    set /p commitMsg="请输入提交信息: "
+    set /p commitMsg="Enter commit message: "
     if "!commitMsg!"=="" (
         set "commitMsg=chore: Update project files"
     )
@@ -126,43 +151,43 @@ if /i not "!useAuto!"=="y" (
 
 echo.
 echo ========================================
-echo 确认提交
+echo Confirm commit
 echo ========================================
-echo 提交信息: !commitMsg!
+echo Commit message: !commitMsg!
 echo.
-set /p confirm="确认提交? (y/n): "
+set /p confirm="Confirm commit? (y/n): "
 
 if /i not "!confirm!"=="y" (
-    echo [取消] 提交已取消
+    echo [CANCELLED] Commit cancelled
     pause
     exit /b 0
 )
 
-REM 使用临时文件提交，避免打开编辑器
+REM Use temporary file for commit message
 set "tempFile=%temp%\git_commit_msg_%random%.txt"
 echo !commitMsg! > "%tempFile%"
 git commit -F "%tempFile%"
-del "%tempFile%" 2>nul
+set "commitResult=!errorlevel!"
+del "%tempFile%" >nul 2>&1
 
-if %errorlevel% equ 0 (
+if !commitResult! equ 0 (
     echo.
-    echo [成功] 提交完成！
+    echo [SUCCESS] Commit completed!
     echo.
-    set /p push="推送到远程仓库? (y/n): "
+    set /p push="Push to remote repository? (y/n): "
     if /i "!push!"=="y" (
         git push
         if !errorlevel! equ 0 (
-            echo [成功] 推送完成！Cloudflare 将自动部署。
+            echo [SUCCESS] Push completed! Cloudflare will auto-deploy.
         ) else (
-            echo [错误] 推送失败，请检查网络连接和权限。
+            echo [ERROR] Push failed, please check network connection and permissions.
         )
     ) else (
-        echo [跳过] 推送已跳过，您可以稍后手动运行: git push
+        echo [SKIPPED] Push skipped, you can run manually later: git push
     )
 ) else (
-    echo [错误] 提交失败，请检查错误信息。
+    echo [ERROR] Commit failed, please check error messages.
 )
 
 echo.
 pause
-

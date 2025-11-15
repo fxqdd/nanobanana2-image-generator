@@ -1366,6 +1366,19 @@ class ModelAPIService {
       // 解析响应
       if (response.data?.choices?.[0]?.message) {
         const msg = response.data.choices[0].message;
+        
+        // 添加详细的调试日志
+        console.log('🔍 解析API响应消息:', {
+          hasContent: !!msg.content,
+          contentType: typeof msg.content,
+          isArray: Array.isArray(msg.content),
+          contentPreview: typeof msg.content === 'string' 
+            ? msg.content.substring(0, 200) 
+            : Array.isArray(msg.content)
+            ? `Array[${msg.content.length}]`
+            : JSON.stringify(msg.content).substring(0, 200)
+        });
+        
         let imageData = null;
         let imageUrl = null;
         
@@ -1374,24 +1387,79 @@ class ModelAPIService {
           // 如果是字符串，可能是 base64 图像数据或 URL
           if (msg.content.startsWith('data:image')) {
             imageData = msg.content.split(',')[1];
-          } else if (msg.content.startsWith('http')) {
+            console.log('✅ 从data:image URL提取图像数据，长度:', imageData?.length);
+          } else if (msg.content.startsWith('http://') || msg.content.startsWith('https://')) {
             imageUrl = msg.content;
+            console.log('✅ 找到图像URL:', imageUrl.substring(0, 100));
           } else if (msg.content.length > 1000) {
             // 可能是 base64 字符串（没有前缀）
             imageData = msg.content;
+            console.log('✅ 从长字符串提取图像数据，长度:', imageData.length);
+          } else {
+            // 尝试解析JSON格式的URL
+            try {
+              const parsed = JSON.parse(msg.content);
+              if (parsed.url && (parsed.url.startsWith('http://') || parsed.url.startsWith('https://'))) {
+                imageUrl = parsed.url;
+                console.log('✅ 从JSON解析图像URL:', imageUrl.substring(0, 100));
+              } else if (parsed.image_url) {
+                imageUrl = parsed.image_url;
+                console.log('✅ 从JSON解析image_url:', imageUrl.substring(0, 100));
+              }
+            } catch (e) {
+              // 不是JSON，继续其他检查
+            }
           }
         } else if (Array.isArray(msg.content)) {
           // 如果是数组，查找图像部分
-          for (const part of msg.content) {
+          console.log('🔍 检查内容数组，长度:', msg.content.length);
+          for (let i = 0; i < msg.content.length; i++) {
+            const part = msg.content[i];
+            console.log(`🔍 检查内容部分[${i}]:`, {
+              type: part?.type,
+              hasImageUrl: !!part?.image_url,
+              hasText: !!part?.text,
+              preview: JSON.stringify(part).substring(0, 150)
+            });
+            
             if (part.type === 'image_url' && part.image_url?.url) {
               const url = part.image_url.url;
               if (url.startsWith('data:image')) {
                 imageData = url.split(',')[1];
-              } else if (url.startsWith('http')) {
+                console.log('✅ 从数组中的data:image提取图像数据，长度:', imageData?.length);
+              } else if (url.startsWith('http://') || url.startsWith('https://')) {
                 imageUrl = url;
+                console.log('✅ 从数组中找到图像URL:', imageUrl.substring(0, 100));
               }
               break;
+            } else if (part.type === 'text' && part.text) {
+              // 检查文本中是否包含URL或base64
+              const text = part.text;
+              if (text.startsWith('http://') || text.startsWith('https://')) {
+                imageUrl = text.trim();
+                console.log('✅ 从文本部分提取图像URL:', imageUrl.substring(0, 100));
+              } else if (text.startsWith('data:image')) {
+                imageData = text.split(',')[1];
+                console.log('✅ 从文本部分提取图像数据，长度:', imageData?.length);
+              } else if (text.length > 1000 && /^[A-Za-z0-9+/=\s]+$/.test(text.trim())) {
+                // 可能是纯base64字符串
+                imageData = text.trim();
+                console.log('✅ 从文本部分提取base64数据，长度:', imageData.length);
+              }
             }
+          }
+        } else if (msg.content && typeof msg.content === 'object') {
+          // 如果是对象，尝试查找图像相关字段
+          console.log('🔍 内容为对象，检查字段:', Object.keys(msg.content));
+          if (msg.content.url) {
+            imageUrl = msg.content.url;
+            console.log('✅ 从对象提取url:', imageUrl.substring(0, 100));
+          } else if (msg.content.image_url) {
+            imageUrl = msg.content.image_url;
+            console.log('✅ 从对象提取image_url:', imageUrl.substring(0, 100));
+          } else if (msg.content.data) {
+            imageData = msg.content.data;
+            console.log('✅ 从对象提取data，长度:', imageData?.length);
           }
         }
         
@@ -1421,32 +1489,67 @@ class ModelAPIService {
           }
           
           // 验证 base64 格式
-          if (!/^[A-Za-z0-9+/=]+$/.test(cleanBase64)) {
-            throw new Error('API返回的图像数据格式无效');
+          const base64Pattern = /^[A-Za-z0-9+/=]+$/;
+          if (!base64Pattern.test(cleanBase64)) {
+            // 添加详细的错误信息
+            const preview = cleanBase64.substring(0, 100);
+            const invalidChars = cleanBase64.match(/[^A-Za-z0-9+/=]/g);
+            console.error('❌ Base64验证失败:', {
+              length: cleanBase64.length,
+              preview: preview,
+              invalidChars: invalidChars ? [...new Set(invalidChars)].slice(0, 10) : null,
+              firstInvalidChar: invalidChars ? invalidChars[0] : null,
+              charCode: invalidChars ? invalidChars[0].charCodeAt(0) : null
+            });
+            throw new Error(`API返回的图像数据格式无效: 包含无效字符 (长度: ${cleanBase64.length})`);
           }
           
-          const imageBlob = this.base64ToBlob(cleanBase64, 'image/png');
-          const blobUrl = URL.createObjectURL(imageBlob);
-          const generationTime = (Date.now() - startTime) / 1000;
-          
-          return {
-            success: true,
-            data: {
-              imageUrl: blobUrl,
-              model: this.newApiProviderModel,
-              generationTime: generationTime.toFixed(2),
-              parameters: {
-                prompt,
-                referenceImagesCount: referenceImages.length,
-                options
+          try {
+            const imageBlob = this.base64ToBlob(cleanBase64, 'image/png');
+            const blobUrl = URL.createObjectURL(imageBlob);
+            const generationTime = (Date.now() - startTime) / 1000;
+            
+            console.log('✅ 成功创建Blob URL，大小:', imageBlob.size, 'bytes');
+            
+            return {
+              success: true,
+              data: {
+                imageUrl: blobUrl,
+                model: this.newApiProviderModel,
+                generationTime: generationTime.toFixed(2),
+                parameters: {
+                  prompt,
+                  referenceImagesCount: referenceImages.length,
+                  options
+                }
               }
-            }
-          };
+            };
+          } catch (blobError) {
+            console.error('❌ 创建Blob失败:', blobError);
+            throw new Error(`API返回的图像数据格式无效: 无法创建图像 (${blobError.message})`);
+          }
         }
+        
+        // 如果都没有找到，打印完整的响应结构用于调试
+        console.error('❌ 未找到图像数据，完整响应结构:', JSON.stringify({
+          choices: response.data?.choices?.map(c => ({
+            message: {
+              role: c.message?.role,
+              contentType: typeof c.message?.content,
+              contentIsArray: Array.isArray(c.message?.content),
+              contentPreview: typeof c.message?.content === 'string'
+                ? c.message.content.substring(0, 200)
+                : Array.isArray(c.message?.content)
+                ? c.message.content.map(p => ({ type: p?.type, hasUrl: !!p?.image_url?.url }))
+                : JSON.stringify(c.message?.content).substring(0, 200)
+            }
+          }))
+        }, null, 2));
         
         throw new Error('API响应中未找到图像数据');
       }
       
+      console.error('❌ API响应格式不正确，完整响应:', JSON.stringify(response.data, null, 2));
       throw new Error('API响应格式不正确');
     } catch (error) {
       console.error('❌ 新API提供商调用失败:', error);

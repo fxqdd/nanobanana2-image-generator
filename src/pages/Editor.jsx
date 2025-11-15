@@ -59,6 +59,46 @@ function Editor() {
     setReferenceImages(newImages)
   }
 
+  // 错误消息翻译函数
+  const translateError = (errorMessage) => {
+    if (!errorMessage) return errorMessage;
+    
+    // 新 API 提供商相关错误
+    if (errorMessage.includes('新API提供商认证失败') || errorMessage.includes('New API provider authentication failed')) {
+      return t('editor.newApiProviderAuthFailed');
+    }
+    if (errorMessage.includes('新API提供商无权限') || errorMessage.includes('New API provider has no permission')) {
+      return t('editor.newApiProviderNoPermission');
+    }
+    if (errorMessage.includes('新API提供商配额已用尽') || errorMessage.includes('New API provider quota exhausted')) {
+      return t('editor.newApiProviderQuotaExhausted');
+    }
+    if (errorMessage.includes('新API提供商服务器错误') || errorMessage.includes('New API provider server error')) {
+      return t('editor.newApiProviderServerError');
+    }
+    if (errorMessage.includes('新API提供商请求超时') || errorMessage.includes('New API provider request timeout')) {
+      return t('editor.newApiProviderTimeout');
+    }
+    if (errorMessage.includes('新API提供商调用失败') || errorMessage.includes('New API provider call failed')) {
+      return t('editor.newApiProviderFailed');
+    }
+    if (errorMessage.includes('新API提供商错误') || errorMessage.includes('New API provider error')) {
+      return t('editor.newApiProviderError');
+    }
+    if (errorMessage.includes('API响应格式不正确') || errorMessage.includes('API response format is incorrect')) {
+      return t('editor.newApiProviderInvalidResponse');
+    }
+    if (errorMessage.includes('API响应中未找到图像数据') || errorMessage.includes('No image data found in API response')) {
+      return t('editor.newApiProviderNoImageData');
+    }
+    if (errorMessage.includes('API返回的图像数据格式无效') || errorMessage.includes('Invalid image data format returned by API')) {
+      return t('editor.newApiProviderInvalidImageFormat');
+    }
+    
+    // 如果无法匹配，返回原始错误消息
+    return errorMessage;
+  };
+
   const handleGenerate = async () => {
     if (!prompt && referenceImages.length === 0) return;
     
@@ -180,7 +220,8 @@ function Editor() {
       }
     } catch (err) {
       console.error('生成图像失败:', err);
-      setError(t('editor.error') + ': ' + (err.message || t('common.loading')));
+      const errorMsg = err.message || t('common.loading');
+      setError(t('editor.error') + ': ' + translateError(errorMsg));
     } finally {
       setIsGenerating(false);
     }
@@ -513,7 +554,8 @@ function Editor() {
                     }
                   } catch (err) {
                     console.error('提示词优化失败:', err);
-                    setOptimizationError(t('editor.optimizeError'));
+                    const errorMsg = err.message || t('editor.optimizeError');
+                    setOptimizationError(translateError(errorMsg));
                   } finally {
                     setIsOptimizing(false);
                   }
