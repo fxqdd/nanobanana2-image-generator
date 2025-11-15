@@ -2268,27 +2268,10 @@ class ModelAPIService {
       });
 
       // 发送请求
-      let response;
-      try {
-        response = await axios.post(apiUrl, requestBody, {
-          headers: requestHeaders,
-          timeout: 60000
-        });
-      } catch (apiError) {
-        // 如果API调用失败，使用本地优化作为降级方案
-        console.error('Doubao-seed-1.6 API调用失败:', apiError);
-        console.log('💡 使用本地优化方案作为降级...');
-        const localResult = this.localOptimizePrompt(userPrompt, options);
-        localResult.data.parameters = localResult.data.parameters || {};
-        localResult.data.parameters.isLocalOptimization = true;
-        localResult.data.apiError = {
-          message: apiError.message,
-          status: apiError.response?.status,
-          code: apiError.code
-        };
-        localResult.data.model = '本地智能优化引擎';
-        return localResult;
-      }
+      const response = await axios.post(apiUrl, requestBody, {
+        headers: requestHeaders,
+        timeout: 60000
+      });
 
       // 解析响应
       const generationTime = (Date.now() - startTime) / 1000;
@@ -2397,28 +2380,45 @@ class ModelAPIService {
         }
       };
     } catch (error) {
-      console.error('Doubao-seed-1.6 API调用失败:', {
-        error: error.message || error,
-        userPrompt: userPrompt,
-        apiKey: this.doubaoSeedApiKey ? '已配置' : '未配置'
-      });
+      console.error('❌ Doubao-seed-1.6 API调用失败:', error);
       
-      console.log('使用本地智能优化引擎...');
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
-      const localResult = this.localOptimizePrompt(userPrompt, options);
-      if (!localResult.data.parameters) {
-        localResult.data.parameters = {};
+      // 详细的错误信息
+      let errorMessage = '提示词优化失败';
+      if (error.response) {
+        const status = error.response.status;
+        const errorData = error.response.data;
+        const apiErrorMessage = errorData?.error?.message || JSON.stringify(errorData);
+        
+        console.error('❌ API错误详情:', {
+          status: status,
+          errorData: errorData,
+          url: error.config?.url,
+          model: this.doubaoSeedModelId,
+          hasApiKey: !!this.doubaoSeedApiKey,
+          apiKeyPrefix: this.doubaoSeedApiKey?.substring(0, 8) + '...'
+        });
+        
+        if (status === 401) {
+          errorMessage = `API认证失败: ${apiErrorMessage}。请检查火山引擎API密钥是否正确`;
+        } else if (status === 403) {
+          errorMessage = `API无权限访问此资源。可能原因：1) API密钥无效或过期 2) API密钥没有访问模型"${this.doubaoSeedModelId}"的权限 3) 模型名称不正确。请检查API密钥和模型配置。`;
+        } else if (status === 429) {
+          errorMessage = `API配额已用尽，请稍后重试`;
+        } else if (status >= 500) {
+          errorMessage = `API服务器错误 (${status})，请稍后重试`;
+        } else {
+          errorMessage = `API错误 (${status}): ${apiErrorMessage}`;
+        }
+      } else if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
+        errorMessage = `API请求超时，请检查网络连接后重试`;
+      } else if (error.message?.includes('Network Error') || error.message?.includes('ERR_')) {
+        errorMessage = `网络连接失败，请检查网络连接`;
+      } else if (error.message) {
+        errorMessage = error.message;
       }
-      localResult.data.parameters.isLocalOptimization = true;
-      localResult.data.apiError = {
-        message: error.message,
-        status: error.response?.status,
-        code: error.code
-      };
-      localResult.data.model = '本地智能优化引擎';
       
-      return localResult;
+      // 直接抛出错误，不使用本地降级方案
+      throw new Error(errorMessage);
     }
   }
 
