@@ -58,14 +58,14 @@ if exist .gitignore (
 )
 
 REM 3. Batch files
-for %%f in (*.bat) do (
+    for %%f in (*.bat) do (
     if exist "%%f" (
         git add "%%f" >nul 2>&1
     )
 )
 
 REM 4. Markdown files
-for %%f in (*.md) do (
+    for %%f in (*.md) do (
     if exist "%%f" (
         git add "%%f" >nul 2>&1
     )

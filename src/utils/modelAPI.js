@@ -2230,19 +2230,30 @@ class ModelAPIService {
       
       if (isDevelopment) {
         // 开发环境：使用 Vite 代理（避免 CORS 问题）
+        // 需要在前端传递 API Key，因为 Vite 代理需要从请求头获取
         apiUrl = '/api/volcano/chat/completions';
         requestHeaders = {
           'Content-Type': 'application/json',
           'x-volcano-api-key': this.doubaoSeedApiKey  // 通过自定义头传递 API Key
         };
+        
+        if (!this.doubaoSeedApiKey) {
+          throw new Error('开发环境需要配置 VITE_VOLCANO_API_KEY 环境变量');
+        }
       } else {
         // 生产环境：使用 Cloudflare Pages Function 代理
-        // 代理路径：/api/volcano/chat/completions
+        // 代理函数会使用环境变量 VOLCANO_API_KEY，不需要前端传递
+        // 如果前端有 API Key 也可以传递，代理会优先使用请求头中的
         apiUrl = '/api/volcano/chat/completions';
         requestHeaders = {
-          'Content-Type': 'application/json',
-          'x-volcano-api-key': this.doubaoSeedApiKey  // 通过自定义头传递 API Key
+          'Content-Type': 'application/json'
         };
+        
+        // 如果前端有 API Key，也可以传递（代理会优先使用）
+        // 如果没有，代理会使用环境变量 VOLCANO_API_KEY
+        if (this.doubaoSeedApiKey) {
+          requestHeaders['x-volcano-api-key'] = this.doubaoSeedApiKey;
+        }
       }
       
       // 构建请求体（符合火山引擎API格式）
@@ -2268,6 +2279,10 @@ class ModelAPIService {
         maxTokens: requestBody.max_completion_tokens,
         hasApiKey: !!this.doubaoSeedApiKey,
         apiKeyPrefix: this.doubaoSeedApiKey?.substring(0, 8) + '...',
+        apiKeyInHeader: !!(requestHeaders['x-volcano-api-key']),
+        apiKeySource: isDevelopment 
+          ? (this.doubaoSeedApiKey ? 'frontend-env' : 'missing')
+          : (this.doubaoSeedApiKey ? 'frontend-env' : 'proxy-env-variable'),
         timeout: 120000
       });
 

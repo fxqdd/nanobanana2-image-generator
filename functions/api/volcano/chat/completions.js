@@ -44,8 +44,22 @@ export async function onRequest(context) {
     body = {};
   }
 
-  // 从请求头或环境变量中获取 API Key（优先使用请求头中的）
-  const requestApiKey = context.request.headers.get('x-volcano-api-key') || apiKey;
+  // 从请求头或环境变量中获取 API Key（优先使用请求头中的，但必须是有效的）
+  const headerApiKey = context.request.headers.get('x-volcano-api-key');
+  const requestApiKey = (headerApiKey && headerApiKey.trim()) ? headerApiKey : apiKey;
+  
+  if (!requestApiKey) {
+    return new Response(JSON.stringify({ 
+      error: 'Missing API Key',
+      message: 'API Key not found in request header or environment variables'
+    }), {
+      status: 500,
+      headers: { 
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
+      }
+    });
+  }
   
   // 目标 URL：火山引擎 API
   const targetUrl = 'https://ark.cn-beijing.volces.com/api/v3/chat/completions';
@@ -54,6 +68,7 @@ export async function onRequest(context) {
     method: context.request.method,
     targetUrl,
     hasApiKey: !!requestApiKey,
+    apiKeySource: headerApiKey && headerApiKey.trim() ? 'request-header' : 'environment-variable',
     model: body.model
   });
 
