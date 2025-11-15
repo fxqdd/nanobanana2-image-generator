@@ -19,12 +19,6 @@ function Editor() {
   const [historySearchTerm, setHistorySearchTerm] = useState('')
   const [historyFilterModel, setHistoryFilterModel] = useState('all')
   
-  // 提示词优化相关状态
-  const [optimizedPrompt, setOptimizedPrompt] = useState('')
-  const [isOptimizing, setIsOptimizing] = useState(false)
-  const [optimizationResult, setOptimizationResult] = useState(null)
-  const [optimizationError, setOptimizationError] = useState(null)
-  
   const seoData = t('seo.editor')
 
   const computeCost = () => {
@@ -108,20 +102,9 @@ function Editor() {
     try {
       const generationTime = new Date().toLocaleString();
       
-      // 如果当前有优化后的提示词，优先使用优化后的提示词
-      // 注意：只有在用户主动优化过提示词时才使用，不进行自动优化
-      let finalPrompt = prompt;
-      if (optimizedPrompt && optimizedPrompt.trim() && optimizedPrompt !== prompt) {
-        console.log('✨ 使用优化后的提示词进行图像生成');
-        console.log('原始提示词:', prompt);
-        console.log('优化提示词:', optimizedPrompt);
-        finalPrompt = optimizedPrompt;
-      }
-      // 移除了自动优化逻辑，避免在选择非 Nano Banana 模型时调用 Gemini API
-      
       const result = await modelAPI.generateImage(
         model,
-        finalPrompt, // 使用优化后的提示词
+        prompt,
         referenceImages,
         {
           style: 'realistic',
@@ -134,8 +117,7 @@ function Editor() {
         
         const newHistoryItem = {
           model,
-          prompt: finalPrompt, // 保存实际使用的提示词
-          originalPrompt: prompt, // 保存原始提示词
+          prompt: prompt,
           referenceImagesCount: referenceImages.length,
           time: Date.now(), // 保存时间戳
           imageUrl: result.data.imageUrl,
@@ -209,7 +191,7 @@ function Editor() {
         try {
           await createGenerationAndCharge({
             model,
-            prompt: finalPrompt,
+            prompt: prompt,
             resultUrl: result.data.imageUrl,
             durationMs: result.data.generationTime || 0,
             cost
@@ -270,9 +252,7 @@ function Editor() {
 
   const useHistoryItem = (item) => {
     // 使用历史记录项：填充提示词和模型
-    if (item.originalPrompt) {
-      setPrompt(item.originalPrompt);
-    } else if (item.prompt) {
+    if (item.prompt) {
       setPrompt(item.prompt);
     }
     if (item.model) {
@@ -318,8 +298,7 @@ function Editor() {
   // 过滤历史记录
   const filteredHistory = history.filter(item => {
     const matchesSearch = !historySearchTerm || 
-      (item.prompt && item.prompt.toLowerCase().includes(historySearchTerm.toLowerCase())) ||
-      (item.originalPrompt && item.originalPrompt.toLowerCase().includes(historySearchTerm.toLowerCase()));
+      (item.prompt && item.prompt.toLowerCase().includes(historySearchTerm.toLowerCase()));
     const matchesModel = historyFilterModel === 'all' || 
       (item.model && item.model.toLowerCase() === historyFilterModel.toLowerCase());
     return matchesSearch && matchesModel;
@@ -360,14 +339,6 @@ function Editor() {
             </li>
             <li>
               <button 
-                className={`sidebar-link ${activeTab === 'promptOptimize' ? 'active' : ''}`}
-                onClick={() => setActiveTab('promptOptimize')}
-              >
-                ✨ {t('editor.promptOptimize')}
-              </button>
-            </li>
-            <li>
-              <button 
                 className={`sidebar-link ${showHistory ? 'active' : ''}`}
                 onClick={() => setShowHistory(!showHistory)}
               >
@@ -391,14 +362,10 @@ function Editor() {
       {/* 主要编辑区域 */}
       <main className="editor-main">
         <h1 className="editor-title">
-          {activeTab === 'imageEdit' ? t('editor.title') : 
-           activeTab === 'textToImage' ? t('editor.textToImageTitle') : 
-           t('editor.optimizeTitle')}
+          {activeTab === 'imageEdit' ? t('editor.title') : t('editor.textToImageTitle')}
         </h1>
         <p className="editor-subtitle">
-          {activeTab === 'imageEdit' ? t('editor.subtitle') : 
-           activeTab === 'textToImage' ? t('editor.textToImageSubtitle') : 
-           t('editor.optimizeSubtitle')}
+          {activeTab === 'imageEdit' ? t('editor.subtitle') : t('editor.textToImageSubtitle')}
         </p>
 
         <div className="editor-container">
@@ -410,8 +377,7 @@ function Editor() {
             </div>
 
             {/* AI模型选择 */}
-            {activeTab !== 'promptOptimize' && (
-              <div className="form-group">
+            <div className="form-group">
                 <label className="form-label">{t('editor.modelSelection')}</label>
                 <select 
                   className="form-select" 
@@ -458,7 +424,6 @@ function Editor() {
                   })()}
                 </div>
               </div>
-            )}
 
             {/* 编辑模式切换 */}
             <div className="form-group">
@@ -475,12 +440,6 @@ function Editor() {
                   onClick={() => setActiveTab('textToImage')}
                 >
                   {t('editor.textToImage')}
-                </button>
-                <button 
-                  className={`edit-mode-btn ${activeTab === 'promptOptimize' ? 'active' : ''}`}
-                  onClick={() => setActiveTab('promptOptimize')}
-                >
-                  {t('editor.promptOptimize')}
                 </button>
               </div>
             </div>
@@ -523,61 +482,29 @@ function Editor() {
 
             {/* 提示词输入 */}
             <div className="form-group">
-              <label className="form-label">{activeTab === 'promptOptimize' ? t('editor.originalPrompt') : t('editor.prompt')}</label>
+              <label className="form-label">{t('editor.prompt')}</label>
               <textarea
                 className="form-textarea"
-                placeholder={activeTab === 'imageEdit' ? t('editor.promptPlaceholder') : 
-                           activeTab === 'textToImage' ? t('editor.textToImagePlaceholder') : 
-                           t('editor.optimizePlaceholder')}
+                placeholder={activeTab === 'imageEdit' ? t('editor.promptPlaceholder') : t('editor.textToImagePlaceholder')}
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
-                rows={activeTab === 'promptOptimize' ? 3 : activeTab === 'imageEdit' ? 4 : 6}
+                rows={activeTab === 'imageEdit' ? 4 : 6}
               />
             </div>
 
             {/* 功能按钮 */}
-            {activeTab === 'promptOptimize' ? (
-              <button 
-                className={`btn btn-primary generate-btn ${isOptimizing ? 'generating' : ''}`}
-                onClick={async () => {
-                  if (!prompt) return;
-                  
-                  setIsOptimizing(true);
-                  setOptimizationError(null);
-                  
-                  try {
-                    const result = await modelAPI.optimizePrompt(prompt);
-                    
-                    if (result.success) {
-                      setOptimizedPrompt(result.data.optimizedPrompt);
-                      setOptimizationResult(result.data);
-                    }
-                  } catch (err) {
-                    console.error('提示词优化失败:', err);
-                    const errorMsg = err.message || t('editor.optimizeError');
-                    setOptimizationError(translateError(errorMsg));
-                  } finally {
-                    setIsOptimizing(false);
-                  }
-                }}
-                disabled={isOptimizing || !prompt}
-              >
-                {isOptimizing ? t('editor.optimizing') : t('editor.optimize')}
-              </button>
-            ) : (
-              <button 
-                className={`btn btn-primary generate-btn ${isGenerating ? 'generating' : ''}`}
-                onClick={handleGenerate}
-                disabled={isGenerating || 
-                  (activeTab === 'imageEdit' ? 
-                    (!prompt && referenceImages.length === 0) : 
-                    !prompt
-                  )
-                }
-              >
-                {isGenerating ? t('editor.generating') : `${t('editor.generate')}${t('editor.costConsumeInButton').replace('{points}', currentCost)}`}
-              </button>
-            )}
+            <button 
+              className={`btn btn-primary generate-btn ${isGenerating ? 'generating' : ''}`}
+              onClick={handleGenerate}
+              disabled={isGenerating || 
+                (activeTab === 'imageEdit' ? 
+                  (!prompt && referenceImages.length === 0) : 
+                  !prompt
+                )
+              }
+            >
+              {isGenerating ? t('editor.generating') : `${t('editor.generate')}${t('editor.costConsumeInButton').replace('{points}', currentCost)}`}
+            </button>
             
             {/* 错误和警告信息显示 */}
             {error && (
@@ -585,92 +512,14 @@ function Editor() {
                 ❌ {error}
               </div>
             )}
-            {optimizationError && (
-              <div className="error-message">
-                ❌ {optimizationError}
-              </div>
-            )}
             {activeTab === 'imageEdit' && referenceImages.length === 0 && !isGenerating && !error && (
               <div className="warning-message">
                 ⚠️ {t('editor.noImages')}
               </div>
             )}
-            {((activeTab === 'textToImage' || activeTab === 'promptOptimize') && 
-              !prompt && 
-              !isGenerating && 
-              !isOptimizing && 
-              !error && 
-              !optimizationError) && (
+            {activeTab === 'textToImage' && !prompt && !isGenerating && !error && (
               <div className="warning-message">
                 ⚠️ {t('editor.noPrompt')}
-              </div>
-            )}
-            
-            {/* 提示词优化结果展示 */}
-            {activeTab === 'promptOptimize' && optimizationResult && (
-              <div className="optimization-result">
-                <div className="result-header">
-                  <h4>
-                    {t('editor.optimizationResult')} 
-                    {optimizationResult.parameters?.isLocalOptimization ? (
-                      <span className="optimization-badge local">{t('editor.localOptimization')}</span>
-                    ) : (
-                      <span className="optimization-badge ai">{t('editor.aiOptimization')}</span>
-                    )}
-                  </h4>
-                  <button 
-                    className="copy-btn"
-                    onClick={() => {
-                      navigator.clipboard.writeText(optimizationResult.optimizedPrompt);
-                      alert(t('editor.copiedToClipboard'));
-                    }}
-                  >
-                    📋 {t('editor.copy')}
-                  </button>
-                  <button 
-                    className="use-btn"
-                    onClick={() => {
-                      setActiveTab('textToImage');
-                      setPrompt(optimizationResult.optimizedPrompt);
-                    }}
-                  >
-                    🚀 {t('editor.useNow')}
-                  </button>
-                </div>
-                <div className="result-content">
-                  <div className="optimized-prompt">
-                    <strong>{t('editor.optimizedPrompt')}</strong>
-                    <p>{optimizationResult.optimizedPrompt}</p>
-                  </div>
-                  <div className="optimization-notes">
-                    <strong>{t('editor.optimizationNotes')}</strong>
-                    <p>{optimizationResult.optimizationNotes}</p>
-                  </div>
-                  {optimizationResult.parameters?.isLocalOptimization && (
-                    <div className="optimization-info" style={{
-                      padding: '12px',
-                      marginTop: '12px',
-                      backgroundColor: '#fff3cd',
-                      border: '1px solid #ffc107',
-                      borderRadius: '6px',
-                      color: '#856404'
-                    }}>
-                      <strong>⚠️ {t('editor.usingLocalEngine')}</strong>
-                      <p style={{margin: '8px 0 0 0', fontSize: '0.9em'}}>
-                        {optimizationResult.apiError?.status === 429 
-                          ? t('editor.apiQuotaExhausted')
-                          : t('editor.apiUnavailable')}
-                      </p>
-                      {optimizationResult.apiError?.troubleshooting?.suggestions && (
-                        <ul style={{margin: '8px 0 0 20px', fontSize: '0.85em'}}>
-                          {optimizationResult.apiError.troubleshooting.suggestions.slice(0, 3).map((suggestion, idx) => (
-                            <li key={idx}>{suggestion.replace(/^\d+\.\s*/, '')}</li>
-                          ))}
-                        </ul>
-                      )}
-                    </div>
-                  )}
-                </div>
               </div>
             )}
           </div>
@@ -678,15 +527,11 @@ function Editor() {
           {/* 右侧输出面板 */}
           <div className="editor-panel output-panel">
             <div className="panel-header">
-              <div className="panel-icon">
-                {activeTab === 'promptOptimize' ? '✨' : '🖼️'}
-              </div>
+              <div className="panel-icon">🖼️</div>
               <h3>
-                {activeTab === 'imageEdit' ? t('editor.editingResults') : 
-                 activeTab === 'textToImage' ? t('editor.generationResults') : 
-                 t('editor.optimizationHint')}
+                {activeTab === 'imageEdit' ? t('editor.editingResults') : t('editor.generationResults')}
               </h3>
-              {generatedImages.length > 0 && activeTab !== 'promptOptimize' && (
+              {generatedImages.length > 0 && (
                 <button 
                   className="clear-btn"
                   onClick={clearGeneratedImages}
@@ -696,82 +541,7 @@ function Editor() {
               )}
             </div>
 
-            {activeTab === 'promptOptimize' ? (
-              isOptimizing ? (
-                <div className="generating-container">
-                  <div className="loading-spinner"></div>
-                  <p className="generating-text">{t('editor.optimizingWithDoubao')}</p>
-                  <p className="generating-subtext">{t('editor.pleaseWait')}</p>
-                </div>
-              ) : optimizationResult ? (
-                <div className="optimization-visual-result">
-                  <div className="result-card">
-                    <div className="result-section">
-                      <h4>📝 原始提示词</h4>
-                      <p className="original-prompt">{optimizationResult.originalPrompt}</p>
-                    </div>
-                    <div className="result-divider">→</div>
-                    <div className="result-section">
-                      <h4>✨ 优化后提示词</h4>
-                      <p className="optimized-prompt-text">{optimizationResult.optimizedPrompt}</p>
-                    </div>
-                  </div>
-                  <div className="result-stats">
-                    <div className="stat-item">
-                      <span className="stat-label">优化时间</span>
-                      <span className="stat-value">{optimizationResult.generationTime}s</span>
-                    </div>
-                    <div className="stat-item">
-                      <span className="stat-label">模型</span>
-                      <span className="stat-value">
-                        {optimizationResult.model}
-                        {optimizationResult.parameters?.isLocalOptimization && (
-                          <span style={{
-                            color: '#ff6b35', 
-                            fontSize: '0.8em', 
-                            marginLeft: '5px',
-                            padding: '2px 6px',
-                            backgroundColor: '#fff3cd',
-                            borderRadius: '4px'
-                          }} title="本地优化（API不可用）">
-                            🔧 本地
-                          </span>
-                        )}
-                      </span>
-                    </div>
-                    {optimizationResult.parameters?.isLocalOptimization && optimizationResult.apiError && (
-                      <div className="stat-item" style={{
-                        gridColumn: '1 / -1',
-                        padding: '10px',
-                        marginTop: '10px',
-                        backgroundColor: '#fff3cd',
-                        border: '1px solid #ffc107',
-                        borderRadius: '6px',
-                        fontSize: '0.85em'
-                      }}>
-                        <strong>⚠️ 使用本地优化</strong>
-                        <p style={{margin: '5px 0 0 0'}}>
-                          {optimizationResult.apiError.status === 429 
-                            ? 'Doubao-seed-1.6 API配额已用尽，已自动切换到本地优化方案。'
-                            : 'Doubao-seed-1.6 API服务暂时不可用，已自动切换到本地优化方案。'}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ) : (
-                <div className="output-placeholder">
-                  <div className="placeholder-icon">✨</div>
-                  <p className="placeholder-text">准备优化提示词</p>
-                  <p className="placeholder-subtext">输入简短提示词，我们将自动扩展为详细的图像生成指令</p>
-                  <div className="placeholder-tips">
-                    <h5>💡 优化效果示例：</h5>
-                    <p><strong>原始：</strong>"日落山脉"</p>
-                    <p><strong>优化后：</strong>包含光线、色彩、构图等详细描述</p>
-                  </div>
-                </div>
-              )
-            ) : (
+            {
               isGenerating ? (
                 <div className="generating-container">
                   <div className="loading-spinner"></div>
@@ -930,8 +700,8 @@ function Editor() {
                             🗑️
                           </button>
                         </div>
-                        <p className="history-item-prompt" title={item.prompt || item.originalPrompt}>
-                          {item.prompt || item.originalPrompt || t('editor.noPrompt')}
+                        <p className="history-item-prompt" title={item.prompt}>
+                          {item.prompt || t('editor.noPrompt')}
                         </p>
                         <div className="history-item-meta">
                           <span className="history-item-time">

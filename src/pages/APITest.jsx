@@ -49,10 +49,8 @@ const APITest = () => {
     setErrors([]);
 
     try {
-      console.log('开始测试API连接...');
-      const result = await modelAPI.optimizePrompt(testPrompt);
-      console.log('API测试结果:', result);
-      setTestResult(result);
+      console.log('提示词优化功能已删除');
+      setErrors(prev => [...prev, '提示词优化功能已从系统中删除']);
     } catch (error) {
       console.error('API测试失败:', error);
       setErrors(prev => [...prev, error.message || error]);
