@@ -1344,11 +1344,20 @@ class ModelAPIService {
         'Authorization': `Bearer ${this.newApiProviderKey}`
       };
       
+      // 检查配置
+      if (!this.newApiProviderBase || !this.newApiProviderKey) {
+        throw new Error('新API提供商配置不完整: 请检查 VITE_NEW_API_PROVIDER_BASE 和 VITE_NEW_API_PROVIDER_KEY 环境变量');
+      }
+      
       console.log('📤 新API提供商请求:', {
         endpoint: useCfProxy ? endpoint : endpoint.replace(this.newApiProviderKey, 'API_KEY_HIDDEN'),
+        baseUrl: this.newApiProviderBase.replace(this.newApiProviderKey, 'API_KEY_HIDDEN'),
         model: this.newApiProviderModel,
         messagesCount: messages.length,
-        hasImages: referenceImages.length > 0
+        hasImages: referenceImages.length > 0,
+        hasApiKey: !!this.newApiProviderKey,
+        apiKeyLength: this.newApiProviderKey?.length || 0,
+        useProxy: useCfProxy
       });
       
       // 发送请求
@@ -1749,9 +1758,24 @@ class ModelAPIService {
         const errorMessage = errorData?.error?.message || JSON.stringify(errorData);
         
         if (status === 401) {
-          throw new Error(`新API提供商认证失败: ${errorMessage}`);
+          console.error('❌ 401认证失败详情:', {
+            errorData: errorData,
+            apiBase: this.newApiProviderBase?.replace(this.newApiProviderKey, 'API_KEY_HIDDEN'),
+            model: this.newApiProviderModel,
+            hasApiKey: !!this.newApiProviderKey,
+            apiKeyPrefix: this.newApiProviderKey?.substring(0, 8) + '...'
+          });
+          throw new Error(`新API提供商认证失败: ${errorMessage}。请检查API密钥是否正确`);
         } else if (status === 403) {
-          throw new Error(`新API提供商无权限访问此资源`);
+          console.error('❌ 403权限不足详情:', {
+            errorData: errorData,
+            apiBase: this.newApiProviderBase?.replace(this.newApiProviderKey, 'API_KEY_HIDDEN'),
+            model: this.newApiProviderModel,
+            hasApiKey: !!this.newApiProviderKey,
+            apiKeyPrefix: this.newApiProviderKey?.substring(0, 8) + '...',
+            errorMessage: errorMessage
+          });
+          throw new Error(`新API提供商无权限访问此资源。可能原因：1) API密钥无效或过期 2) API密钥没有访问模型"${this.newApiProviderModel}"的权限 3) 模型名称不正确。请检查API密钥和模型配置。`);
         } else if (status === 429) {
           throw new Error(`新API提供商配额已用尽，请稍后重试`);
         } else if (status >= 500) {
