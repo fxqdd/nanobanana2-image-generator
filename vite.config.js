@@ -20,9 +20,23 @@ export default defineConfig({
             // 从请求头中获取 API Key（前端会在请求头中传递）
             const apiKey = req.headers['x-volcano-api-key'];
             if (apiKey) {
+              // 火山引擎 API 支持两种认证方式，同时使用以确保兼容性
               proxyReq.setHeader('Authorization', `Bearer ${apiKey}`);
+              proxyReq.setHeader('X-Volcano-API-Key', apiKey);  // 火山引擎专用认证头
               // 移除自定义头，避免被转发
               proxyReq.removeHeader('x-volcano-api-key');
+              
+              // 调试信息（仅在开发环境）
+              if (process.env.NODE_ENV === 'development') {
+                console.log('🔧 Vite代理: 设置火山引擎API认证头', {
+                  hasApiKey: !!apiKey,
+                  apiKeyLength: apiKey.length,
+                  apiKeyPrefix: apiKey.substring(0, 8) + '...',
+                  targetUrl: proxyReq.path
+                });
+              }
+            } else {
+              console.warn('⚠️ Vite代理: 未找到 x-volcano-api-key 请求头');
             }
           });
         }
