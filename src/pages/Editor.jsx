@@ -631,7 +631,7 @@ function Editor() {
                 </p>
                 </div>
               )
-            )}
+            }
           </div>
         </div>
       </main>
