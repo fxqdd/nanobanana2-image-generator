@@ -42,19 +42,203 @@ function Editor() {
   };
   const currentCost = computeCost();
 
-  const handleImageUpload = (e) => {
+  // 将图片转换为 base64 并保存
+  const convertImageToBase64 = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleImageUpload = async (e) => {
     if (e.target.files && e.target.files.length > 0 && referenceImages.length < 9) {
-      const newImage = URL.createObjectURL(e.target.files[0])
-      setReferenceImages([...referenceImages, newImage])
-      e.target.value = ''
+      const file = e.target.files[0];
+      // 检查文件大小（限制为 5MB，避免 localStorage 过大）
+      if (file.size > 5 * 1024 * 1024) {
+        setError('图片太大，请选择小于 5MB 的图片');
+        e.target.value = '';
+        return;
+      }
+      
+      try {
+        // 创建 Blob URL 用于显示
+        const blobUrl = URL.createObjectURL(file);
+        // 转换为 base64 用于保存
+        const base64 = await convertImageToBase64(file);
+        
+        const newImage = {
+          blobUrl: blobUrl,
+          base64: base64,
+          name: file.name,
+          size: file.size
+        };
+        
+        const updatedImages = [...referenceImages, newImage];
+        setReferenceImages(updatedImages);
+        
+        // 保存到 localStorage
+        saveEditorState({
+          prompt,
+          referenceImages: updatedImages,
+          activeTab,
+          model
+        });
+        
+        e.target.value = '';
+      } catch (err) {
+        console.error('图片处理失败:', err);
+        setError('图片处理失败，请重试');
+        e.target.value = '';
+      }
     }
   }
 
   const removeImage = (index) => {
-    const newImages = [...referenceImages]
-    newImages.splice(index, 1)
-    setReferenceImages(newImages)
+    const newImages = [...referenceImages];
+    // 释放 Blob URL
+    if (newImages[index]?.blobUrl) {
+      URL.revokeObjectURL(newImages[index].blobUrl);
+    }
+    newImages.splice(index, 1);
+    setReferenceImages(newImages);
+    
+    // 更新 localStorage
+    saveEditorState({
+      prompt,
+      referenceImages: newImages,
+      activeTab,
+      model
+    });
   }
+  
+  // 保存编辑器状态到 localStorage
+  const saveEditorState = (state) => {
+    try {
+      const stateToSave = {
+        prompt: state.prompt || '',
+        activeTab: state.activeTab || 'imageEdit',
+        model: state.model || 'Nano Banana',
+        // 只保存 base64 数据，不保存 Blob URL（因为 Blob URL 不能持久化）
+        referenceImages: (state.referenceImages || []).map(img => {
+          // 如果是字符串（旧格式或 base64），直接保存
+          if (typeof img === 'string') {
+            return {
+              base64: img,
+              name: 'image',
+              size: 0
+            };
+          }
+          // 如果是对象（新格式），提取 base64
+          if (typeof img === 'object' && img !== null) {
+            return {
+              base64: img.base64 || img.blobUrl || '',
+              name: img.name || 'image',
+              size: img.size || 0
+            };
+          }
+          return {
+            base64: '',
+            name: 'image',
+            size: 0
+          };
+        })
+      };
+      localStorage.setItem('editorState', JSON.stringify(stateToSave));
+    } catch (err) {
+      // 如果存储失败（可能是配额超限），只保存文本内容
+      try {
+        localStorage.setItem('editorPrompt', state.prompt || '');
+        localStorage.setItem('editorActiveTab', state.activeTab || 'imageEdit');
+        localStorage.setItem('editorModel', state.model || 'Nano Banana');
+      } catch (e) {
+        console.warn('保存编辑器状态失败:', e);
+      }
+    }
+  };
+  
+  // 从 localStorage 恢复编辑器状态
+  const loadEditorState = () => {
+    try {
+      const saved = localStorage.getItem('editorState');
+      if (saved) {
+        const state = JSON.parse(saved);
+        
+        // 恢复提示词
+        if (state.prompt) {
+          setPrompt(state.prompt);
+        }
+        
+        // 恢复模式
+        if (state.activeTab) {
+          setActiveTab(state.activeTab);
+        }
+        
+        // 恢复模型
+        if (state.model) {
+          setModel(state.model);
+        }
+        
+        // 恢复图片（从 base64 重新创建显示 URL）
+        if (state.referenceImages && state.referenceImages.length > 0) {
+          const restoredImages = state.referenceImages.map(img => {
+            // 处理不同格式
+            let base64 = '';
+            let name = 'image';
+            let size = 0;
+            
+            if (typeof img === 'string') {
+              // 旧格式：直接是 base64 字符串
+              base64 = img;
+            } else if (typeof img === 'object' && img !== null) {
+              // 新格式：对象
+              base64 = img.base64 || img.blobUrl || '';
+              name = img.name || 'image';
+              size = img.size || 0;
+            }
+            
+            if (base64) {
+              // 如果 base64 不包含 data: 前缀，添加它
+              const dataUrl = base64.startsWith('data:') 
+                ? base64 
+                : `data:image/jpeg;base64,${base64}`;
+              
+              return {
+                blobUrl: dataUrl, // 使用 data URL 作为显示 URL
+                base64: base64.startsWith('data:') ? base64.split(',')[1] || base64 : base64, // 保存纯 base64
+                name: name,
+                size: size
+              };
+            }
+            return null;
+          }).filter(img => img !== null);
+          
+          if (restoredImages.length > 0) {
+            setReferenceImages(restoredImages);
+          }
+        }
+      } else {
+        // 如果没有完整状态，尝试加载单独的字段（向后兼容）
+        const savedPrompt = localStorage.getItem('editorPrompt');
+        const savedTab = localStorage.getItem('editorActiveTab');
+        const savedModel = localStorage.getItem('editorModel');
+        
+        if (savedPrompt) setPrompt(savedPrompt);
+        if (savedTab) setActiveTab(savedTab);
+        if (savedModel) setModel(savedModel);
+      }
+    } catch (err) {
+      console.warn('加载编辑器状态失败:', err);
+      // 尝试加载单独的字段
+      try {
+        const savedPrompt = localStorage.getItem('editorPrompt');
+        if (savedPrompt) setPrompt(savedPrompt);
+      } catch (e) {
+        console.warn('加载提示词失败:', e);
+      }
+    }
+  };
 
   // 错误消息翻译函数
   const translateError = (errorMessage) => {
@@ -115,10 +299,20 @@ function Editor() {
     try {
       const generationTime = new Date().toLocaleString();
       
+      // 转换图片格式为 modelAPI 需要的格式
+      const imagesForAPI = referenceImages.map(img => {
+        // 如果是对象格式，使用 base64 或 blobUrl
+        if (typeof img === 'object' && img !== null) {
+          return img.base64 || img.blobUrl || img;
+        }
+        // 如果是字符串，直接使用
+        return img;
+      });
+      
       const result = await modelAPI.generateImage(
         model,
         prompt,
-        referenceImages,
+        imagesForAPI,
         {
           style: 'realistic',
           resolution: '800x600'
@@ -236,7 +430,58 @@ function Editor() {
         console.error('加载历史记录失败:', e);
       }
     }
+    
+    // 恢复编辑器状态（提示词、图片等）
+    loadEditorState();
   }, []);
+  
+  // 当提示词改变时，自动保存（防抖）
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      saveEditorState({
+        prompt,
+        referenceImages,
+        activeTab,
+        model
+      });
+    }, 500); // 防抖：500ms 后保存，避免频繁写入
+    
+    return () => clearTimeout(timer);
+  }, [prompt, activeTab, model]);
+  
+  // 当图片数量改变时，立即保存（图片上传是异步的，需要立即保存）
+  useEffect(() => {
+    // 使用 setTimeout 确保状态已更新
+    const timer = setTimeout(() => {
+      saveEditorState({
+        prompt,
+        referenceImages,
+        activeTab,
+        model
+      });
+    }, 100);
+    
+    return () => clearTimeout(timer);
+  }, [referenceImages.length]);
+  
+  // 页面卸载或路由切换时保存状态
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      saveEditorState({
+        prompt,
+        referenceImages,
+        activeTab,
+        model
+      });
+    };
+    
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      // 组件卸载时也保存一次
+      handleBeforeUnload();
+    };
+  }, [prompt, referenceImages, activeTab, model]);
 
   // 定期更新点数（每30秒）
   useEffect(() => {
@@ -491,18 +736,24 @@ function Editor() {
                   {t('editor.referenceImages')} {referenceImages.length}/9
                 </label>
                 <div className="image-upload-area">
-                  {referenceImages.map((image, index) => (
-                    <div key={index} className="uploaded-image">
-                      <img src={image} alt={`${t('editor.referenceImages')} ${index + 1}`} />
-                      <button 
-                        className="remove-image-btn" 
-                        onClick={() => removeImage(index)}
-                        aria-label={t('editor.removeImage')}
-                      >
-                        ✕
-                      </button>
-                    </div>
-                  ))}
+                  {referenceImages.map((image, index) => {
+                    // 兼容旧格式（字符串）和新格式（对象）
+                    const imageSrc = typeof image === 'string' 
+                      ? image 
+                      : (image.blobUrl || image.base64 || image);
+                    return (
+                      <div key={index} className="uploaded-image">
+                        <img src={imageSrc} alt={`${t('editor.referenceImages')} ${index + 1}`} />
+                        <button 
+                          className="remove-image-btn" 
+                          onClick={() => removeImage(index)}
+                          aria-label={t('editor.removeImage')}
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    );
+                  })}
                   {referenceImages.length < 9 && (
                     <label className="upload-button">
                       <input 

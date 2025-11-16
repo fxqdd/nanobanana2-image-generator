@@ -903,6 +903,19 @@ class ModelAPIService {
         throw new Error(`OpenRouter API 认证失败 (401): ${errorMessage}。请检查 API 密钥是否正确配置。`);
       }
       
+      // 处理 403 权限错误
+      if (error.response?.status === 403) {
+        const errorData = error.response?.data;
+        const errorMessage = errorData?.error?.message || JSON.stringify(errorData);
+        console.error('❌ 403权限不足详情:', {
+          errorData: errorData,
+          modelId: modelId,
+          hasApiKey: useCfProxy ? 'via-proxy' : !!this.openRouterApiKey,
+          errorMessage: errorMessage
+        });
+        throw new Error(`OpenRouter API 错误(403): Provider returned error. 可能原因：1) API密钥无效或过期 2) API密钥没有访问模型"${modelId}"的权限 3) 模型名称不正确或该模型不可用。请检查API密钥和模型配置。`);
+      }
+      
       // 处理其他 HTTP 错误
       if (error.response?.data) {
         const errorData = error.response.data;
@@ -1825,18 +1838,18 @@ class ModelAPIService {
         options
       });
 
-      if (!this.volcanoApiKey) {
-        throw new Error('火山引擎 API Key 未配置');
+      // 在生产环境中，API Key 由代理从环境变量获取，不需要前端配置
+      const isDevelopment = import.meta.env.DEV;
+      if (isDevelopment && !this.volcanoApiKey) {
+        throw new Error('火山引擎 API Key 未配置。请在 .env.local 文件中设置 VITE_VOLCANO_API_KEY');
       }
 
       const startTime = Date.now();
       
-      // 使用代理路径避免 CORS 问题（开发环境）
-      // 生产环境需要配置后端代理或使用其他方案
-      const isDevelopment = import.meta.env.DEV;
+      // 统一使用代理路径避免 CORS 问题（开发和生产环境都使用 Cloudflare Pages Functions 代理）
       const endpoint = isDevelopment 
-        ? '/api/volcano/images/generations'  // 使用 Vite 代理
-        : `${this.volcanoBaseURL}/images/generations`;  // 直接调用（可能仍有 CORS 问题）
+        ? '/api/volcano/images/generations'  // 开发环境：使用 Vite 代理
+        : '/api/volcano/images/generations';  // 生产环境：使用 Cloudflare Pages Functions 代理
 
       // 构建请求体
       const requestBody = {
@@ -1926,18 +1939,20 @@ class ModelAPIService {
       });
 
       // 发送请求
-      // 在开发环境中，通过代理发送，API Key 通过自定义头传递
-      // 在生产环境中，如果仍有 CORS 问题，需要配置后端代理
+      // 开发和生产环境都通过代理发送，API Key 通过自定义头传递（开发环境）或由代理使用环境变量（生产环境）
       const headers = {
         'Content-Type': 'application/json'
       };
       
       if (isDevelopment) {
-        // 开发环境：通过代理，API Key 通过自定义头传递
-        headers['X-Volcano-API-Key'] = this.volcanoApiKey;
+        // 开发环境：通过 Vite 代理，API Key 通过自定义头传递
+        if (this.volcanoApiKey) {
+          headers['x-volcano-api-key'] = this.volcanoApiKey;
+        }
       } else {
-        // 生产环境：直接设置 Authorization（可能被 CORS 阻止）
-        headers['Authorization'] = `Bearer ${this.volcanoApiKey}`;
+        // 生产环境：通过 Cloudflare Pages Functions 代理，API Key 由代理从环境变量获取
+        // 不在这里设置 API Key，让代理使用环境变量 VOLCANO_API_KEY
+        // 如果需要，也可以通过请求头传递（代理会优先使用环境变量）
       }
       
       // 直接发送请求，不重试，失败即报错
@@ -2200,11 +2215,24 @@ class ModelAPIService {
       // 如果有参考图像，转换为Base64
       const processedImages = [];
       for (const img of referenceImages) {
-        if (img.startsWith('blob:')) {
-          const base64 = await this.imageToBase64(img);
+        // 处理新格式（对象）和旧格式（字符串）
+        let imageUrl = img;
+        if (typeof img === 'object' && img !== null) {
+          // 新格式：优先使用 base64，否则使用 blobUrl
+          imageUrl = img.base64 || img.blobUrl || img;
+        }
+        
+        // 如果是 blob URL，转换为 base64
+        if (typeof imageUrl === 'string' && imageUrl.startsWith('blob:')) {
+          const base64 = await this.imageToBase64(imageUrl);
           processedImages.push(base64);
+        } else if (typeof imageUrl === 'string' && imageUrl.startsWith('data:')) {
+          // 如果已经是 base64 data URL，提取 base64 部分
+          const base64Part = imageUrl.split(',')[1] || imageUrl;
+          processedImages.push(base64Part);
         } else {
-          processedImages.push(img);
+          // 其他情况（包括已经是 base64 字符串）
+          processedImages.push(imageUrl);
         }
       }
 
