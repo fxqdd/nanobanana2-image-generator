@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useLanguage } from '../contexts/LanguageContext'
 import SEO from '../components/SEO'
 import '../styles/Editor.css'
@@ -21,6 +21,7 @@ function Editor() {
   const [historySearchTerm, setHistorySearchTerm] = useState('')
   const [historyFilterModel, setHistoryFilterModel] = useState('all')
   const [currentCredits, setCurrentCredits] = useState(null) // 当前点数
+  const isGeneratingRef = useRef(false) // 使用 ref 防止重复调用
   
   const seoData = t('seo.editor')
 
@@ -281,22 +282,32 @@ function Editor() {
   };
 
   const handleGenerate = async () => {
-    if (!prompt && referenceImages.length === 0) return;
-    
-    // 检查点数是否足够
-    if (isLoggedIn) {
-      const sufficient = await checkCreditsSufficient(currentCost);
-      if (!sufficient) {
-        const credits = await getMyCredits();
-        setError(t('editor.insufficientCredits') || `点数不足！需要 ${currentCost} 点，当前只有 ${credits} 点。`);
-        return;
-      }
+    // 防止重复调用
+    if (isGeneratingRef.current || isGenerating) {
+      console.warn('⚠️ 生成请求已在进行中，忽略重复调用');
+      return;
     }
     
+    if (!prompt && referenceImages.length === 0) return;
+    
+    // 设置生成状态
+    isGeneratingRef.current = true;
     setIsGenerating(true);
     setError(null);
     
     try {
+      // 检查点数是否足够
+      if (isLoggedIn) {
+        const sufficient = await checkCreditsSufficient(currentCost);
+        if (!sufficient) {
+          const credits = await getMyCredits();
+          setError(t('editor.insufficientCredits') || `点数不足！需要 ${currentCost} 点，当前只有 ${credits} 点。`);
+          isGeneratingRef.current = false;
+          setIsGenerating(false);
+          return;
+        }
+      }
+      
       const generationTime = new Date().toLocaleString();
       
       // 转换图片格式为 modelAPI 需要的格式
@@ -417,6 +428,8 @@ function Editor() {
       const errorMsg = err.message || t('common.loading');
       setError(t('editor.error') + ': ' + translateError(errorMsg));
     } finally {
+      // 重置生成状态
+      isGeneratingRef.current = false;
       setIsGenerating(false);
     }
   }
