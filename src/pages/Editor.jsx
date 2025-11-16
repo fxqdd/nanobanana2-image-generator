@@ -22,6 +22,7 @@ function Editor() {
   const [historyFilterModel, setHistoryFilterModel] = useState('all')
   const [currentCredits, setCurrentCredits] = useState(null) // 当前点数
   const isGeneratingRef = useRef(false) // 使用 ref 防止重复调用
+  const [previewImage, setPreviewImage] = useState(null) // 预览图片 URL
   
   const seoData = t('seo.editor')
 
@@ -519,12 +520,52 @@ function Editor() {
   }, [isLoggedIn]);
 
   const downloadImage = (imageUrl) => {
-    const link = document.createElement('a');
-    link.href = imageUrl;
-    link.download = `generated-image-${new Date().getTime()}.png`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    try {
+      // 如果是 base64 data URL，需要特殊处理
+      if (imageUrl.startsWith('data:')) {
+        // 将 base64 转换为 Blob
+        const base64Data = imageUrl.split(',')[1] || imageUrl.split(',')[0];
+        const mimeType = imageUrl.match(/data:([^;]+)/)?.[1] || 'image/png';
+        const byteCharacters = atob(base64Data);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: mimeType });
+        
+        // 创建下载链接
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `generated-image-${new Date().getTime()}.png`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      } else {
+        // HTTP URL，直接下载
+        const link = document.createElement('a');
+        link.href = imageUrl;
+        link.download = `generated-image-${new Date().getTime()}.png`;
+        link.target = '_blank';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+    } catch (error) {
+      console.error('下载图片失败:', error);
+      // 如果下载失败，尝试在新窗口打开
+      window.open(imageUrl, '_blank');
+    }
+  };
+
+  const previewImageModal = (imageUrl) => {
+    setPreviewImage(imageUrl);
+  };
+
+  const closePreview = () => {
+    setPreviewImage(null);
   };
 
   const clearGeneratedImages = () => {
@@ -875,7 +916,7 @@ function Editor() {
                         </button>
                         <button 
                           className="action-btn"
-                          onClick={() => window.open(imageUrl, '_blank')}
+                          onClick={() => previewImageModal(imageUrl)}
                           title={t('common.view')}
                         >
                           🔍
@@ -899,6 +940,125 @@ function Editor() {
           </div>
         </div>
       </main>
+
+      {/* 图片预览模态框 */}
+      {previewImage && (
+        <div 
+          className="image-preview-overlay" 
+          onClick={closePreview}
+          style={{ 
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.9)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 10000,
+            cursor: 'pointer'
+          }}
+        >
+          <div 
+            className="image-preview-container"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              position: 'relative',
+              maxWidth: '90vw',
+              maxHeight: '90vh',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '1rem'
+            }}
+          >
+            <button
+              onClick={closePreview}
+              style={{
+                position: 'absolute',
+                top: '-40px',
+                right: '0',
+                background: 'rgba(255, 255, 255, 0.2)',
+                border: 'none',
+                color: 'white',
+                fontSize: '24px',
+                width: '32px',
+                height: '32px',
+                borderRadius: '50%',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'background 0.2s'
+              }}
+              onMouseEnter={(e) => e.target.style.background = 'rgba(255, 255, 255, 0.3)'}
+              onMouseLeave={(e) => e.target.style.background = 'rgba(255, 255, 255, 0.2)'}
+            >
+              ✕
+            </button>
+            <img 
+              src={previewImage} 
+              alt={t('editor.previewImage') || 'Preview Image'}
+              style={{
+                maxWidth: '100%',
+                maxHeight: '85vh',
+                objectFit: 'contain',
+                borderRadius: '8px',
+                boxShadow: '0 4px 20px rgba(0, 0, 0, 0.5)'
+              }}
+              onError={(e) => {
+                console.error('预览图片加载失败:', previewImage);
+                e.target.style.display = 'none';
+              }}
+            />
+            <div style={{
+              display: 'flex',
+              gap: '1rem',
+              marginTop: '1rem'
+            }}>
+              <button
+                onClick={() => {
+                  downloadImage(previewImage);
+                }}
+                style={{
+                  padding: '0.5rem 1rem',
+                  background: '#ff6b35',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  transition: 'background 0.2s'
+                }}
+                onMouseEnter={(e) => e.target.style.background = '#ff5722'}
+                onMouseLeave={(e) => e.target.style.background = '#ff6b35'}
+              >
+                {t('editor.downloadImage')}
+              </button>
+              <button
+                onClick={closePreview}
+                style={{
+                  padding: '0.5rem 1rem',
+                  background: 'rgba(255, 255, 255, 0.2)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  transition: 'background 0.2s'
+                }}
+                onMouseEnter={(e) => e.target.style.background = 'rgba(255, 255, 255, 0.3)'}
+                onMouseLeave={(e) => e.target.style.background = 'rgba(255, 255, 255, 0.2)'}
+              >
+                {t('common.close') || 'Close'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 历史记录模态框 */}
       {showHistory && (
