@@ -155,7 +155,26 @@ function Showcase() {
                     className="showcase-image showcase-image-base"
                     key={`base-${item.id}-${currentIndex}`}
                     onError={(e) => {
-                      e.target.src = `https://via.placeholder.com/400x300/CCCCCC/666666?text=${encodeURIComponent(t('showcase.imageLoadError'))}`
+                      // 避免无限循环：如果已经是占位符或已经处理过，直接隐藏
+                      if (e.target.dataset.errorHandled === 'true') {
+                        e.target.style.display = 'none'
+                        return
+                      }
+                      // 标记为已处理
+                      e.target.dataset.errorHandled = 'true'
+                      // 使用 data URI 作为占位符，避免网络请求
+                      const canvas = document.createElement('canvas')
+                      canvas.width = 400
+                      canvas.height = 300
+                      const ctx = canvas.getContext('2d')
+                      ctx.fillStyle = '#CCCCCC'
+                      ctx.fillRect(0, 0, 400, 300)
+                      ctx.fillStyle = '#666666'
+                      ctx.font = '20px Arial'
+                      ctx.textAlign = 'center'
+                      ctx.textBaseline = 'middle'
+                      ctx.fillText(t('showcase.imageLoadError') || 'Image load failed', 200, 150)
+                      e.target.src = canvas.toDataURL()
                     }}
                   />
                   {/* 顶层图片（用于渐变效果，显示下一张图片） */}
@@ -165,7 +184,26 @@ function Showcase() {
                     className={`showcase-image showcase-image-overlay ${transitioning ? 'showcase-image-transitioning' : ''}`}
                     key={`overlay-${item.id}-${nextIndex}`}
                     onError={(e) => {
-                      e.target.src = `https://via.placeholder.com/400x300/CCCCCC/666666?text=${encodeURIComponent(t('showcase.imageLoadError'))}`
+                      // 避免无限循环：如果已经是占位符或已经处理过，直接隐藏
+                      if (e.target.dataset.errorHandled === 'true') {
+                        e.target.style.display = 'none'
+                        return
+                      }
+                      // 标记为已处理
+                      e.target.dataset.errorHandled = 'true'
+                      // 使用 data URI 作为占位符，避免网络请求
+                      const canvas = document.createElement('canvas')
+                      canvas.width = 400
+                      canvas.height = 300
+                      const ctx = canvas.getContext('2d')
+                      ctx.fillStyle = '#CCCCCC'
+                      ctx.fillRect(0, 0, 400, 300)
+                      ctx.fillStyle = '#666666'
+                      ctx.font = '20px Arial'
+                      ctx.textAlign = 'center'
+                      ctx.textBaseline = 'middle'
+                      ctx.fillText(t('showcase.imageLoadError') || 'Image load failed', 200, 150)
+                      e.target.src = canvas.toDataURL()
                     }}
                   />
                   <div className="showcase-overlay">
