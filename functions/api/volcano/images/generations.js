@@ -1,4 +1,4 @@
-// 处理所有 HTTP 方法（GET, POST, OPTIONS 等）
+// 处理 /api/volcano/images/generations 路径
 export async function onRequest(context) {
   // 处理 OPTIONS 预检请求
   if (context.request.method === 'OPTIONS') {
@@ -44,19 +44,22 @@ export async function onRequest(context) {
     body = {};
   }
 
-  // 从请求头或环境变量中获取 API Key（优先使用请求头中的）
-  const requestApiKey = context.request.headers.get('x-volcano-api-key') || apiKey;
+  // 从请求头或环境变量中获取 API Key（优先使用环境变量）
+  const headerApiKey = context.request.headers.get('x-volcano-api-key');
+  const requestApiKey = headerApiKey || apiKey;
   
-  // 获取路径（例如 /api/volcano/chat/completions -> /api/v3/chat/completions）
+  // 获取路径并转换为火山引擎 API 路径
+  // /api/volcano/images/generations -> /api/v3/images/generations
   const url = new URL(context.request.url);
   const path = url.pathname.replace('/api/volcano', '/api/v3');
   const targetUrl = `https://ark.cn-beijing.volces.com${path}`;
 
-  console.log('Proxying to Volcano API:', {
+  console.log('Proxying to Volcano API (images/generations):', {
     method: context.request.method,
     path: url.pathname,
     targetUrl,
-    hasApiKey: !!requestApiKey
+    hasApiKey: !!requestApiKey,
+    apiKeySource: headerApiKey ? 'header' : 'env'
   });
 
   try {
@@ -74,13 +77,20 @@ export async function onRequest(context) {
 
     const responseBody = await resp.text();
     
+    console.log('Volcano API response:', {
+      status: resp.status,
+      statusText: resp.statusText,
+      contentType: resp.headers.get('content-type'),
+      bodyLength: responseBody.length
+    });
+    
     return new Response(responseBody, {
       status: resp.status,
       headers: {
         'Content-Type': resp.headers.get('content-type') || 'application/json',
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, x-volcano-api-key'
+        'Access-Control-Allow-Headers': 'Content-Type, x-volcano-api-key, Authorization'
       }
     });
   } catch (error) {

@@ -2031,6 +2031,8 @@ class ModelAPIService {
           throw new Error(`火山引擎API密钥无效或未授权`);
         } else if (status === 403) {
           throw new Error(`火山引擎API无权限访问此资源`);
+        } else if (status === 405) {
+          throw new Error(`火山引擎API方法不允许 (405)。请检查API端点路径是否正确。当前路径: ${endpoint}`);
         } else if (status === 429) {
           throw new Error(`火山引擎API配额已用尽，请稍后重试`);
         } else if (status >= 500) {
