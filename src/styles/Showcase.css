@@ -78,7 +78,21 @@ body.dark-mode .showcase-image-container {
   transition: transform 0.5s ease;
 }
 
-.showcase-card:hover .showcase-image {
+.showcase-image-base {
+  z-index: 1;
+}
+
+.showcase-image-overlay {
+  z-index: 2;
+  clip-path: circle(0% at 50% 50%);
+  transition: clip-path 1s ease-in-out;
+}
+
+.showcase-image-overlay.showcase-image-transitioning {
+  clip-path: circle(150% at 50% 50%);
+}
+
+.showcase-card:hover .showcase-image-base {
   transform: scale(1.1);
 }
 
