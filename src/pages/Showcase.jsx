@@ -17,8 +17,8 @@ function Showcase() {
       title: t('showcase.case1Title'),
       description: t('showcase.case1Desc'),
       images: [
-        '/images/showcase/showcase-1-image1.jpg', // 红发女性肖像
-        '/images/showcase/showcase-1-image2.jpg' // 中世纪盔甲女性
+        '/images/showcase/showcase-1-image1.jpg.png', // 红发女性肖像
+        '/images/showcase/showcase-1-image2.jpg.png' // 中世纪盔甲女性
       ],
       prompt: t('showcase.case1Prompt')
     },
@@ -27,8 +27,8 @@ function Showcase() {
       title: t('showcase.case2Title'),
       description: t('showcase.case2Desc'),
       images: [
-        '/images/showcase/showcase-2-image1.jpg', // 咖啡店场景
-        '/images/showcase/showcase-2-image2.jpg' // 花园场景
+        '/images/showcase/showcase-2-image1.jpg.png', // 咖啡店场景
+        '/images/showcase/showcase-2-image2.jpg.png' // 花园场景
       ],
       prompt: t('showcase.case2Prompt')
     },
@@ -37,8 +37,8 @@ function Showcase() {
       title: t('showcase.case3Title'),
       description: t('showcase.case3Desc'),
       images: [
-        '/images/showcase/showcase-3-image1.jpg', // 雪地海滩场景
-        '/images/showcase/showcase-3-image2.jpg' // 夏日海滩场景
+        '/images/showcase/showcase-3-image1.jpg.png', // 雪地海滩场景
+        '/images/showcase/showcase-3-image2.jpg.png' // 夏日海滩场景
       ],
       prompt: t('showcase.case3Prompt')
     },
@@ -47,8 +47,8 @@ function Showcase() {
       title: t('showcase.case4Title'),
       description: t('showcase.case4Desc'),
       images: [
-        '/images/showcase/showcase-4-image1.jpg', // 日落女性肖像
-        '/images/showcase/showcase-4-image2.jpg' // 油画风格日落
+        '/images/showcase/showcase-4-image1.jpg.png', // 日落女性肖像
+        '/images/showcase/showcase-4-image2.jpg.png' // 油画风格日落
       ],
       prompt: t('showcase.case4Prompt')
     },
@@ -57,8 +57,8 @@ function Showcase() {
       title: t('showcase.case5Title'),
       description: t('showcase.case5Desc'),
       images: [
-        '/images/showcase/showcase-5-image1.jpg', // 城市日景街道
-        '/images/showcase/showcase-5-image2.jpg' // 城市夜景街道，有"BLUE ALICE"霓虹灯
+        '/images/showcase/showcase-5-image1.jpg.png', // 城市日景街道
+        '/images/showcase/showcase-5-image2.jpg.png' // 城市夜景街道，有"BLUE ALICE"霓虹灯
       ],
       prompt: t('showcase.case5Prompt')
     },
@@ -67,8 +67,8 @@ function Showcase() {
       title: t('showcase.case6Title'),
       description: t('showcase.case6Desc'),
       images: [
-        '/images/showcase/showcase-6-image1.jpg', // 普通客厅阅读场景
-        '/images/showcase/showcase-6-image2.jpg' // 魔法森林阅读场景
+        '/images/showcase/showcase-6-image1.jpg.png', // 普通客厅阅读场景
+        '/images/showcase/showcase-6-image2.jpg.png' // 魔法森林阅读场景
       ],
       prompt: t('showcase.case6Prompt')
     }
