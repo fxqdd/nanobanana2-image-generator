@@ -86,7 +86,9 @@ export default {
     nb2TextCharts: 'Deutlich höhere Genauigkeit bei Text, Diagrammen und Infografiken',
     nb2Consistency: 'Nahezu perfekte Konsistenz und Reproduzierbarkeit',
     nb2Semantic: 'Stärkeres Kontextverständnis und Intent‑Parsing',
-    nb2Blend: 'Nahtloses Blending (2–5 Bilder mischen)'
+    nb2Blend: 'Nahtloses Blending (2–5 Bilder mischen)',
+    technicalAdvantagesTitle: 'Technische Vorteile',
+    technicalAdvantagesDescription: 'Nano Banana 2 nutzt die neueste KI-Technologie, um Ihnen ein hervorragendes Bildbearbeitungserlebnis zu bieten'
   },
   footer: {
     description: 'Transformieren Sie jedes Bild mit einfachen Texteingaben. Erleben Sie die Zukunft der KI-Bildbearbeitung.',

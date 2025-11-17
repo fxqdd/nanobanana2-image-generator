@@ -83,7 +83,9 @@ export default {
     nb2TextCharts: 'テキスト・図表・インフォグラフィックの精度が大幅向上',
     nb2Consistency: 'ほぼ完璧な一貫性と再現性',
     nb2Semantic: 'より深い文脈理解と意図解析',
-    nb2Blend: 'シームレス合成（2〜5枚の画像をミックス）'
+    nb2Blend: 'シームレス合成（2〜5枚の画像をミックス）',
+    technicalAdvantagesTitle: '技術的優位性',
+    technicalAdvantagesDescription: 'Nano Banana 2は最新のAI技術を採用し、卓越した画像編集体験を提供します'
   },
   footer: {
     description: 'シンプルなテキストプロンプトで任意の画像を変換。AI画像編集の未来を体験してください。',

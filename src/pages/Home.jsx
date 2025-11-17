@@ -225,10 +225,10 @@ function Home() {
           </div>
           
           <h2 className="section-title" style={{ marginTop: '3rem', marginBottom: '1.5rem' }}>
-            技术优势
+            {t('home.technicalAdvantagesTitle')}
           </h2>
           <p className="section-description" style={{ marginBottom: '2rem' }}>
-            Nano Banana 2 采用最新的 AI 技术，为您提供卓越的图像编辑体验
+            {t('home.technicalAdvantagesDescription')}
           </p>
         </div>
       </section>

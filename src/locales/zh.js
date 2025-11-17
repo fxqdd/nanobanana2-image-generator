@@ -88,7 +88,9 @@ export default {
     nb2TextCharts: '文本、图表、信息图的准确性大幅提升',
     nb2Consistency: '近乎完美的一致性与可重复性',
     nb2Semantic: '更深层的语境理解与意图解析',
-    nb2Blend: '无缝融合（可混合 2–5 张图像）'
+    nb2Blend: '无缝融合（可混合 2–5 张图像）',
+    technicalAdvantagesTitle: '技术优势',
+    technicalAdvantagesDescription: 'Nano Banana 2 采用最新的 AI 技术，为您提供卓越的图像编辑体验'
   },
   footer: {
     description: '用简单的文字提示变换任何图像。体验AI图像编辑的未来。',

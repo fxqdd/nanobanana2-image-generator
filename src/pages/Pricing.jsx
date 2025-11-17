@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
 import SEO from '../components/SEO';
@@ -66,6 +66,65 @@ const Pricing = () => {
   const [billingCycle, setBillingCycle] = useState('monthly');
   const seoData = t('seo.pricing');
 
+  // FastSpring 支付处理函数
+  const handleCheckout = (plan) => {
+    // 检查 FastSpring API 是否已加载
+    if (typeof window === 'undefined' || !window.fastspring || !window.fastspring.builder) {
+      console.error('FastSpring API is not loaded. Please check if the script is properly included.');
+      alert(t('pricing.paymentError') || '支付系统未就绪，请稍后再试。');
+      return;
+    }
+
+    // 根据计费周期选择产品路径
+    const productPath = billingCycle === 'monthly' 
+      ? plan.productPathMonthly 
+      : plan.productPathYearly;
+
+    if (!productPath) {
+      console.error('Product path is not defined for this plan.');
+      alert(t('pricing.productError') || '产品配置错误，请联系客服。');
+      return;
+    }
+
+    try {
+      // 调用 FastSpring 支付弹窗
+      window.fastspring.builder.push({
+        product: productPath,
+        quantity: 1
+      });
+    } catch (error) {
+      console.error('Error opening FastSpring checkout:', error);
+      alert(t('pricing.checkoutError') || '打开支付页面失败，请稍后再试。');
+    }
+  };
+
+  // 监听 FastSpring 支付事件
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    // 支付成功回调
+    const handleOrderComplete = (event) => {
+      console.log('Order completed:', event);
+      // 这里可以添加支付成功后的处理逻辑，比如跳转到成功页面、更新用户状态等
+      // 例如：window.location.href = '/payment-success';
+    };
+
+    // 支付取消回调
+    const handleOrderCancel = (event) => {
+      console.log('Order cancelled:', event);
+    };
+
+    // 注册事件监听器
+    document.addEventListener('fso:order.complete', handleOrderComplete);
+    document.addEventListener('fso:order.cancel', handleOrderCancel);
+
+    // 清理函数
+    return () => {
+      document.removeEventListener('fso:order.complete', handleOrderComplete);
+      document.removeEventListener('fso:order.cancel', handleOrderCancel);
+    };
+  }, []);
+
   // 使用翻译的定价计划数据
   const pricingPlans = [
     {
@@ -80,6 +139,8 @@ const Pricing = () => {
       pointsPerYear: 9600,
       highlight: false,
       cta: t('pricing.subscribe'),
+      productPathMonthly: 'basic-monthly', // FastSpring 产品路径 - 月付
+      productPathYearly: 'basic-yearly',   // FastSpring 产品路径 - 年付
       features: [
         t('pricing.feature1'),
         t('pricing.feature2'),
@@ -105,6 +166,8 @@ const Pricing = () => {
       pointsPerYear: 30000,
       highlight: true,
       cta: t('pricing.subscribe'),
+      productPathMonthly: 'professional-monthly', // FastSpring 产品路径 - 月付
+      productPathYearly: 'professional-yearly',   // FastSpring 产品路径 - 年付
       features: [
         t('pricing.proFeature1'),
         t('pricing.proFeature2'),
@@ -131,6 +194,8 @@ const Pricing = () => {
       pointsPerYear: 65000,
       highlight: false,
       cta: t('pricing.subscribe'),
+      productPathMonthly: 'master-monthly', // FastSpring 产品路径 - 月付
+      productPathYearly: 'master-yearly',   // FastSpring 产品路径 - 年付
       features: [
         t('pricing.masterFeature1'),
         t('pricing.masterFeature2'),
@@ -257,7 +322,12 @@ const Pricing = () => {
                 ))}
               </ul>
 
-              <button className={`plan-button ${plan.highlight ? 'primary' : 'secondary'}`}>{t('pricing.subscribe')}</button>
+              <button 
+                className={`plan-button ${plan.highlight ? 'primary' : 'secondary'}`}
+                onClick={() => handleCheckout(plan)}
+              >
+                {t('pricing.subscribe')}
+              </button>
             </div>
           );
         })}

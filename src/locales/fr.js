@@ -85,8 +85,10 @@ export default {
     nb24k: 'Suréchantillonnage 4K',
     nb2TextCharts: 'Bien meilleure précision sur textes, graphiques et infographies',
     nb2Consistency: 'Cohérence et reproductibilité quasi parfaites',
-    nb2Semantic: 'Raisonnement contextuel et interprétation de l’intention renforcés',
-    nb2Blend: 'Fusion sans couture (mélange 2–5 images)'
+    nb2Semantic: 'Raisonnement contextuel et interprétation de l'intention renforcés',
+    nb2Blend: 'Fusion sans couture (mélange 2–5 images)',
+    technicalAdvantagesTitle: 'Avantages techniques',
+    technicalAdvantagesDescription: 'Nano Banana 2 adopte la dernière technologie IA pour vous offrir une excellente expérience d\'édition d\'images'
   },
   footer: {
     description: 'Transformez n\'importe quelle image avec de simples invites textuelles. Découvrez l\'avenir de l\'édition d\'images par IA.',

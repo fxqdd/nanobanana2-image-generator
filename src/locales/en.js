@@ -88,7 +88,9 @@ export default {
     nb2TextCharts: 'Much better accuracy with text, charts and infographics',
     nb2Consistency: 'Near‑perfect consistency and repeatability',
     nb2Semantic: 'Stronger contextual reasoning and intent parsing',
-    nb2Blend: 'Seamless blending (mix 2–5 images)'
+    nb2Blend: 'Seamless blending (mix 2–5 images)',
+    technicalAdvantagesTitle: 'Technical Advantages',
+    technicalAdvantagesDescription: 'Nano Banana 2 adopts the latest AI technology to provide you with an excellent image editing experience'
   },
   footer: {
     description: 'Transform any image with simple text prompts. Experience the future of AI image editing.',
