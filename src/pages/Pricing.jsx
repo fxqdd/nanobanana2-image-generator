@@ -462,10 +462,10 @@ const Pricing = () => {
             <p className="nb2-subtitle">
               {t('home.nb2Subtitle') || '由 Google 先进的 Gemini 3 Pro 模型驱动的新一代图像生成引擎'}
             </p>
+            <div className="nb2-notice">
+              {t('home.nb2Notice') || '提示：Gempix2 模型尚未正式发布。一旦开放会第一时间接入，目前线上仍由 Nano Banana 模型提供服务。'}
+            </div>
             <ul className="nb2-list">
-              <li className="nb2-notice">
-                {t('home.nb2Notice') || '提示：Gempix2 模型尚未正式发布。一旦开放会第一时间接入，目前线上仍由 Nano Banana 模型提供服务。'}
-              </li>
               <li>✓ {t('home.nb2Gemini') || 'Gemini 3 Pro 支持，语义理解更深'}</li>
               <li>✓ {t('home.nb22k') || '2K 原生（2048×2048）'}</li>
               <li>✓ {t('home.nb24k') || '4K 上采样'}</li>
