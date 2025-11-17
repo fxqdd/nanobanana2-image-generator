@@ -66,13 +66,46 @@ const Pricing = () => {
   const [billingCycle, setBillingCycle] = useState('monthly');
   const seoData = t('seo.pricing');
 
+  // 检查 FastSpring API 是否已加载
+  const checkFastSpringLoaded = () => {
+    return typeof window !== 'undefined' && 
+           window.fastspring && 
+           window.fastspring.builder &&
+           typeof window.fastspring.builder.push === 'function';
+  };
+
+  // 等待 FastSpring API 加载
+  const waitForFastSpring = (maxAttempts = 20, interval = 500) => {
+    return new Promise((resolve, reject) => {
+      let attempts = 0;
+      const checkInterval = setInterval(() => {
+        attempts++;
+        if (checkFastSpringLoaded()) {
+          clearInterval(checkInterval);
+          resolve(true);
+        } else if (attempts >= maxAttempts) {
+          clearInterval(checkInterval);
+          reject(new Error('FastSpring API 加载超时'));
+        }
+      }, interval);
+    });
+  };
+
   // FastSpring 支付处理函数
-  const handleCheckout = (plan) => {
+  const handleCheckout = async (plan) => {
+    console.log('开始支付流程，计划:', plan.id, '计费周期:', billingCycle);
+    
     // 检查 FastSpring API 是否已加载
-    if (typeof window === 'undefined' || !window.fastspring || !window.fastspring.builder) {
-      console.error('FastSpring API is not loaded. Please check if the script is properly included.');
-      alert(t('pricing.paymentError') || '支付系统未就绪，请稍后再试。');
-      return;
+    if (!checkFastSpringLoaded()) {
+      console.log('FastSpring API 未加载，等待加载...');
+      try {
+        await waitForFastSpring();
+        console.log('FastSpring API 已加载');
+      } catch (error) {
+        console.error('FastSpring API 加载失败:', error);
+        alert('支付系统未就绪，请刷新页面后重试。如果问题持续，请联系客服。');
+        return;
+      }
     }
 
     // 根据计费周期选择产品路径
@@ -81,10 +114,12 @@ const Pricing = () => {
       : plan.productPathYearly;
 
     if (!productPath) {
-      console.error('Product path is not defined for this plan.');
-      alert(t('pricing.productError') || '产品配置错误，请联系客服。');
+      console.error('产品路径未定义，计划:', plan.id, '计费周期:', billingCycle);
+      alert('产品配置错误，请联系客服。');
       return;
     }
+
+    console.log('准备打开支付弹窗，产品路径:', productPath);
 
     try {
       // 调用 FastSpring 支付弹窗
@@ -92,26 +127,65 @@ const Pricing = () => {
         product: productPath,
         quantity: 1
       });
+      console.log('FastSpring 支付弹窗已触发');
     } catch (error) {
-      console.error('Error opening FastSpring checkout:', error);
-      alert(t('pricing.checkoutError') || '打开支付页面失败，请稍后再试。');
+      console.error('打开支付页面失败:', error);
+      alert('打开支付页面失败，请稍后再试。错误信息: ' + error.message);
     }
   };
 
-  // 监听 FastSpring 支付事件
+  // 监听 FastSpring 支付事件和检查 API 加载状态
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
+    // 检查 FastSpring 脚本是否已加载
+    const checkScript = () => {
+      const script = document.getElementById('fsc-api');
+      if (!script) {
+        console.warn('⚠️ FastSpring 脚本标签未找到');
+        return;
+      }
+      console.log('✓ FastSpring 脚本标签已找到');
+      
+      // 等待脚本加载
+      script.onload = () => {
+        console.log('✓ FastSpring 脚本已加载');
+        // 再等待一下让 API 初始化
+        setTimeout(() => {
+          if (checkFastSpringLoaded()) {
+            console.log('✓ FastSpring API 已就绪');
+          } else {
+            console.warn('⚠️ FastSpring 脚本已加载但 API 未就绪');
+          }
+        }, 1000);
+      };
+      
+      script.onerror = () => {
+        console.error('❌ FastSpring 脚本加载失败');
+      };
+    };
+
+    // 立即检查
+    checkScript();
+    
+    // 如果脚本已经加载，也检查一下
+    if (document.readyState === 'complete') {
+      setTimeout(checkScript, 100);
+    } else {
+      window.addEventListener('load', checkScript);
+    }
+
     // 支付成功回调
     const handleOrderComplete = (event) => {
-      console.log('Order completed:', event);
+      console.log('✅ 订单完成:', event);
       // 这里可以添加支付成功后的处理逻辑，比如跳转到成功页面、更新用户状态等
       // 例如：window.location.href = '/payment-success';
+      alert('支付成功！感谢您的订阅。');
     };
 
     // 支付取消回调
     const handleOrderCancel = (event) => {
-      console.log('Order cancelled:', event);
+      console.log('❌ 订单取消:', event);
     };
 
     // 注册事件监听器
