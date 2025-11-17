@@ -82,6 +82,7 @@ export default {
     viewPricing: '查看定价',
     nb2Title: 'Nano Banana 2（Gempix2）',
     nb2Subtitle: '由 Google 先进的 Gemini 3 Pro 模型驱动的新一代图像生成引擎，针对文本理解、图表与信息图识别、复杂语境推理全面升级。',
+    nb2Notice: '提示：Gempix2 模型尚未正式发布，一旦开放我们会第一时间接入，目前线上仍由 Nano Banana 模型提供服务。',
     nb2Gemini: 'Gemini 3 Pro 支持，语义理解更深',
     nb22k: '2K 原生（2048×2048）',
     nb24k: '4K 上采样',
