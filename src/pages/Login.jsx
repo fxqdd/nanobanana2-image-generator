@@ -255,8 +255,9 @@ const Login = () => {
         }
         // 提前取消 Loading，再导航，避免按钮长时间停在 Loading
         setIsLoading(false);
-        console.log('[Login] navigating to home after email login');
-        navigate(getLocalizedPath('/'));
+        const targetPath = getLocalizedPath('/account');
+        console.log('[Login] navigating to account after email login:', targetPath);
+        navigate(targetPath);
         return;
       }
 
