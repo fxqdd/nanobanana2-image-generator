@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
 import SEO from '../components/SEO';
+import PayPalButton from '../components/PayPalButton';
 import '../styles/Pricing.css';
 
 const formatPrice = (value) => `$${value.toFixed(2)}`;
@@ -61,143 +62,59 @@ const renderComparisonCell = (value, type = 'boolean') => {
   return <span className="comparison-text">{value}</span>;
 };
 
+const GUMROAD_BASIC_MONTHLY_URL = 'https://fxqdd.gumroad.com/l/qxdec';
+
 const Pricing = () => {
   const { t, getLocalizedPath } = useLanguage();
   const [billingCycle, setBillingCycle] = useState('monthly');
   const seoData = t('seo.pricing');
 
-  // 检查 FastSpring API 是否已加载
-  const checkFastSpringLoaded = () => {
-    return typeof window !== 'undefined' && 
-           window.fastspring && 
-           window.fastspring.builder &&
-           typeof window.fastspring.builder.push === 'function';
-  };
-
-  // 等待 FastSpring API 加载
-  const waitForFastSpring = (maxAttempts = 20, interval = 500) => {
-    return new Promise((resolve, reject) => {
-      let attempts = 0;
-      const checkInterval = setInterval(() => {
-        attempts++;
-        if (checkFastSpringLoaded()) {
-          clearInterval(checkInterval);
-          resolve(true);
-        } else if (attempts >= maxAttempts) {
-          clearInterval(checkInterval);
-          reject(new Error('FastSpring API 加载超时'));
-        }
-      }, interval);
-    });
-  };
-
-  // FastSpring 支付处理函数
-  const handleCheckout = async (plan) => {
-    console.log('开始支付流程，计划:', plan.id, '计费周期:', billingCycle);
+  // PayPal支付成功处理
+  const handlePayPalSuccess = (paymentData) => {
+    console.log('✅ PayPal支付成功:', paymentData);
     
-    // 检查 FastSpring API 是否已加载
-    if (!checkFastSpringLoaded()) {
-      console.log('FastSpring API 未加载，等待加载...');
-      try {
-        await waitForFastSpring();
-        console.log('FastSpring API 已加载');
-      } catch (error) {
-        console.error('FastSpring API 加载失败:', error);
-        alert('支付系统未就绪，请刷新页面后重试。如果问题持续，请联系客服。');
-        return;
-      }
-    }
+    // 这里可以调用后端API更新用户订阅状态
+    // 例如：
+    // fetch('/api/subscriptions', {
+    //   method: 'POST',
+    //   headers: { 'Content-Type': 'application/json' },
+    //   body: JSON.stringify({
+    //     orderId: paymentData.orderId,
+    //     planId: paymentData.planId,
+    //     billingCycle: paymentData.billingCycle,
+    //     amount: paymentData.amount
+    //   })
+    // });
 
-    // 根据计费周期选择产品路径
-    const productPath = billingCycle === 'monthly' 
-      ? plan.productPathMonthly 
-      : plan.productPathYearly;
-
-    if (!productPath) {
-      console.error('产品路径未定义，计划:', plan.id, '计费周期:', billingCycle);
-      alert('产品配置错误，请联系客服。');
-      return;
-    }
-
-    console.log('准备打开支付弹窗，产品路径:', productPath);
-
-    try {
-      // 调用 FastSpring 支付弹窗
-      window.fastspring.builder.push({
-        product: productPath,
-        quantity: 1
-      });
-      console.log('FastSpring 支付弹窗已触发');
-    } catch (error) {
-      console.error('打开支付页面失败:', error);
-      alert('打开支付页面失败，请稍后再试。错误信息: ' + error.message);
-    }
+    // 显示成功消息
+    alert(`支付成功！感谢您订阅 ${paymentData.planId} 计划。订单ID: ${paymentData.orderId}`);
+    
+    // 可以跳转到成功页面
+    // window.location.href = '/payment-success';
   };
 
-  // 监听 FastSpring 支付事件和检查 API 加载状态
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
+  // PayPal支付错误处理
+  const handlePayPalError = (error) => {
+    console.error('❌ PayPal支付错误:', error);
+    alert('支付过程中出现错误，请稍后重试。如果问题持续，请联系客服。');
+  };
 
-    // 检查 FastSpring 脚本是否已加载
-    const checkScript = () => {
-      const script = document.getElementById('fsc-api');
-      if (!script) {
-        console.warn('⚠️ FastSpring 脚本标签未找到');
-        return;
-      }
-      console.log('✓ FastSpring 脚本标签已找到');
-      
-      // 等待脚本加载
-      script.onload = () => {
-        console.log('✓ FastSpring 脚本已加载');
-        // 再等待一下让 API 初始化
-        setTimeout(() => {
-          if (checkFastSpringLoaded()) {
-            console.log('✓ FastSpring API 已就绪');
-          } else {
-            console.warn('⚠️ FastSpring 脚本已加载但 API 未就绪');
-          }
-        }, 1000);
-      };
-      
-      script.onerror = () => {
-        console.error('❌ FastSpring 脚本加载失败');
-      };
-    };
+  // PayPal支付取消处理
+  const handlePayPalCancel = (data) => {
+    console.log('⚠️ PayPal支付取消:', data);
+    // 可以显示取消消息，或者不显示（用户主动取消）
+  };
 
-    // 立即检查
-    checkScript();
-    
-    // 如果脚本已经加载，也检查一下
-    if (document.readyState === 'complete') {
-      setTimeout(checkScript, 100);
+  // 计算支付金额
+  const calculateAmount = (plan) => {
+    if (billingCycle === 'monthly') {
+      return plan.monthlySale;
     } else {
-      window.addEventListener('load', checkScript);
+      // 年付：月付价格减去年付折扣，再乘以12
+      const yearlyMonthly = Math.max(plan.monthlySale - plan.yearlyDiscount, 0);
+      return yearlyMonthly * 12;
     }
-
-    // 支付成功回调
-    const handleOrderComplete = (event) => {
-      console.log('✅ 订单完成:', event);
-      // 这里可以添加支付成功后的处理逻辑，比如跳转到成功页面、更新用户状态等
-      // 例如：window.location.href = '/payment-success';
-      alert('支付成功！感谢您的订阅。');
-    };
-
-    // 支付取消回调
-    const handleOrderCancel = (event) => {
-      console.log('❌ 订单取消:', event);
-    };
-
-    // 注册事件监听器
-    document.addEventListener('fso:order.complete', handleOrderComplete);
-    document.addEventListener('fso:order.cancel', handleOrderCancel);
-
-    // 清理函数
-    return () => {
-      document.removeEventListener('fso:order.complete', handleOrderComplete);
-      document.removeEventListener('fso:order.cancel', handleOrderCancel);
-    };
-  }, []);
+  };
 
   // 使用翻译的定价计划数据
   const pricingPlans = [
@@ -363,6 +280,7 @@ const Pricing = () => {
       <div className="pricing-plans">
         {pricingPlans.map((plan) => {
           const pricing = getPlanPricing(plan, billingCycle, t);
+          const isBasicMonthly = plan.id === 'basic' && billingCycle === 'monthly';
           return (
             <div key={plan.id} className={`pricing-card ${plan.highlight ? 'popular' : ''}`}>
               <div className="plan-topline">
@@ -396,12 +314,26 @@ const Pricing = () => {
                 ))}
               </ul>
 
-              <button 
-                className={`plan-button ${plan.highlight ? 'primary' : 'secondary'}`}
-                onClick={() => handleCheckout(plan)}
-              >
-                {t('pricing.subscribe')}
-              </button>
+              {isBasicMonthly ? (
+                <button
+                  className={`plan-button ${plan.highlight ? 'primary' : 'secondary'}`}
+                  type="button"
+                  onClick={() => window.open(GUMROAD_BASIC_MONTHLY_URL, '_blank', 'noopener')}
+                >
+                  {t('pricing.subscribe')}
+                </button>
+              ) : (
+                <div className="paypal-button-container">
+                  <PayPalButton
+                    amount={calculateAmount(plan)}
+                    planId={plan.id}
+                    billingCycle={billingCycle}
+                    onSuccess={handlePayPalSuccess}
+                    onError={handlePayPalError}
+                    onCancel={handlePayPalCancel}
+                  />
+                </div>
+              )}
             </div>
           );
         })}

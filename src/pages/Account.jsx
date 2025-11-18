@@ -108,12 +108,6 @@ const Account = () => {
             </span>
           </div>
         </div>
-        <div className="row">
-          <div className="col">
-            <label>{t('account.recentActivity') || 'Recent activity'}</label>
-            <span>{t('account.recentActivityDesc') || 'No recent activity'}</span>
-          </div>
-        </div>
       </div>
     </div>
   );

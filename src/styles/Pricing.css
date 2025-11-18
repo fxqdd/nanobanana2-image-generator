@@ -260,6 +260,25 @@
   box-shadow: 0 10px 20px rgba(255, 203, 93, 0.25);
 }
 
+/* PayPal按钮容器样式 */
+.paypal-button-container {
+  width: 100%;
+  margin-top: 8px;
+  min-height: 45px; /* 确保有足够空间显示PayPal按钮 */
+}
+
+/* 确保PayPal按钮样式正确显示 */
+.paypal-button-container > div {
+  width: 100% !important;
+}
+
+/* PayPal按钮响应式调整 */
+@media (max-width: 768px) {
+  .paypal-button-container {
+    min-height: 40px;
+  }
+}
+
 /* 功能对比表格 */
 .comparison-section {
   margin-bottom: 88px;
