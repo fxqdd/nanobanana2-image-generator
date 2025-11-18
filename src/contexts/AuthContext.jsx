@@ -237,6 +237,25 @@ export const AuthProvider = ({ children }) => {
     };
   }, []);
 
+  // 离开页面时主动注销，避免下次进入时卡在登录状态
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+
+    const handlePageExit = () => {
+      supabase.auth.signOut().catch(() => {});
+      setUser(null);
+      setIsLoggedIn(false);
+    };
+
+    window.addEventListener('beforeunload', handlePageExit);
+    window.addEventListener('pagehide', handlePageExit);
+
+    return () => {
+      window.removeEventListener('beforeunload', handlePageExit);
+      window.removeEventListener('pagehide', handlePageExit);
+    };
+  }, []);
+
   // 常规邮箱登录函数（现在使用 Supabase）
   const login = async (credentials) => {
     try {
