@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
 import SEO from '../components/SEO';
-import PayPalButton from '../components/PayPalButton';
 import '../styles/Pricing.css';
 
 const formatPrice = (value) => `$${value.toFixed(2)}`;
@@ -69,51 +68,17 @@ const Pricing = () => {
   const [billingCycle, setBillingCycle] = useState('monthly');
   const seoData = t('seo.pricing');
 
-  // PayPal支付成功处理
-  const handlePayPalSuccess = (paymentData) => {
-    console.log('✅ PayPal支付成功:', paymentData);
-    
-    // 这里可以调用后端API更新用户订阅状态
-    // 例如：
-    // fetch('/api/subscriptions', {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify({
-    //     orderId: paymentData.orderId,
-    //     planId: paymentData.planId,
-    //     billingCycle: paymentData.billingCycle,
-    //     amount: paymentData.amount
-    //   })
-    // });
-
-    // 显示成功消息
-    alert(`支付成功！感谢您订阅 ${paymentData.planId} 计划。订单ID: ${paymentData.orderId}`);
-    
-    // 可以跳转到成功页面
-    // window.location.href = '/payment-success';
+  const getCheckoutLink = (plan) => {
+    return billingCycle === 'monthly' ? plan.gumroadMonthly : plan.gumroadYearly;
   };
 
-  // PayPal支付错误处理
-  const handlePayPalError = (error) => {
-    console.error('❌ PayPal支付错误:', error);
-    alert('支付过程中出现错误，请稍后重试。如果问题持续，请联系客服。');
-  };
-
-  // PayPal支付取消处理
-  const handlePayPalCancel = (data) => {
-    console.log('⚠️ PayPal支付取消:', data);
-    // 可以显示取消消息，或者不显示（用户主动取消）
-  };
-
-  // 计算支付金额
-  const calculateAmount = (plan) => {
-    if (billingCycle === 'monthly') {
-      return plan.monthlySale;
-    } else {
-      // 年付：月付价格减去年付折扣，再乘以12
-      const yearlyMonthly = Math.max(plan.monthlySale - plan.yearlyDiscount, 0);
-      return yearlyMonthly * 12;
+  const handleCheckout = (plan) => {
+    const checkoutLink = getCheckoutLink(plan);
+    if (!checkoutLink) {
+      alert(t('pricing.checkoutUnavailable') || 'Payment link is not ready for this plan. Please contact support.');
+      return;
     }
+    window.open(checkoutLink, '_blank', 'noopener');
   };
 
   // 使用翻译的定价计划数据
@@ -130,8 +95,8 @@ const Pricing = () => {
       pointsPerYear: 9600,
       highlight: false,
       cta: t('pricing.subscribe'),
-      productPathMonthly: 'basic-monthly', // FastSpring 产品路径 - 月付
-      productPathYearly: 'basic-yearly',   // FastSpring 产品路径 - 年付
+      gumroadMonthly: GUMROAD_BASIC_MONTHLY_URL,
+      gumroadYearly: '',
       features: [
         t('pricing.feature1'),
         t('pricing.feature2'),
@@ -157,8 +122,8 @@ const Pricing = () => {
       pointsPerYear: 30000,
       highlight: true,
       cta: t('pricing.subscribe'),
-      productPathMonthly: 'professional-monthly', // FastSpring 产品路径 - 月付
-      productPathYearly: 'professional-yearly',   // FastSpring 产品路径 - 年付
+      gumroadMonthly: '',
+      gumroadYearly: '',
       features: [
         t('pricing.proFeature1'),
         t('pricing.proFeature2'),
@@ -185,8 +150,8 @@ const Pricing = () => {
       pointsPerYear: 65000,
       highlight: false,
       cta: t('pricing.subscribe'),
-      productPathMonthly: 'master-monthly', // FastSpring 产品路径 - 月付
-      productPathYearly: 'master-yearly',   // FastSpring 产品路径 - 年付
+      gumroadMonthly: '',
+      gumroadYearly: '',
       features: [
         t('pricing.masterFeature1'),
         t('pricing.masterFeature2'),
@@ -280,7 +245,7 @@ const Pricing = () => {
       <div className="pricing-plans">
         {pricingPlans.map((plan) => {
           const pricing = getPlanPricing(plan, billingCycle, t);
-          const isBasicMonthly = plan.id === 'basic' && billingCycle === 'monthly';
+          const checkoutLink = getCheckoutLink(plan);
           return (
             <div key={plan.id} className={`pricing-card ${plan.highlight ? 'popular' : ''}`}>
               <div className="plan-topline">
@@ -314,26 +279,14 @@ const Pricing = () => {
                 ))}
               </ul>
 
-              {isBasicMonthly ? (
-                <button
-                  className={`plan-button ${plan.highlight ? 'primary' : 'secondary'}`}
-                  type="button"
-                  onClick={() => window.open(GUMROAD_BASIC_MONTHLY_URL, '_blank', 'noopener')}
-                >
-                  {t('pricing.subscribe')}
-                </button>
-              ) : (
-                <div className="paypal-button-container">
-                  <PayPalButton
-                    amount={calculateAmount(plan)}
-                    planId={plan.id}
-                    billingCycle={billingCycle}
-                    onSuccess={handlePayPalSuccess}
-                    onError={handlePayPalError}
-                    onCancel={handlePayPalCancel}
-                  />
-                </div>
-              )}
+              <button
+                className={`plan-button ${plan.highlight ? 'primary' : 'secondary'}`}
+                type="button"
+                onClick={() => handleCheckout(plan)}
+                disabled={!checkoutLink}
+              >
+                {checkoutLink ? t('pricing.subscribe') : t('pricing.contactUs') || 'Contact us'}
+              </button>
             </div>
           );
         })}
