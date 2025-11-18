@@ -246,10 +246,35 @@ const Login = () => {
       setIsLoading(true);
       
       if (isLoginForm) {
+        // 在登录之前设置存储模式，但保留已有的 session（如果有）
+        // 这样 Supabase 客户端会在正确的存储中创建新的 session
+        const targetMode = rememberMe ? 'local' : 'session';
+        const currentMode = getAuthStorageMode();
+        
+        if (currentMode !== targetMode) {
+          console.log('[Login] Setting storage mode to:', targetMode, '(before login)');
+          console.log('[Login] Current storage mode:', currentMode);
+          // 在登录前切换存储，但保留已有 session（如果有）
+          // 这样如果切换后没有 session，Supabase 会在新存储中创建
+          setAuthStorageMode(targetMode, true);
+          
+          // 等待存储切换完成，并验证切换是否成功
+          await new Promise(resolve => setTimeout(resolve, 100));
+          const verifyMode = getAuthStorageMode();
+          console.log('[Login] Storage mode after switch:', verifyMode);
+          if (verifyMode !== targetMode) {
+            console.warn('[Login] Storage mode switch may have failed!');
+          }
+        }
+        
         console.log('[Login] Calling signInWithPassword...');
         try {
           const { data, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
-          console.log('[Login] signInWithPassword result:', { hasSession: !!data?.session, error: signInError });
+          console.log('[Login] signInWithPassword result:', { 
+            hasSession: !!data?.session, 
+            error: signInError,
+            sessionUser: data?.session?.user?.email 
+          });
           
           if (signInError) {
             console.error('[Login] Sign in error:', signInError);
@@ -265,12 +290,9 @@ const Login = () => {
             return;
           }
           
-          // 登录成功后再切换存储模式，避免在登录前清理已有的 session
-          console.log('[Login] Setting storage mode to:', rememberMe ? 'local' : 'session');
-          setAuthStorageMode(rememberMe ? 'local' : 'session');
-          
-          // 等待一小段时间确保存储切换完成
-          await new Promise(resolve => setTimeout(resolve, 50));
+          // 登录成功后，确保 session 在正确的存储中
+          // 如果存储模式在登录前已经切换，Supabase 应该已经在正确的存储中创建了 session
+          console.log('[Login] Login successful, session created in', targetMode, 'storage');
           
           // 提前取消 Loading，再导航，避免按钮长时间停在 Loading
           setIsLoading(false);

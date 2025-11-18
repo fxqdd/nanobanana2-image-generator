@@ -73,7 +73,7 @@ export const getAuthStorageMode = () => {
   return window.localStorage.getItem(STORAGE_MODE_KEY) === 'session' ? 'session' : 'local';
 };
 
-export const setAuthStorageMode = (mode = 'local') => {
+export const setAuthStorageMode = (mode = 'local', preserveSession = true) => {
   if (typeof window === 'undefined') return;
   
   const currentMode = getAuthStorageMode();
@@ -85,34 +85,26 @@ export const setAuthStorageMode = (mode = 'local') => {
     return;
   }
   
-  // 在切换存储之前，先迁移现有的 session 数据
-  try {
-    const existingSession = currentStorage.getItem(SUPABASE_STORAGE_KEY);
-    if (existingSession) {
-      // 迁移 session 到新的存储
-      targetStorage.setItem(SUPABASE_STORAGE_KEY, existingSession);
-      console.log(`[AuthStorage] Migrated session from ${currentMode} to ${mode} storage`);
+  // 在切换存储之前，先迁移现有的 session 数据（如果 preserveSession 为 true）
+  if (preserveSession) {
+    try {
+      const existingSession = currentStorage.getItem(SUPABASE_STORAGE_KEY);
+      if (existingSession) {
+        // 迁移 session 到新的存储
+        targetStorage.setItem(SUPABASE_STORAGE_KEY, existingSession);
+        console.log(`[AuthStorage] Migrated session from ${currentMode} to ${mode} storage`);
+      }
+    } catch (error) {
+      console.warn('[AuthStorage] Failed to migrate session during storage switch:', error);
     }
-  } catch (error) {
-    console.warn('[AuthStorage] Failed to migrate session during storage switch:', error);
   }
   
-  // 切换存储适配器
+  // 切换存储适配器（必须在 Supabase 操作之前完成）
   storageAdapter.setStorage(targetStorage);
   window.localStorage.setItem(STORAGE_MODE_KEY, mode === 'session' ? 'session' : 'local');
   
-  // 清理旧存储（但只在确认新存储有数据后）
-  const opposite = mode === 'session' ? window.localStorage : window.sessionStorage;
-  try {
-    // 延迟清理，确保新存储已经设置好
-    setTimeout(() => {
-      if (targetStorage.getItem(SUPABASE_STORAGE_KEY)) {
-        opposite?.removeItem(SUPABASE_STORAGE_KEY);
-      }
-    }, 100);
-  } catch (error) {
-    console.warn('Failed to clean up opposite auth storage', error);
-  }
+  // 不立即清理旧存储，让 Supabase 客户端有时间同步
+  // 旧存储会在下次切换时自然被覆盖
 };
 
 export default supabase;

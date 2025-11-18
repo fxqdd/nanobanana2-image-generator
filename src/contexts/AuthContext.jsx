@@ -216,7 +216,13 @@ export const AuthProvider = ({ children }) => {
     // 监听 Supabase auth 状态变化
     try {
       const { data: { subscription: authSubscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-        console.log('🔄 Auth state changed:', event, session?.user?.email);
+        console.log('🔄 Auth state changed:', event, session?.user?.email || 'no user');
+        console.log('🔄 Session details:', { 
+          hasSession: !!session, 
+          hasUser: !!session?.user,
+          userId: session?.user?.id,
+          email: session?.user?.email 
+        });
         if (isMounted) {
           await syncSessionToState(session);
         }
