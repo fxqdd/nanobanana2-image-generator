@@ -38,7 +38,7 @@ const Login = () => {
   // 已移除测试账号
   
   const navigate = useNavigate();
-  const { socialLogin } = useAuth();
+  const { socialLogin, isLoggedIn } = useAuth();
   const { t, getLocalizedPath, language } = useLanguage();
   const seoData = t('seo.login') || { title: t('login.title'), description: '', keywords: '' };
   
@@ -317,10 +317,47 @@ const Login = () => {
           if (authStateResolved && resolvedSession) {
             console.log('[Login] ✓ Using session from onAuthStateChange');
             setIsLoading(false);
-            const targetPath = getLocalizedPath('/account');
-            console.log('[Login] navigating to account after email login:', targetPath);
-            navigate(targetPath);
-            return;
+            
+            // 等待 AuthContext 状态更新（syncSessionToState 是异步的）
+            console.log('[Login] Waiting for AuthContext to sync state...');
+            
+            // 轮询检查 isLoggedIn 状态，最多等待 3 秒
+            let attempts = 0;
+            const maxAttempts = 30; // 30 * 100ms = 3 秒
+            while (attempts < maxAttempts) {
+              await new Promise(resolve => setTimeout(resolve, 100));
+              // 使用闭包获取最新的 isLoggedIn 值（通过检查 session）
+              const { data: sessionCheck } = await supabase.auth.getSession();
+              if (sessionCheck?.session) {
+                console.log('[Login] Session confirmed, AuthContext should be updated');
+                break;
+              }
+              attempts++;
+            }
+            
+            // 再次确认 session 存在
+            const { data: finalSessionCheck } = await supabase.auth.getSession();
+            if (finalSessionCheck?.session) {
+              const targetPath = getLocalizedPath('/account');
+              console.log('[Login] navigating to account after email login:', targetPath);
+              
+              // 尝试使用 React Router 导航
+              navigate(targetPath, { replace: true });
+              
+              // 如果 1 秒后还在登录页面，使用硬导航作为备用方案
+              setTimeout(() => {
+                if (window.location.pathname.includes('/login')) {
+                  console.log('[Login] Still on login page, using hard navigation as fallback');
+                  window.location.href = targetPath;
+                }
+              }, 1000);
+              
+              return;
+            } else {
+              console.error('[Login] Session lost after waiting, login may have failed');
+              setError(t('login.loginFailed') || '登录失败，请重试');
+              return;
+            }
           }
           
           // 否则使用 signInWithPassword 的结果
@@ -337,9 +374,13 @@ const Login = () => {
             if (data?.session) {
               console.log('[Login] ✓ Login successful via signInWithPassword result');
               setIsLoading(false);
+              
+              // 等待 AuthContext 状态更新
+              await new Promise(resolve => setTimeout(resolve, 500));
+              
               const targetPath = getLocalizedPath('/account');
               console.log('[Login] navigating to account after email login:', targetPath);
-              navigate(targetPath);
+              navigate(targetPath, { replace: true });
               return;
             }
           }
@@ -356,8 +397,13 @@ const Login = () => {
           if (sessionData?.session && sessionData.session.user?.email === email) {
             console.log('[Login] ✓ Found session via getSession(), login was successful');
             setIsLoading(false);
+            
+            // 等待 AuthContext 状态更新
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
             const targetPath = getLocalizedPath('/account');
-            navigate(targetPath);
+            console.log('[Login] navigating to account after email login:', targetPath);
+            navigate(targetPath, { replace: true });
             return;
           }
           
@@ -381,8 +427,13 @@ const Login = () => {
             if (sessionData?.session && sessionData.session.user?.email === email) {
               console.log('[Login] ✓ Found session despite error, proceeding with navigation');
               setIsLoading(false);
+              
+              // 等待 AuthContext 状态更新
+              await new Promise(resolve => setTimeout(resolve, 500));
+              
               const targetPath = getLocalizedPath('/account');
-              navigate(targetPath);
+              console.log('[Login] navigating to account after email login:', targetPath);
+              navigate(targetPath, { replace: true });
               return;
             }
           } catch (checkErr) {
