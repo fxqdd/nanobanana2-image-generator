@@ -244,7 +244,6 @@ const Login = () => {
     try {
       console.log('[Login] handleSubmit start, isLoginForm=', isLoginForm);
       setIsLoading(true);
-      setAuthStorageMode(rememberMe ? 'local' : 'session');
       
       if (isLoginForm) {
         console.log('[Login] Calling signInWithPassword...');
@@ -265,6 +264,13 @@ const Login = () => {
             setIsLoading(false);
             return;
           }
+          
+          // 登录成功后再切换存储模式，避免在登录前清理已有的 session
+          console.log('[Login] Setting storage mode to:', rememberMe ? 'local' : 'session');
+          setAuthStorageMode(rememberMe ? 'local' : 'session');
+          
+          // 等待一小段时间确保存储切换完成
+          await new Promise(resolve => setTimeout(resolve, 50));
           
           // 提前取消 Loading，再导航，避免按钮长时间停在 Loading
           setIsLoading(false);
