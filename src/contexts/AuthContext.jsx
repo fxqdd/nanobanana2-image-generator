@@ -1,5 +1,6 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import supabase from '../lib/supabaseClient';
+import { DEFAULT_FREE_PLAN, DEFAULT_FREE_CREDITS } from '../constants/subscription';
 
 // 创建认证上下文
 const AuthContext = createContext();
@@ -9,6 +10,46 @@ export const AuthProvider = ({ children }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  const buildDefaultProfilePayload = (supabaseUser) => {
+    const fallbackName =
+      supabaseUser.user_metadata?.full_name ||
+      supabaseUser.user_metadata?.name ||
+      supabaseUser.email?.split('@')[0] ||
+      'User';
+
+    return {
+      user_id: supabaseUser.id,
+      username: fallbackName,
+      email: supabaseUser.email,
+      plan: DEFAULT_FREE_PLAN,
+      credits_remaining: DEFAULT_FREE_CREDITS,
+      is_admin: false
+    };
+  };
+
+  const createDefaultProfile = async (supabaseUser) => {
+    if (!supabaseUser) return null;
+    const defaultProfile = buildDefaultProfilePayload(supabaseUser);
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .insert(defaultProfile)
+        .select('*')
+        .single();
+
+      if (error) {
+        console.warn('Failed to create default profile:', error);
+        return defaultProfile;
+      }
+
+      console.log('✓ Default profile created with free plan');
+      return data;
+    } catch (createError) {
+      console.warn('Error creating default profile:', createError);
+      return defaultProfile;
+    }
+  };
 
   // 从 Supabase session 和 profile 获取用户信息
   const fetchUserProfile = async (supabaseUser) => {
@@ -34,15 +75,25 @@ export const AuthProvider = ({ children }) => {
         return { data: null, error: err };
       });
 
-      if (error && error.code !== 'PGRST116') {
-        console.warn('Failed to fetch profile:', error);
+      let resolvedProfile = profile;
+
+      if (error) {
+        if (error.code === 'PGRST116') {
+          resolvedProfile = await createDefaultProfile(supabaseUser);
+        } else {
+          console.warn('Failed to fetch profile:', error);
+        }
+      }
+
+      if (!resolvedProfile) {
+        resolvedProfile = await createDefaultProfile(supabaseUser);
       }
 
       // 构建用户数据对象
       const userData = {
         id: supabaseUser.id,
         email: supabaseUser.email,
-        name: profile?.username || 
+        name: resolvedProfile?.username || 
               supabaseUser.user_metadata?.full_name || 
               supabaseUser.user_metadata?.name ||
               supabaseUser.email?.split('@')[0] || 
@@ -50,7 +101,7 @@ export const AuthProvider = ({ children }) => {
         provider: supabaseUser.app_metadata?.provider || 'email',
         avatar: supabaseUser.user_metadata?.avatar_url || 
                 supabaseUser.user_metadata?.picture || 
-                profile?.avatar_url || 
+                resolvedProfile?.avatar_url || 
                 null
       };
 

@@ -5,6 +5,7 @@ import { useLanguage } from '../contexts/LanguageContext';
 import SEO from '../components/SEO';
 import supabase, { setAuthStorageMode, getAuthStorageMode } from '../lib/supabaseClient';
 import { sendVerificationEmail, registerUser } from '../utils/emailAPI';
+import { DEFAULT_FREE_PLAN, DEFAULT_FREE_CREDITS } from '../constants/subscription';
 import '../styles/Login.css';
 
 const PENDING_EMAIL_KEY = 'nb-pending-email';
@@ -106,7 +107,9 @@ const Login = () => {
                   .insert({
                     user_id: session.user.id,
                     username: username,
-                    email: session.user.email
+                    email: session.user.email,
+                    plan: DEFAULT_FREE_PLAN,
+                    credits_remaining: DEFAULT_FREE_CREDITS
                   });
                 
                 if (insertError) {
@@ -144,7 +147,8 @@ const Login = () => {
             setVerificationEmail('');
             
             // 返回登录页，让用户自行登录
-            navigate(getLocalizedPath('/login'));
+            setIsLoading(false);
+            navigate(getLocalizedPath('/'));
             return;
           } else {
             // 没有 session，可能是 token 还未处理完成，等待一下再试
@@ -152,11 +156,12 @@ const Login = () => {
               const { data: { session: retrySession } } = await supabase.auth.getSession();
               if (retrySession) {
                 window.location.hash = '';
-                navigate(getLocalizedPath('/login'));
+                setIsLoading(false);
+                navigate(getLocalizedPath('/'));
               } else {
                 setError(t('login.loginFailed') || '登录失败，请重试');
+                setIsLoading(false);
               }
-              setIsLoading(false);
             }, 1000);
             return;
           }
@@ -165,6 +170,8 @@ const Login = () => {
           setError(err.message || t('common.error'));
           setIsLoading(false);
         }
+      } else {
+        setIsLoading(false);
       }
     };
     

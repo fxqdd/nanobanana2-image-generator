@@ -32,6 +32,30 @@ export async function getMySubscription() {
   return data;
 }
 
+export async function getMyInvoices(limit = 10) {
+  const user = await getCurrentUser();
+  if (!user) return [];
+
+  try {
+    const { data, error } = await supabase
+      .from('invoices')
+      .select('id, amount_cents, currency, provider, external_id, description, issued_at')
+      .eq('user_id', user.id)
+      .order('issued_at', { ascending: false })
+      .limit(limit);
+
+    if (error) {
+      console.warn('Failed to load invoices (table may not exist):', error);
+      return [];
+    }
+
+    return data || [];
+  } catch (err) {
+    console.warn('Error loading invoices:', err);
+    return [];
+  }
+}
+
 export async function getMyGenerationsCountThisMonth() {
   const user = await getCurrentUser();
   if (!user) return 0;
@@ -45,6 +69,52 @@ export async function getMyGenerationsCountThisMonth() {
     .gte('created_at', from.toISOString());
   if (error) return 0;
   return count || 0;
+}
+
+// 获取当前用户的生成历史，按时间倒序，限制条数
+export async function getMyGenerationHistory(limit = 30) {
+  const user = await getCurrentUser();
+  if (!user) return [];
+
+  const { data, error } = await supabase
+    .from('generations')
+    .select('id, model, prompt, result_url, duration_ms, created_at')
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: false })
+    .limit(limit);
+
+  if (error) {
+    console.error('Failed to load generation history:', error);
+    return [];
+  }
+
+  return data || [];
+}
+
+// 限制每个用户最多保留 limit 条生成记录，超出部分从最旧开始删除
+export async function enforceGenerationHistoryLimit(limit = 30) {
+  const user = await getCurrentUser();
+  if (!user) return;
+
+  const { data, error } = await supabase
+    .from('generations')
+    .select('id, created_at')
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: false });
+
+  if (error || !data || data.length <= limit) return;
+
+  const idsToDelete = data.slice(limit).map((row) => row.id);
+  if (!idsToDelete.length) return;
+
+  const { error: deleteError } = await supabase
+    .from('generations')
+    .delete()
+    .in('id', idsToDelete);
+
+  if (deleteError) {
+    console.error('Failed to cleanup old generations:', deleteError);
+  }
 }
 
 export async function createGenerationAndCharge({ model, prompt, resultUrl, durationMs, cost }) {

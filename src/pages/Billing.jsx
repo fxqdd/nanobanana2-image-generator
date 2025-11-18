@@ -2,20 +2,26 @@ import React, { useEffect, useState } from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
 import SEO from '../components/SEO';
 import '../styles/Settings.css';
-import { getMyProfile, getMySubscription } from '../services/db';
+import { getMyProfile, getMySubscription, getMyInvoices } from '../services/db';
 
 const Billing = () => {
   const { t, getLocalizedPath } = useLanguage();
   const [profile, setProfile] = useState(null);
   const [subscription, setSubscription] = useState(null);
+  const [invoices, setInvoices] = useState([]);
 
   useEffect(() => {
     let mounted = true;
     (async () => {
-      const [p, s] = await Promise.all([getMyProfile(), getMySubscription()]);
+      const [p, s, inv] = await Promise.all([
+        getMyProfile(),
+        getMySubscription(),
+        getMyInvoices(10)
+      ]);
       if (!mounted) return;
       if (p) setProfile(p);
       if (s) setSubscription(s);
+      if (Array.isArray(inv)) setInvoices(inv);
     })();
     return () => {
       mounted = false;
@@ -60,36 +66,35 @@ const Billing = () => {
       {/* 发票记录 */}
       <div className="card list-card">
         <h3>{t('billing.invoices') || 'Invoices'}</h3>
-        <div className="row">
-          <div className="col">
-            <label>{t('billing.lastInvoice') || 'Last invoice'}</label>
-            <span>{t('common.notAvailable') || '—'}</span>
+        {invoices.length === 0 ? (
+          <div className="row">
+            <div className="col">
+              <label>{t('billing.lastInvoice') || 'Last invoice'}</label>
+              <span>{t('common.notAvailable') || '—'}</span>
+            </div>
           </div>
-        </div>
-        <div className="row">
-          <div className="col">
-            <label>{t('billing.download') || 'Download'}</label>
-            <span>{t('billing.invoicesDesc') || 'Download past invoices'}</span>
-          </div>
-        </div>
+        ) : (
+          <>
+            <div className="row">
+              <div className="col">
+                <label>{t('billing.lastInvoice') || 'Last invoice'}</label>
+                <span>
+                  {new Date(invoices[0].issued_at).toLocaleDateString()} ·{' '}
+                  {(invoices[0].amount_cents / 100).toFixed(2)}{' '}
+                  {invoices[0].currency || 'USD'}
+                </span>
+              </div>
+            </div>
+            <div className="row">
+              <div className="col">
+                <label>{t('billing.download') || 'Download'}</label>
+                <span>{t('billing.invoicesDesc') || 'Download past invoices'}</span>
+              </div>
+            </div>
+          </>
+        )}
       </div>
 
-      {/* 支付方式 */}
-      <div className="card list-card">
-        <h3>{t('billing.paymentMethods') || 'Payment methods'}</h3>
-        <div className="row">
-          <div className="col">
-            <label>{t('billing.primaryMethod') || 'Primary'}</label>
-            <span>{t('common.notAvailable') || '—'}</span>
-          </div>
-        </div>
-        <div className="row">
-          <div className="col">
-            <label>{t('billing.manage') || 'Manage'}</label>
-            <span>{t('billing.paymentMethodsDesc') || 'Add, remove or set default'}</span>
-          </div>
-        </div>
-      </div>
     </div>
   );
 };
