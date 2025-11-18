@@ -62,6 +62,10 @@ const renderComparisonCell = (value, type = 'boolean') => {
 };
 
 const GUMROAD_BASIC_MONTHLY_URL = 'https://fxqdd.gumroad.com/l/qxdec';
+const GUMROAD_BASIC_YEARLY_URL = 'https://fxqdd.gumroad.com/l/hljpr';
+const GUMROAD_PRO_MONTHLY_URL = 'https://fxqdd.gumroad.com/l/fdbdc';
+const GUMROAD_PRO_YEARLY_URL = 'https://fxqdd.gumroad.com/l/prskkk';
+const GUMROAD_MASTER_MONTHLY_URL = 'https://fxqdd.gumroad.com/l/toihfe';
 
 const Pricing = () => {
   const { t, getLocalizedPath } = useLanguage();
@@ -96,7 +100,7 @@ const Pricing = () => {
       highlight: false,
       cta: t('pricing.subscribe'),
       gumroadMonthly: GUMROAD_BASIC_MONTHLY_URL,
-      gumroadYearly: '',
+      gumroadYearly: GUMROAD_BASIC_YEARLY_URL,
       features: [
         t('pricing.feature1'),
         t('pricing.feature2'),
@@ -122,8 +126,8 @@ const Pricing = () => {
       pointsPerYear: 30000,
       highlight: true,
       cta: t('pricing.subscribe'),
-      gumroadMonthly: '',
-      gumroadYearly: '',
+      gumroadMonthly: GUMROAD_PRO_MONTHLY_URL,
+      gumroadYearly: GUMROAD_PRO_YEARLY_URL,
       features: [
         t('pricing.proFeature1'),
         t('pricing.proFeature2'),
@@ -150,7 +154,7 @@ const Pricing = () => {
       pointsPerYear: 65000,
       highlight: false,
       cta: t('pricing.subscribe'),
-      gumroadMonthly: '',
+      gumroadMonthly: GUMROAD_MASTER_MONTHLY_URL,
       gumroadYearly: '',
       features: [
         t('pricing.masterFeature1'),
