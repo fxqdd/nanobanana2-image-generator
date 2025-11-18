@@ -247,18 +247,37 @@ const Login = () => {
       setAuthStorageMode(rememberMe ? 'local' : 'session');
       
       if (isLoginForm) {
-        const { data, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
-        console.log('[Login] signInWithPassword result:', { hasSession: !!data?.session, error: signInError });
-        if (signInError) {
-          setError(signInError.message || t('login.loginFailed'));
+        console.log('[Login] Calling signInWithPassword...');
+        try {
+          const { data, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+          console.log('[Login] signInWithPassword result:', { hasSession: !!data?.session, error: signInError });
+          
+          if (signInError) {
+            console.error('[Login] Sign in error:', signInError);
+            setError(signInError.message || t('login.loginFailed'));
+            setIsLoading(false);
+            return;
+          }
+          
+          if (!data?.session) {
+            console.error('[Login] No session returned from signInWithPassword');
+            setError(t('login.loginFailed') || '登录失败，请重试');
+            setIsLoading(false);
+            return;
+          }
+          
+          // 提前取消 Loading，再导航，避免按钮长时间停在 Loading
+          setIsLoading(false);
+          const targetPath = getLocalizedPath('/account');
+          console.log('[Login] navigating to account after email login:', targetPath);
+          navigate(targetPath);
+          return;
+        } catch (signInErr) {
+          console.error('[Login] signInWithPassword exception:', signInErr);
+          setError(signInErr.message || t('login.loginFailed') || '登录失败，请重试');
+          setIsLoading(false);
           return;
         }
-        // 提前取消 Loading，再导航，避免按钮长时间停在 Loading
-        setIsLoading(false);
-        const targetPath = getLocalizedPath('/account');
-        console.log('[Login] navigating to account after email login:', targetPath);
-        navigate(targetPath);
-        return;
       }
 
       // 构建重定向 URL - 使用简单的 /login 路径，避免语言路径问题
