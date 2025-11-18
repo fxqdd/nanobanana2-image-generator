@@ -242,15 +242,20 @@ const Login = () => {
     }
 
     try {
+      console.log('[Login] handleSubmit start, isLoginForm=', isLoginForm);
       setIsLoading(true);
       setAuthStorageMode(rememberMe ? 'local' : 'session');
       
       if (isLoginForm) {
-        const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+        const { data, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+        console.log('[Login] signInWithPassword result:', { hasSession: !!data?.session, error: signInError });
         if (signInError) {
           setError(signInError.message || t('login.loginFailed'));
           return;
         }
+        // 提前取消 Loading，再导航，避免按钮长时间停在 Loading
+        setIsLoading(false);
+        console.log('[Login] navigating to home after email login');
         navigate(getLocalizedPath('/'));
         return;
       }
@@ -301,6 +306,8 @@ const Login = () => {
       });
       setError(err.message || t('common.error') || '发生错误，请稍后重试');
     } finally {
+      // 对于登录分支，我们在成功时已经手动 setIsLoading(false)
+      // 这里主要处理错误场景
       setIsLoading(false);
     }
   };
