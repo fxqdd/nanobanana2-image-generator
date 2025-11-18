@@ -237,24 +237,9 @@ export const AuthProvider = ({ children }) => {
     };
   }, []);
 
-  // 离开页面时主动注销，避免下次进入时卡在登录状态
-  useEffect(() => {
-    if (typeof window === 'undefined') return undefined;
-
-    const handlePageExit = () => {
-      supabase.auth.signOut().catch(() => {});
-      setUser(null);
-      setIsLoggedIn(false);
-    };
-
-    window.addEventListener('beforeunload', handlePageExit);
-    window.addEventListener('pagehide', handlePageExit);
-
-    return () => {
-      window.removeEventListener('beforeunload', handlePageExit);
-      window.removeEventListener('pagehide', handlePageExit);
-    };
-  }, []);
+  // 注意：已移除 beforeunload 监听器
+  // 原因：它会在每次关闭标签页时都登出用户，导致无法保持登录状态
+  // Supabase 的 session 管理已经足够，不需要手动在页面卸载时登出
 
   // 常规邮箱登录函数（现在使用 Supabase）
   const login = async (credentials) => {
