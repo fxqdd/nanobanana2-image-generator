@@ -83,6 +83,11 @@ export const getSupabaseClient = () => {
   return supabaseClient;
 }
 
+// 重置客户端实例（用于存储模式切换后获取新实例）
+export const resetSupabaseClient = () => {
+  supabaseClient = null;
+}
+
 // 默认导出客户端实例获取函数
 export default getSupabaseClient;
 
@@ -123,6 +128,9 @@ export const setAuthStorageMode = (mode = 'local', preserveSession = true) => {
   // 切换存储适配器（必须在 Supabase 操作之前完成）
   storageAdapter.setStorage(targetStorage);
   window.localStorage.setItem(STORAGE_MODE_KEY, mode === 'session' ? 'session' : 'local');
+  
+  // 重置客户端实例，确保下次使用时创建新实例
+  resetSupabaseClient();
   
   // 不立即清理旧存储，让 Supabase 客户端有时间同步
   // 旧存储会在下次切换时自然被覆盖

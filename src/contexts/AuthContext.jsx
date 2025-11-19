@@ -386,7 +386,8 @@ export const AuthProvider = ({ children }) => {
     register,
     logout,
     updateUser,
-    socialLogin
+    socialLogin,
+    syncSessionToState
   };
 
   return (

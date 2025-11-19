@@ -36,7 +36,7 @@ const Login = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   
   const navigate = useNavigate();
-  const { socialLogin, isLoggedIn } = useAuth();
+  const { socialLogin, isLoggedIn, syncSessionToState } = useAuth();
   const { t, getLocalizedPath, language } = useLanguage();
   const seoData = t('seo.login') || { title: t('login.title'), description: '', keywords: '' };
   
@@ -166,6 +166,9 @@ const Login = () => {
         hasAccessToken: !!data.session.access_token,
         hasRefreshToken: !!data.session.refresh_token
       });
+      
+      // 手动同步会话到 AuthContext，避免因监听器问题导致的状态更新延迟
+      await syncSessionToState(data.session);
       
       // 3. 设置登录后的加载状态，等待 AuthContext 同步
       console.log('[Login] ========== 登录成功，等待状态同步 ==========');
