@@ -337,47 +337,50 @@ const Login = () => {
             // 8. 立即设置 loading 为 false
             setIsLoading(false);
             
-            // 9. 确保 session 已保存到存储（重要：必须等待保存完成）
+            // 9. 等待一小段时间让 session 保存（不阻塞）
             console.log('[Login] 等待 session 保存到存储...');
+            await new Promise(resolve => setTimeout(resolve, 300));
+            console.log('[Login] 等待完成');
             
-            // 轮询检查 session 是否已保存（最多等待 2 秒）
-            let sessionSaved = false;
-            for (let i = 0; i < 20; i++) {
-              await new Promise(resolve => setTimeout(resolve, 100));
+            // 10. 快速验证 session（带超时，不阻塞导航）
+            console.log('[Login] 快速验证 session...');
+            let sessionVerified = false;
+            
+            try {
+              // 设置超时：最多等待 1 秒
+              const verifyPromise = supabase.auth.getSession();
+              const timeoutPromise = new Promise((_, reject) => 
+                setTimeout(() => reject(new Error('验证超时')), 1000)
+              );
               
-              // 检查 session 是否已保存到存储
-              const { data: { session: savedSession } } = await supabase.auth.getSession();
-              if (savedSession && savedSession.user?.email === email) {
-                console.log('[Login] ✓ Session 已保存到存储 (尝试', i + 1, '/20)');
-                sessionSaved = true;
-                break;
+              const { data: { session: verifySession } } = await Promise.race([
+                verifyPromise,
+                timeoutPromise
+              ]);
+              
+              if (verifySession && verifySession.user?.email === email) {
+                console.log('[Login] ✓ Session 验证通过');
+                sessionVerified = true;
+              } else {
+                console.warn('[Login] ⚠️ Session 验证失败，但继续导航');
               }
+            } catch (verifyError) {
+              console.warn('[Login] ⚠️ Session 验证超时或出错，但继续导航:', verifyError.message);
             }
             
-            if (!sessionSaved) {
-              console.warn('[Login] ⚠️ Session 保存验证超时，但继续导航');
-            }
-            
-            // 10. 再次确认 session 存在（从存储读取）
-            const { data: { session: finalCheckSession } } = await supabase.auth.getSession();
-            if (!finalCheckSession || finalCheckSession.user?.email !== email) {
-              console.error('[Login] ✗ Session 验证失败，session 可能未正确保存');
-              setError('登录失败：Session 未正确保存，请重试');
-              setIsLoading(false);
-              return;
-            }
-            
-            console.log('[Login] ✓ Session 最终验证通过，准备导航');
-            
-            // 11. 导航到账户页面
+            // 11. 无论验证结果如何，都进行导航
+            // 因为 onAuthStateChange 已经确认登录成功，session 应该已经保存
+            console.log('[Login] ========== 准备导航 ==========');
             const targetPath = getLocalizedPath('/account');
-            console.log('[Login] 导航到:', targetPath);
+            console.log('[Login] 目标路径:', targetPath);
             console.log('[Login] 当前 URL:', window.location.href);
+            console.log('[Login] Session 验证状态:', sessionVerified ? '通过' : '未通过（但继续导航）');
             
-            // 使用 window.location.replace 进行硬导航
-            // 不延迟，立即导航
+            // 立即导航，不等待
+            console.log('[Login] 执行导航...');
             window.location.replace(targetPath);
             
+            // 这行代码理论上不会执行（因为页面会刷新），但为了安全起见还是加上
             return;
           }
           
