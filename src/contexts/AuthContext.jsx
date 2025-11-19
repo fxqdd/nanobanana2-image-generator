@@ -9,8 +9,8 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState(null);
-  // 初始不再进入“全局加载”状态，避免在登录后卡在验证界面
-  const [loading, setLoading] = useState(false);
+  // 初始化时进入加载，防止路由在 session 恢复前重定向
+  const [loading, setLoading] = useState(true);
 
   const buildDefaultProfilePayload = (supabaseUser) => {
     const fallbackName =

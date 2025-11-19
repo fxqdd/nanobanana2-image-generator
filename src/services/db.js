@@ -118,15 +118,65 @@ export async function enforceGenerationHistoryLimit(limit = 30) {
 }
 
 export async function createGenerationAndCharge({ model, prompt, resultUrl, durationMs, cost }) {
-  const { data, error } = await supabase().rpc('create_generation_with_charge', {
-    p_model: model,
-    p_prompt: prompt,
-    p_result_url: resultUrl,
-    p_duration_ms: durationMs || 0,
-    p_cost: cost || 0
-  });
-  if (error) throw error;
-  return data; // uuid
+  const user = await getCurrentUser();
+  if (!user) throw new Error('Not authenticated');
+
+  try {
+    const { data, error } = await supabase().rpc('create_generation_with_charge', {
+      p_model: model,
+      p_prompt: prompt,
+      p_result_url: resultUrl,
+      p_duration_ms: durationMs || 0,
+      p_cost: cost || 0
+    });
+    if (error) throw error;
+    return data; // uuid
+  } catch (rpcError) {
+    console.warn('RPC create_generation_with_charge failed, applying fallback logic:', rpcError?.message || rpcError);
+
+    // 1. 创建生成记录
+    const { data: generation, error: insertError } = await supabase()
+      .from('generations')
+      .insert({
+        user_id: user.id,
+        model,
+        prompt,
+        result_url: resultUrl,
+        duration_ms: durationMs || 0
+      })
+      .select('id')
+      .single();
+
+    if (insertError) {
+      console.error('Fallback generation insert failed:', insertError);
+      throw insertError;
+    }
+
+    // 2. 扣除点数
+    if (cost && cost > 0) {
+      const { data: profile, error: profileError } = await supabase()
+        .from('profiles')
+        .select('credits_remaining')
+        .eq('user_id', user.id)
+        .single();
+
+      if (profileError) {
+        console.warn('Failed to load credits for fallback deduction:', profileError);
+      } else {
+        const updatedCredits = Math.max(0, (profile?.credits_remaining ?? 0) - cost);
+        const { error: updateError } = await supabase()
+          .from('profiles')
+          .update({ credits_remaining: updatedCredits })
+          .eq('user_id', user.id);
+
+        if (updateError) {
+          console.warn('Failed to update credits during fallback deduction:', updateError);
+        }
+      }
+    }
+
+    return generation?.id;
+  }
 }
 
 // 获取当前用户的点数

@@ -41,8 +41,14 @@ const storageAdapter = {
 };
 
 if (typeof window !== 'undefined') {
-  const savedMode = window.localStorage.getItem(STORAGE_MODE_KEY) === 'session' ? 'session' : 'local';
-  storageAdapter.setStorage(selectStorageByMode(savedMode) ?? window.localStorage);
+  const storedMode = window.localStorage.getItem(STORAGE_MODE_KEY);
+  const initialMode = storedMode === 'local' ? 'local' : 'session';
+  storageAdapter.setStorage(
+    selectStorageByMode(initialMode) ?? window.sessionStorage ?? window.localStorage
+  );
+  if (storedMode !== initialMode) {
+    window.localStorage.setItem(STORAGE_MODE_KEY, initialMode);
+  }
 }
 
 if (!supabaseUrl || !supabaseAnonKey) {

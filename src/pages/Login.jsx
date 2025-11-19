@@ -72,7 +72,7 @@ const Login = () => {
           if (session?.user) {
             window.location.hash = '';
             setIsLoading(false);
-            navigate(getLocalizedPath('/account'));
+            navigate(getLocalizedPath('/'));
             return;
           } else {
             setTimeout(async () => {
@@ -80,7 +80,7 @@ const Login = () => {
               if (retrySession) {
                 window.location.hash = '';
                 setIsLoading(false);
-                navigate(getLocalizedPath('/account'));
+                navigate(getLocalizedPath('/'));
               } else {
                 setError(t('login.loginFailed') || '登录失败，请重试');
                 setIsLoading(false);
@@ -216,7 +216,7 @@ const Login = () => {
   useEffect(() => {
     if (isLoggedIn && postLoginLoading) {
       console.log('[Login] ========== 状态同步完成，开始导航 ==========');
-      const targetPath = getLocalizedPath('/account');
+      const targetPath = getLocalizedPath('/');
       console.log('[Login] 目标路径:', targetPath);
       navigate(targetPath, { replace: true });
       setPostLoginLoading(false);
@@ -416,7 +416,7 @@ const Login = () => {
   // 如果已登录，重定向到账户页面
   useEffect(() => {
     if (isLoggedIn) {
-      navigate(getLocalizedPath('/account'), { replace: true });
+      navigate(getLocalizedPath('/'), { replace: true });
     }
   }, [isLoggedIn, navigate, getLocalizedPath]);
 

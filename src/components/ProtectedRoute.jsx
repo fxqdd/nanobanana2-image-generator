@@ -11,6 +11,7 @@ import { useAuth } from '../contexts/AuthContext';
 const ProtectedRoute = ({ children }) => {
   const { isLoggedIn, loading } = useAuth();
   const location = useLocation();
+  const [shouldRedirect, setShouldRedirect] = useState(false);
 
   // 添加加载动画样式
   useEffect(() => {
@@ -39,58 +40,42 @@ const ProtectedRoute = ({ children }) => {
     };
   }, []);
 
-  // 如果正在加载认证状态，返回加载指示器
-  // 增加等待时间，给 AuthContext 更多时间初始化（最多等待 3 秒）
-  if (loading) {
-    return (
-      <div style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        minHeight: '100vh',
-        color: 'var(--text-color)'
-      }}>
-        <div className="auth-loading-spinner"></div>
-        <p style={{ fontSize: '18px', fontWeight: '500' }}>验证中...</p>
-      </div>
-    );
-  }
-
-  // 如果未登录，重定向到登录页面，并记录当前位置以便登录后返回
-  // 但先检查一下是否真的没有 session（可能是初始化还没完成）
-  const [shouldRedirect, setShouldRedirect] = useState(false);
-  
   useEffect(() => {
     if (!isLoggedIn && !loading) {
-      // 给一个短暂的延迟，确保 AuthContext 有时间初始化
       const timer = setTimeout(() => {
         setShouldRedirect(true);
-      }, 500); // 等待 500ms 再重定向
-      
+      }, 500);
+
       return () => clearTimeout(timer);
+    } else {
+      setShouldRedirect(false);
     }
   }, [isLoggedIn, loading]);
+
+  const renderLoading = () => (
+    <div style={{
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      minHeight: '100vh',
+      color: 'var(--text-color)'
+    }}>
+      <div className="auth-loading-spinner"></div>
+      <p style={{ fontSize: '18px', fontWeight: '500' }}>验证中...</p>
+    </div>
+  );
+
+  if (loading) {
+    return renderLoading();
+  }
   
   if (!isLoggedIn && shouldRedirect) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
   
   if (!isLoggedIn && !shouldRedirect) {
-    // 在等待期间，显示加载状态
-    return (
-      <div style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        minHeight: '100vh',
-        color: 'var(--text-color)'
-      }}>
-        <div className="auth-loading-spinner"></div>
-        <p style={{ fontSize: '18px', fontWeight: '500' }}>验证中...</p>
-      </div>
-    );
+    return renderLoading();
   }
 
   // 如果已登录，渲染子组件
