@@ -23,7 +23,7 @@ function Editor() {
   const [currentCredits, setCurrentCredits] = useState(null) // 当前点数
   const isGeneratingRef = useRef(false) // 使用 ref 防止重复调用
   const [previewImage, setPreviewImage] = useState(null) // 预览图片 URL
-  
+
   const seoData = t('seo.editor')
 
   const computeCost = () => {
@@ -63,23 +63,23 @@ function Editor() {
         e.target.value = '';
         return;
       }
-      
+
       try {
         // 创建 Blob URL 用于显示
         const blobUrl = URL.createObjectURL(file);
         // 转换为 base64 用于保存
         const base64 = await convertImageToBase64(file);
-        
+
         const newImage = {
           blobUrl: blobUrl,
           base64: base64,
           name: file.name,
           size: file.size
         };
-        
+
         const updatedImages = [...referenceImages, newImage];
         setReferenceImages(updatedImages);
-        
+
         // 保存到 localStorage
         saveEditorState({
           prompt,
@@ -87,7 +87,7 @@ function Editor() {
           activeTab,
           model
         });
-        
+
         e.target.value = '';
       } catch (err) {
         console.error('图片处理失败:', err);
@@ -105,7 +105,7 @@ function Editor() {
     }
     newImages.splice(index, 1);
     setReferenceImages(newImages);
-    
+
     // 更新 localStorage
     saveEditorState({
       prompt,
@@ -114,7 +114,7 @@ function Editor() {
       model
     });
   }
-  
+
   // 保存编辑器状态到 localStorage
   const saveEditorState = (state) => {
     try {
@@ -159,29 +159,29 @@ function Editor() {
       }
     }
   };
-  
+
   // 从 localStorage 恢复编辑器状态
   const loadEditorState = () => {
     try {
       const saved = localStorage.getItem('editorState');
       if (saved) {
         const state = JSON.parse(saved);
-        
+
         // 恢复提示词
         if (state.prompt) {
           setPrompt(state.prompt);
         }
-        
+
         // 恢复模式
         if (state.activeTab) {
           setActiveTab(state.activeTab);
         }
-        
+
         // 恢复模型
         if (state.model) {
           setModel(state.model);
         }
-        
+
         // 恢复图片（从 base64 重新创建显示 URL）
         if (state.referenceImages && state.referenceImages.length > 0) {
           const restoredImages = state.referenceImages.map(img => {
@@ -189,7 +189,7 @@ function Editor() {
             let base64 = '';
             let name = 'image';
             let size = 0;
-            
+
             if (typeof img === 'string') {
               // 旧格式：直接是 base64 字符串
               base64 = img;
@@ -199,13 +199,13 @@ function Editor() {
               name = img.name || 'image';
               size = img.size || 0;
             }
-            
+
             if (base64) {
               // 如果 base64 不包含 data: 前缀，添加它
-              const dataUrl = base64.startsWith('data:') 
-                ? base64 
+              const dataUrl = base64.startsWith('data:')
+                ? base64
                 : `data:image/jpeg;base64,${base64}`;
-              
+
               return {
                 blobUrl: dataUrl, // 使用 data URL 作为显示 URL
                 base64: base64.startsWith('data:') ? base64.split(',')[1] || base64 : base64, // 保存纯 base64
@@ -215,7 +215,7 @@ function Editor() {
             }
             return null;
           }).filter(img => img !== null);
-          
+
           if (restoredImages.length > 0) {
             setReferenceImages(restoredImages);
           }
@@ -225,7 +225,7 @@ function Editor() {
         const savedPrompt = localStorage.getItem('editorPrompt');
         const savedTab = localStorage.getItem('editorActiveTab');
         const savedModel = localStorage.getItem('editorModel');
-        
+
         if (savedPrompt) setPrompt(savedPrompt);
         if (savedTab) setActiveTab(savedTab);
         if (savedModel) setModel(savedModel);
@@ -245,7 +245,7 @@ function Editor() {
   // 错误消息翻译函数
   const translateError = (errorMessage) => {
     if (!errorMessage) return errorMessage;
-    
+
     // 新 API 提供商相关错误
     if (errorMessage.includes('新API提供商认证失败') || errorMessage.includes('New API provider authentication failed')) {
       return t('editor.newApiProviderAuthFailed');
@@ -277,7 +277,7 @@ function Editor() {
     if (errorMessage.includes('API返回的图像数据格式无效') || errorMessage.includes('Invalid image data format returned by API')) {
       return t('editor.newApiProviderInvalidImageFormat');
     }
-    
+
     // 如果无法匹配，返回原始错误消息
     return errorMessage;
   };
@@ -288,14 +288,14 @@ function Editor() {
       console.warn('⚠️ 生成请求已在进行中，忽略重复调用');
       return;
     }
-    
+
     if (!prompt && referenceImages.length === 0) return;
-    
+
     // 设置生成状态
     isGeneratingRef.current = true;
     setIsGenerating(true);
     setError(null);
-    
+
     try {
       // 检查点数是否足够
       if (isLoggedIn) {
@@ -308,9 +308,9 @@ function Editor() {
           return;
         }
       }
-      
+
       const generationTime = new Date().toLocaleString();
-      
+
       // 转换图片格式为 modelAPI 需要的格式
       const imagesForAPI = referenceImages.map(img => {
         // 如果是对象格式，使用 base64 或 blobUrl
@@ -320,7 +320,7 @@ function Editor() {
         // 如果是字符串，直接使用
         return img;
       });
-      
+
       const result = await modelAPI.generateImage(
         model,
         prompt,
@@ -330,7 +330,7 @@ function Editor() {
           resolution: '800x600'
         }
       );
-      
+
       if (result.success) {
         setGeneratedImages([...generatedImages, result.data.imageUrl]);
 
@@ -365,20 +365,20 @@ function Editor() {
         };
 
         if (isLoggedIn) {
-          // 登录用户：仅在内存中维护最近 30 条，并在数据库中限制上限
+          // 登录用户：仅在内存中维护最近 10 条，并在数据库中限制上限
           setHistory((prev) => {
             const updated = [newHistoryItem, ...prev];
-            return updated.slice(0, 30);
+            return updated.slice(0, 10);
           });
           try {
-            await enforceGenerationHistoryLimit(30);
+            await enforceGenerationHistoryLimit(10);
           } catch (cleanupErr) {
             console.warn('清理旧的生成记录失败（可忽略）:', cleanupErr);
           }
         } else {
-          // 未登录用户：继续使用 localStorage 保存历史（最多 30 条）
+          // 未登录用户：继续使用 localStorage 保存历史（最多 10 条）
           const updatedHistory = [newHistoryItem, ...history];
-          const historyToSave = updatedHistory.slice(0, 30);
+          const historyToSave = updatedHistory.slice(0, 10);
           setHistory(historyToSave);
 
           try {
@@ -397,13 +397,13 @@ function Editor() {
       isGeneratingRef.current = false;
       setIsGenerating(false);
     }
-  }
+  };
 
   useEffect(() => {
     const loadHistory = async () => {
       try {
         if (isLoggedIn) {
-          const rows = await getMyGenerationHistory(30);
+          const rows = await getMyGenerationHistory(10);
           const mapped = rows.map((row) => ({
             id: row.id,
             model: row.model,
@@ -434,7 +434,7 @@ function Editor() {
     // 恢复编辑器状态（提示词、图片等）
     loadEditorState();
   }, [isLoggedIn]);
-  
+
   // 当提示词改变时，自动保存（防抖）
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -445,10 +445,10 @@ function Editor() {
         model
       });
     }, 500); // 防抖：500ms 后保存，避免频繁写入
-    
+
     return () => clearTimeout(timer);
   }, [prompt, activeTab, model]);
-  
+
   // 当图片数量改变时，立即保存（图片上传是异步的，需要立即保存）
   useEffect(() => {
     // 使用 setTimeout 确保状态已更新
@@ -460,10 +460,10 @@ function Editor() {
         model
       });
     }, 100);
-    
+
     return () => clearTimeout(timer);
   }, [referenceImages.length]);
-  
+
   // 页面卸载或路由切换时保存状态
   useEffect(() => {
     const handleBeforeUnload = () => {
@@ -474,7 +474,7 @@ function Editor() {
         model
       });
     };
-    
+
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
@@ -486,7 +486,7 @@ function Editor() {
   // 定期更新点数（每30秒）
   useEffect(() => {
     if (!isLoggedIn) return;
-    
+
     const updateCredits = async () => {
       try {
         const credits = await getMyCredits();
@@ -495,13 +495,13 @@ function Editor() {
         console.warn('更新点数失败:', err);
       }
     };
-    
+
     // 立即更新一次
     updateCredits();
-    
+
     // 每30秒更新一次
     const interval = setInterval(updateCredits, 30000);
-    
+
     return () => clearInterval(interval);
   }, [isLoggedIn]);
 
@@ -519,7 +519,7 @@ function Editor() {
         }
         const byteArray = new Uint8Array(byteNumbers);
         const blob = new Blob([byteArray], { type: mimeType });
-        
+
         // 创建下载链接
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
@@ -567,7 +567,7 @@ function Editor() {
     const minutes = Math.floor(diff / 60000);
     const hours = Math.floor(diff / 3600000);
     const days = Math.floor(diff / 86400000);
-    
+
     if (minutes < 1) return t('editor.justNow');
     if (minutes < 60) return `${minutes}${t('editor.minutesAgo')}`;
     if (hours < 24) return `${hours}${t('editor.hoursAgo')}`;
@@ -622,9 +622,9 @@ function Editor() {
 
   // 过滤历史记录
   const filteredHistory = history.filter(item => {
-    const matchesSearch = !historySearchTerm || 
+    const matchesSearch = !historySearchTerm ||
       (item.prompt && item.prompt.toLowerCase().includes(historySearchTerm.toLowerCase()));
-    const matchesModel = historyFilterModel === 'all' || 
+    const matchesModel = historyFilterModel === 'all' ||
       (item.model && item.model.toLowerCase() === historyFilterModel.toLowerCase());
     return matchesSearch && matchesModel;
   });
@@ -637,50 +637,10 @@ function Editor() {
         keywords={seoData.keywords}
         path={getLocalizedPath('/editor')}
       />
-      
-          <div className="editor-sidebar">
-            <div className="sidebar-header">
-              <h3>Nano Banana</h3>
-              <p>AI Generator</p>
-            </div>
-        
-        <nav className="sidebar-nav">
-          <ul className="sidebar-links">
-            <li>
-              <button 
-                className={`sidebar-link ${activeTab === 'imageEdit' ? 'active' : ''}`}
-                onClick={() => setActiveTab('imageEdit')}
-              >
-                🖼️ {t('editor.imageEdit')}
-              </button>
-            </li>
-            <li>
-              <button 
-                className={`sidebar-link ${activeTab === 'textToImage' ? 'active' : ''}`}
-                onClick={() => setActiveTab('textToImage')}
-              >
-                📝 {t('editor.textToImage')}
-              </button>
-            </li>
-            <li>
-              <button 
-                className={`sidebar-link ${showHistory ? 'active' : ''}`}
-                onClick={() => setShowHistory(!showHistory)}
-              >
-                📋 {t('editor.history')} {history.length > 0 && `(${history.length})`}
-              </button>
-            </li>
-          </ul>
-        </nav>
-        
-        <div className="model-info">
-          <h4>{t('editor.currentModel')}</h4>
-          <p className="model-name">{model}</p>
-          <p className="model-status">
-            {model.toLowerCase().includes('nano banana') ? 
-              t('editor.highPerformance') : model.toLowerCase().includes('gemini') ?
-              t('editor.multimodal') : t('editor.artistic')}
-          </p>
+
+      <div className="editor-sidebar">
+        <div className="sidebar-header">
+          <h3>Nano Banana</h3>
         </div>
       </div>
 
@@ -703,64 +663,64 @@ function Editor() {
 
             {/* AI模型选择 */}
             <div className="form-group">
-                <label className="form-label">{t('editor.modelSelection')}</label>
-                <select 
-                  className="form-select" 
-                  value={model} 
-                  onChange={(e) => setModel(e.target.value)}
-                >
-                  <option value="Nano Banana">Nano Banana</option>
-                  <option value="GPT-5 Image">GPT-5 Image</option>
-                  <option value="GPT-5 Image Mini">GPT-5 Image Mini</option>
-                  <option value="SeeDream-4">SeeDream-4</option>
-                </select>
-                <p className="form-note">{t('editor.modelNote')}</p>
-                
-                {/* 积分消耗提示（不可交互） */}
-                <div style={{ marginTop: 8, padding: '8px 10px', background: '#f8f9fa', borderRadius: 8, lineHeight: 1.7 }}>
-                  {(function(){
-                    const isTextToImage = activeTab === 'textToImage';
-                    const items = isTextToImage
-                      ? [
-                          { name: 'Nano Banana', cost: 2 },
-                          { name: 'GPT-5 Image', cost: 3 },
-                          { name: 'GPT-5 Image Mini', cost: 2 },
-                          { name: 'SeeDream-4', cost: 2 }
-                        ]
-                      : [
-                          { name: 'Nano Banana', cost: 4 },
-                          { name: 'GPT-5 Image', cost: 3 },
-                          { name: 'GPT-5 Image Mini', cost: 3 },
-                          { name: 'SeeDream-4', cost: 2 }
-                        ];
-                    return (
-                      <div>
-                        <div style={{ color: '#666', marginBottom: 4 }}>{t('editor.costDisplayTitle')}</div>
-                        <ul style={{ margin: 0, paddingLeft: 16 }}>
-                          {items.map(it => (
-                            <li key={`${it.name}-${it.cost}`} style={{ display: 'flex', gap: 8 }}>
-                              <span style={{ color: '#555' }}>{t('editor.costConsume').replace('{points}', it.cost)}</span>
-                              <span style={{ color: '#222' }}>{it.name}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )
-                  })()}
-                </div>
+              <label className="form-label">{t('editor.modelSelection')}</label>
+              <select
+                className="form-select"
+                value={model}
+                onChange={(e) => setModel(e.target.value)}
+              >
+                <option value="Nano Banana">Nano Banana</option>
+                <option value="GPT-5 Image">GPT-5 Image</option>
+                <option value="GPT-5 Image Mini">GPT-5 Image Mini</option>
+                <option value="SeeDream-4">SeeDream-4</option>
+              </select>
+              <p className="form-note">{t('editor.modelNote')}</p>
+
+              {/* 积分消耗提示（不可交互） */}
+              <div style={{ marginTop: 8, padding: '8px 10px', background: '#f8f9fa', borderRadius: 8, lineHeight: 1.7 }}>
+                {(function () {
+                  const isTextToImage = activeTab === 'textToImage';
+                  const items = isTextToImage
+                    ? [
+                      { name: 'Nano Banana', cost: 2 },
+                      { name: 'GPT-5 Image', cost: 3 },
+                      { name: 'GPT-5 Image Mini', cost: 2 },
+                      { name: 'SeeDream-4', cost: 2 }
+                    ]
+                    : [
+                      { name: 'Nano Banana', cost: 4 },
+                      { name: 'GPT-5 Image', cost: 3 },
+                      { name: 'GPT-5 Image Mini', cost: 3 },
+                      { name: 'SeeDream-4', cost: 2 }
+                    ];
+                  return (
+                    <div>
+                      <div style={{ color: '#666', marginBottom: 4 }}>{t('editor.costDisplayTitle')}</div>
+                      <ul style={{ margin: 0, paddingLeft: 16 }}>
+                        {items.map(it => (
+                          <li key={`${it.name}-${it.cost}`} style={{ display: 'flex', gap: 8 }}>
+                            <span style={{ color: '#555' }}>{t('editor.costConsume').replace('{points}', it.cost)}</span>
+                            <span style={{ color: '#222' }}>{it.name}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )
+                })()}
               </div>
+            </div>
 
             {/* 编辑模式切换 */}
             <div className="form-group">
               <label className="form-label">{t('editor.functionMode')}</label>
               <div className="edit-modes">
-                <button 
+                <button
                   className={`edit-mode-btn ${activeTab === 'imageEdit' ? 'active' : ''}`}
                   onClick={() => setActiveTab('imageEdit')}
                 >
                   {t('editor.imageEdit')}
                 </button>
-                <button 
+                <button
                   className={`edit-mode-btn ${activeTab === 'textToImage' ? 'active' : ''}`}
                   onClick={() => setActiveTab('textToImage')}
                 >
@@ -778,14 +738,14 @@ function Editor() {
                 <div className="image-upload-area">
                   {referenceImages.map((image, index) => {
                     // 兼容旧格式（字符串）和新格式（对象）
-                    const imageSrc = typeof image === 'string' 
-                      ? image 
+                    const imageSrc = typeof image === 'string'
+                      ? image
                       : (image.blobUrl || image.base64 || image);
                     return (
                       <div key={index} className="uploaded-image">
                         <img src={imageSrc} alt={`${t('editor.referenceImages')} ${index + 1}`} />
-                        <button 
-                          className="remove-image-btn" 
+                        <button
+                          className="remove-image-btn"
                           onClick={() => removeImage(index)}
                           aria-label={t('editor.removeImage')}
                         >
@@ -796,9 +756,9 @@ function Editor() {
                   })}
                   {referenceImages.length < 9 && (
                     <label className="upload-button">
-                      <input 
-                        type="file" 
-                        accept="image/*" 
+                      <input
+                        type="file"
+                        accept="image/*"
                         onChange={handleImageUpload}
                         className="file-input"
                       />
@@ -824,19 +784,19 @@ function Editor() {
             </div>
 
             {/* 功能按钮 */}
-            <button 
+            <button
               className={`btn btn-primary generate-btn ${isGenerating ? 'generating' : ''}`}
               onClick={handleGenerate}
-              disabled={isGenerating || 
-                (activeTab === 'imageEdit' ? 
-                  (!prompt && referenceImages.length === 0) : 
+              disabled={isGenerating ||
+                (activeTab === 'imageEdit' ?
+                  (!prompt && referenceImages.length === 0) :
                   !prompt
                 )
               }
             >
               {isGenerating ? t('editor.generating') : `${t('editor.generate')}${t('editor.costConsumeInButton').replace('{points}', currentCost)}`}
             </button>
-            
+
             {/* 错误和警告信息显示 */}
             {error && (
               <div className="error-message">
@@ -863,7 +823,7 @@ function Editor() {
                 {activeTab === 'imageEdit' ? t('editor.editingResults') : t('editor.generationResults')}
               </h3>
               {generatedImages.length > 0 && (
-                <button 
+                <button
                   className="clear-btn"
                   onClick={clearGeneratedImages}
                 >
@@ -877,8 +837,8 @@ function Editor() {
                 <div className="generating-container">
                   <div className="loading-spinner"></div>
                   <p className="generating-text">
-                    {activeTab === 'imageEdit' 
-                      ? t('editor.editingWithModel', { model }) 
+                    {activeTab === 'imageEdit'
+                      ? t('editor.editingWithModel', { model })
                       : t('editor.generatingWithModel', { model })}
                   </p>
                   <p className="generating-subtext">{t('editor.pleaseWait')}</p>
@@ -887,20 +847,20 @@ function Editor() {
                 <div className="output-gallery">
                   {generatedImages.map((imageUrl, index) => (
                     <div key={index} className="generated-image-container">
-                      <img 
-                        src={imageUrl} 
-                        alt={`生成的图像 ${index + 1}`} 
+                      <img
+                        src={imageUrl}
+                        alt={`生成的图像 ${index + 1}`}
                         className="generated-image"
                       />
                       <div className="image-actions">
-                        <button 
+                        <button
                           className="action-btn"
                           onClick={() => downloadImage(imageUrl)}
                           title={t('editor.downloadImage')}
                         >
                           ⬇️
                         </button>
-                        <button 
+                        <button
                           className="action-btn"
                           onClick={() => previewImageModal(imageUrl)}
                           title={t('common.view')}
@@ -915,11 +875,11 @@ function Editor() {
                 <div className="output-placeholder">
                   <div className="placeholder-icon">📷</div>
                   <p className="placeholder-text">
-                  {activeTab === 'imageEdit' ? t('editor.prepareEditImage') : t('editor.prepareGenerateImage')}
-                </p>
-                <p className="placeholder-subtext">
-                  {activeTab === 'imageEdit' ? t('editor.uploadReferenceAndPrompt') : t('editor.enterDescriptionToGenerate')}
-                </p>
+                    {activeTab === 'imageEdit' ? t('editor.prepareEditImage') : t('editor.prepareGenerateImage')}
+                  </p>
+                  <p className="placeholder-subtext">
+                    {activeTab === 'imageEdit' ? t('editor.uploadReferenceAndPrompt') : t('editor.enterDescriptionToGenerate')}
+                  </p>
                 </div>
               )
             }
@@ -929,166 +889,44 @@ function Editor() {
 
       {/* 图片预览模态框 */}
       {previewImage && (
-        <div 
-          className="image-preview-overlay" 
-          onClick={closePreview}
-          style={{ 
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: 'rgba(0, 0, 0, 0.9)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 10000,
-            cursor: 'pointer'
-          }}
-        >
-          <div 
-            className="image-preview-container"
-            onClick={(e) => e.stopPropagation()}
-            style={{
-              position: 'relative',
-              maxWidth: '90vw',
-              maxHeight: '90vh',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              gap: '1rem'
-            }}
-          >
-            <button
-              onClick={closePreview}
-              style={{
-                position: 'absolute',
-                top: '-40px',
-                right: '0',
-                background: 'rgba(255, 255, 255, 0.2)',
-                border: 'none',
-                color: 'white',
-                fontSize: '24px',
-                width: '32px',
-                height: '32px',
-                borderRadius: '50%',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                transition: 'background 0.2s'
-              }}
-              onMouseEnter={(e) => e.target.style.background = 'rgba(255, 255, 255, 0.3)'}
-              onMouseLeave={(e) => e.target.style.background = 'rgba(255, 255, 255, 0.2)'}
-            >
-              ✕
-            </button>
-            <img 
-              src={previewImage} 
-              alt={t('editor.previewImage') || 'Preview Image'}
-              style={{
-                maxWidth: '100%',
-                maxHeight: '85vh',
-                objectFit: 'contain',
-                borderRadius: '8px',
-                boxShadow: '0 4px 20px rgba(0, 0, 0, 0.5)'
-              }}
-              onError={(e) => {
-                console.error('预览图片加载失败:', previewImage);
-                e.target.style.display = 'none';
-              }}
-            />
-            <div style={{
-              display: 'flex',
-              gap: '1rem',
-              marginTop: '1rem'
-            }}>
-              <button
-                onClick={() => {
-                  downloadImage(previewImage);
-                }}
-                style={{
-                  padding: '0.5rem 1rem',
-                  background: '#ff6b35',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '4px',
-                  cursor: 'pointer',
-                  fontSize: '14px',
-                  fontWeight: '500',
-                  transition: 'background 0.2s'
-                }}
-                onMouseEnter={(e) => e.target.style.background = '#ff5722'}
-                onMouseLeave={(e) => e.target.style.background = '#ff6b35'}
-              >
-                {t('editor.downloadImage')}
-              </button>
-              <button
-                onClick={closePreview}
-                style={{
-                  padding: '0.5rem 1rem',
-                  background: 'rgba(255, 255, 255, 0.2)',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '4px',
-                  cursor: 'pointer',
-                  fontSize: '14px',
-                  fontWeight: '500',
-                  transition: 'background 0.2s'
-                }}
-                onMouseEnter={(e) => e.target.style.background = 'rgba(255, 255, 255, 0.3)'}
-                onMouseLeave={(e) => e.target.style.background = 'rgba(255, 255, 255, 0.2)'}
-              >
-                {t('common.close') || 'Close'}
-              </button>
-            </div>
+        <div className="image-preview-modal" onClick={closePreview}>
+          <div className="preview-content" onClick={e => e.stopPropagation()}>
+            <img src={previewImage} alt="Preview" />
+            <button className="close-preview-btn" onClick={closePreview}>×</button>
           </div>
         </div>
       )}
 
-      {/* 历史记录模态框 */}
-      {showHistory && (
-        <div 
-          className="history-modal-overlay" 
-          onClick={() => setShowHistory(false)}
-          style={{ 
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            zIndex: 9999
-          }}
-        >
-          <div 
-            className="history-modal" 
-            onClick={(e) => e.stopPropagation()}
-            style={{ zIndex: 10000 }}
-          >
-            <div className="history-modal-header">
-              <h2>📋 {t('editor.history')}</h2>
-              <button 
-                className="history-close-btn"
-                onClick={() => setShowHistory(false)}
-                aria-label={t('common.close')}
-              >
-                ✕
-              </button>
-            </div>
+      {/* 历史记录侧边栏/抽屉 */}
+      <button
+        className="history-toggle-btn"
+        onClick={() => setShowHistory(!showHistory)}
+        title={t('editor.history')}
+      >
+        🕒 {history.length > 0 && <span className="history-badge">({history.length}/10)</span>}
+      </button>
 
+      {showHistory && (
+        <div className="history-drawer">
+          <div className="history-header">
+            <h3>{t('editor.history')}</h3>
+            <button className="close-history-btn" onClick={() => setShowHistory(false)}>×</button>
+          </div>
+
+          <div className="history-content">
             {/* 搜索和筛选 */}
             <div className="history-filters">
               <input
                 type="text"
-                className="history-search"
                 placeholder={t('editor.searchHistory')}
                 value={historySearchTerm}
                 onChange={(e) => setHistorySearchTerm(e.target.value)}
+                className="history-search"
               />
               <select
-                className="history-filter"
                 value={historyFilterModel}
                 onChange={(e) => setHistoryFilterModel(e.target.value)}
+                className="history-filter"
               >
                 <option value="all">{t('editor.allModels')}</option>
                 <option value="Nano Banana">Nano Banana</option>
@@ -1097,7 +935,7 @@ function Editor() {
                 <option value="SeeDream-4">SeeDream-4</option>
               </select>
               {history.length > 0 && (
-                <button 
+                <button
                   className="history-clear-btn"
                   onClick={clearAllHistory}
                 >
@@ -1118,13 +956,13 @@ function Editor() {
                   const actualIndex = history.findIndex(h => h === item);
                   return (
                     <div key={actualIndex} className="history-item">
-                      <div 
+                      <div
                         className="history-item-image"
                         onClick={() => useHistoryItem(item)}
                       >
                         {item.imageUrl && item.imageUrl !== '[Base64 Image Data]' ? (
-                          <img 
-                            src={item.imageUrl} 
+                          <img
+                            src={item.imageUrl}
                             alt={item.prompt || t('editor.generatedImage')}
                             onError={(e) => {
                               e.target.style.display = 'none';
