@@ -211,7 +211,8 @@ export default {
     prepareGenerateImage: 'Prepare to generate image',
     uploadReferenceAndPrompt: 'Upload reference image and enter editing prompt',
     enterDescriptionToGenerate: 'Enter detailed description to generate image',
-    insufficientCredits: 'Insufficient credits'
+    insufficientCredits: 'Insufficient credits',
+    modelNotSupportedForImageEdit: 'This model only supports text-to-image. Switch to Text to Image mode or choose another model for image editing.'
   },
   showcase: {
     title: 'Showcase',

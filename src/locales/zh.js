@@ -211,7 +211,8 @@ export default {
     prepareGenerateImage: '准备生成图像',
     uploadReferenceAndPrompt: '上传参考图像并输入编辑提示',
     enterDescriptionToGenerate: '输入详细描述生成图像',
-    insufficientCredits: '点数不足'
+    insufficientCredits: '点数不足',
+    modelNotSupportedForImageEdit: '该模型仅支持文字生成，请切换至文字生图模式或选择其他模型进行图像编辑'
   },
   showcase: {
     title: '展示案例',

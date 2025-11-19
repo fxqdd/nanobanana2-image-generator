@@ -121,62 +121,54 @@ export async function createGenerationAndCharge({ model, prompt, resultUrl, dura
   const user = await getCurrentUser();
   if (!user) throw new Error('Not authenticated');
 
-  try {
-    const { data, error } = await supabase().rpc('create_generation_with_charge', {
-      p_model: model,
-      p_prompt: prompt,
-      p_result_url: resultUrl,
-      p_duration_ms: durationMs || 0,
-      p_cost: cost || 0
-    });
-    if (error) throw error;
-    return data; // uuid
-  } catch (rpcError) {
-    console.warn('RPC create_generation_with_charge failed, applying fallback logic:', rpcError?.message || rpcError);
+  const client = supabase();
 
-    // 1. 创建生成记录
-    const { data: generation, error: insertError } = await supabase()
-      .from('generations')
-      .insert({
-        user_id: user.id,
-        model,
-        prompt,
-        result_url: resultUrl,
-        duration_ms: durationMs || 0
-      })
-      .select('id')
+  let currentCredits = 0;
+  if (cost && cost > 0) {
+    const { data: profile, error: profileError } = await client
+      .from('profiles')
+      .select('credits_remaining')
+      .eq('user_id', user.id)
       .single();
 
-    if (insertError) {
-      console.error('Fallback generation insert failed:', insertError);
-      throw insertError;
+    if (profileError) {
+      throw profileError;
     }
-
-    // 2. 扣除点数
-    if (cost && cost > 0) {
-      const { data: profile, error: profileError } = await supabase()
-        .from('profiles')
-        .select('credits_remaining')
-        .eq('user_id', user.id)
-        .single();
-
-      if (profileError) {
-        console.warn('Failed to load credits for fallback deduction:', profileError);
-      } else {
-        const updatedCredits = Math.max(0, (profile?.credits_remaining ?? 0) - cost);
-        const { error: updateError } = await supabase()
-          .from('profiles')
-          .update({ credits_remaining: updatedCredits })
-          .eq('user_id', user.id);
-
-        if (updateError) {
-          console.warn('Failed to update credits during fallback deduction:', updateError);
-        }
-      }
+    currentCredits = profile?.credits_remaining ?? 0;
+    if (currentCredits < cost) {
+      throw new Error('INSUFFICIENT_CREDITS');
     }
-
-    return generation?.id;
   }
+
+  const { data: generation, error: insertError } = await client
+    .from('generations')
+    .insert({
+      user_id: user.id,
+      model,
+      prompt,
+      result_url: resultUrl,
+      duration_ms: durationMs || 0
+    })
+    .select('id')
+    .single();
+
+  if (insertError) {
+    throw insertError;
+  }
+
+  if (cost && cost > 0) {
+    const updatedCredits = Math.max(0, currentCredits - cost);
+    const { error: updateError } = await client
+      .from('profiles')
+      .update({ credits_remaining: updatedCredits })
+      .eq('user_id', user.id);
+
+    if (updateError) {
+      throw updateError;
+    }
+  }
+
+  return generation?.id;
 }
 
 // 获取当前用户的点数

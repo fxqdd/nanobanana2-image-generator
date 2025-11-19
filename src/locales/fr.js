@@ -208,7 +208,9 @@ export default {
     prepareEditImage: 'Préparer l\'édition d\'image',
     prepareGenerateImage: 'Préparer la génération d\'image',
     uploadReferenceAndPrompt: 'Télécharger l\'image de référence et entrer l\'invite d\'édition',
-    enterDescriptionToGenerate: 'Entrer une description détaillée pour générer l\'image'
+    enterDescriptionToGenerate: 'Entrer une description détaillée pour générer l\'image',
+    insufficientCredits: 'Crédits insuffisants',
+    modelNotSupportedForImageEdit: 'Ce modèle ne prend en charge que le mode texte-vers-image. Passez en mode Texte vers Image ou choisissez un autre modèle pour l’édition d’images.'
   },
   showcase: {
     title: 'Galerie',

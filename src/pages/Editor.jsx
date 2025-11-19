@@ -12,7 +12,10 @@ function Editor() {
   const [activeTab, setActiveTab] = useState('imageEdit')
   const [model, setModel] = useState('Nano Banana')
   const [referenceImages, setReferenceImages] = useState([])
-  const [prompt, setPrompt] = useState('')
+  const [prompts, setPrompts] = useState({
+    imageEdit: '',
+    textToImage: ''
+  })
   const [generatedImages, setGeneratedImages] = useState([])
   const [isGenerating, setIsGenerating] = useState(false)
   const [error, setError] = useState(null)
@@ -24,7 +27,24 @@ function Editor() {
   const isGeneratingRef = useRef(false) // 使用 ref 防止重复调用
   const [previewImage, setPreviewImage] = useState(null) // 预览图片 URL
 
+  const IMAGE_EDIT_BLOCKED_MODELS = ['SeeDream-4']
+
+  const currentPrompt = prompts[activeTab] || ''
+  const updatePrompt = (value, mode = activeTab) => {
+    setPrompts(prev => ({
+      ...prev,
+      [mode]: value
+    }))
+  }
+  const isImageEditModelBlocked = activeTab === 'imageEdit' && IMAGE_EDIT_BLOCKED_MODELS.includes(model)
+
   const seoData = t('seo.editor')
+
+  useEffect(() => {
+    if (isImageEditModelBlocked) {
+      setModel('Nano Banana')
+    }
+  }, [isImageEditModelBlocked])
 
   const computeCost = () => {
     const isTextToImage = activeTab === 'textToImage';
@@ -82,7 +102,7 @@ function Editor() {
 
         // 保存到 localStorage
         saveEditorState({
-          prompt,
+          prompts,
           referenceImages: updatedImages,
           activeTab,
           model
@@ -108,7 +128,7 @@ function Editor() {
 
     // 更新 localStorage
     saveEditorState({
-      prompt,
+      prompts,
       referenceImages: newImages,
       activeTab,
       model
@@ -118,8 +138,12 @@ function Editor() {
   // 保存编辑器状态到 localStorage
   const saveEditorState = (state) => {
     try {
+      const promptsToSave = state.prompts || prompts;
       const stateToSave = {
-        prompt: state.prompt || '',
+        prompts: {
+          imageEdit: promptsToSave?.imageEdit || '',
+          textToImage: promptsToSave?.textToImage || ''
+        },
         activeTab: state.activeTab || 'imageEdit',
         model: state.model || 'Nano Banana',
         // 只保存 base64 数据，不保存 Blob URL（因为 Blob URL 不能持久化）
@@ -151,7 +175,9 @@ function Editor() {
     } catch (err) {
       // 如果存储失败（可能是配额超限），只保存文本内容
       try {
-        localStorage.setItem('editorPrompt', state.prompt || '');
+        const promptsToSave = state.prompts || prompts;
+        localStorage.setItem('editorImagePrompt', promptsToSave?.imageEdit || '');
+        localStorage.setItem('editorTextPrompt', promptsToSave?.textToImage || '');
         localStorage.setItem('editorActiveTab', state.activeTab || 'imageEdit');
         localStorage.setItem('editorModel', state.model || 'Nano Banana');
       } catch (e) {
@@ -168,8 +194,17 @@ function Editor() {
         const state = JSON.parse(saved);
 
         // 恢复提示词
-        if (state.prompt) {
-          setPrompt(state.prompt);
+        if (state.prompts) {
+          setPrompts({
+            imageEdit: state.prompts.imageEdit || '',
+            textToImage: state.prompts.textToImage || ''
+          });
+        } else if (state.prompt) {
+          // 兼容旧结构
+          setPrompts({
+            imageEdit: state.prompt,
+            textToImage: state.prompt
+          });
         }
 
         // 恢复模式
@@ -222,11 +257,17 @@ function Editor() {
         }
       } else {
         // 如果没有完整状态，尝试加载单独的字段（向后兼容）
-        const savedPrompt = localStorage.getItem('editorPrompt');
+        const savedImagePrompt = localStorage.getItem('editorImagePrompt');
+        const savedTextPrompt = localStorage.getItem('editorTextPrompt');
         const savedTab = localStorage.getItem('editorActiveTab');
         const savedModel = localStorage.getItem('editorModel');
 
-        if (savedPrompt) setPrompt(savedPrompt);
+        if (savedImagePrompt || savedTextPrompt) {
+          setPrompts({
+            imageEdit: savedImagePrompt || '',
+            textToImage: savedTextPrompt || ''
+          });
+        }
         if (savedTab) setActiveTab(savedTab);
         if (savedModel) setModel(savedModel);
       }
@@ -234,8 +275,14 @@ function Editor() {
       console.warn('加载编辑器状态失败:', err);
       // 尝试加载单独的字段
       try {
-        const savedPrompt = localStorage.getItem('editorPrompt');
-        if (savedPrompt) setPrompt(savedPrompt);
+        const savedImagePrompt = localStorage.getItem('editorImagePrompt');
+        const savedTextPrompt = localStorage.getItem('editorTextPrompt');
+        if (savedImagePrompt || savedTextPrompt) {
+          setPrompts({
+            imageEdit: savedImagePrompt || '',
+            textToImage: savedTextPrompt || ''
+          });
+        }
       } catch (e) {
         console.warn('加载提示词失败:', e);
       }
@@ -289,7 +336,18 @@ function Editor() {
       return;
     }
 
-    if (!prompt && referenceImages.length === 0) return;
+    if (activeTab === 'imageEdit') {
+      if (!currentPrompt && referenceImages.length === 0) return;
+    } else {
+      if (!currentPrompt) return;
+    }
+
+    if (activeTab === 'imageEdit' && IMAGE_EDIT_BLOCKED_MODELS.includes(model)) {
+      setError(t('editor.modelNotSupportedForImageEdit') || '当前模型不支持图像编辑，请选择其他模型或切换到文字生图模式。');
+      isGeneratingRef.current = false;
+      setIsGenerating(false);
+      return;
+    }
 
     // 设置生成状态
     isGeneratingRef.current = true;
@@ -312,18 +370,18 @@ function Editor() {
       const generationTime = new Date().toLocaleString();
 
       // 转换图片格式为 modelAPI 需要的格式
-      const imagesForAPI = referenceImages.map(img => {
-        // 如果是对象格式，使用 base64 或 blobUrl
-        if (typeof img === 'object' && img !== null) {
-          return img.base64 || img.blobUrl || img;
-        }
-        // 如果是字符串，直接使用
-        return img;
-      });
+      const imagesForAPI = activeTab === 'imageEdit'
+        ? referenceImages.map(img => {
+            if (typeof img === 'object' && img !== null) {
+              return img.base64 || img.blobUrl || img;
+            }
+            return img;
+          })
+        : [];
 
       const result = await modelAPI.generateImage(
         model,
-        prompt,
+        currentPrompt,
         imagesForAPI,
         {
           style: 'realistic',
@@ -340,7 +398,7 @@ function Editor() {
         try {
           generationId = await createGenerationAndCharge({
             model,
-            prompt: prompt,
+            prompt: currentPrompt,
             resultUrl: result.data.imageUrl,
             durationMs: result.data.generationTime || 0,
             cost: costToCharge
@@ -357,8 +415,8 @@ function Editor() {
         const newHistoryItem = {
           id: generationId,
           model,
-          prompt: prompt,
-          referenceImagesCount: referenceImages.length,
+          prompt: currentPrompt,
+          referenceImagesCount: activeTab === 'imageEdit' ? referenceImages.length : 0,
           time: Date.now(), // 保存时间戳
           imageUrl: result.data.imageUrl,
           generationTime: result.data.generationTime
@@ -439,7 +497,7 @@ function Editor() {
   useEffect(() => {
     const timer = setTimeout(() => {
       saveEditorState({
-        prompt,
+        prompts,
         referenceImages,
         activeTab,
         model
@@ -447,14 +505,14 @@ function Editor() {
     }, 500); // 防抖：500ms 后保存，避免频繁写入
 
     return () => clearTimeout(timer);
-  }, [prompt, activeTab, model]);
+  }, [prompts, activeTab, model]);
 
   // 当图片数量改变时，立即保存（图片上传是异步的，需要立即保存）
   useEffect(() => {
     // 使用 setTimeout 确保状态已更新
     const timer = setTimeout(() => {
       saveEditorState({
-        prompt,
+        prompts,
         referenceImages,
         activeTab,
         model
@@ -468,7 +526,7 @@ function Editor() {
   useEffect(() => {
     const handleBeforeUnload = () => {
       saveEditorState({
-        prompt,
+        prompts,
         referenceImages,
         activeTab,
         model
@@ -481,7 +539,7 @@ function Editor() {
       // 组件卸载时也保存一次
       handleBeforeUnload();
     };
-  }, [prompt, referenceImages, activeTab, model]);
+  }, [prompts, referenceImages, activeTab, model]);
 
   // 定期更新点数（每30秒）
   useEffect(() => {
@@ -576,9 +634,10 @@ function Editor() {
   };
 
   const useHistoryItem = (item) => {
+    const targetTab = item.referenceImagesCount > 0 ? 'imageEdit' : 'textToImage';
     // 使用历史记录项：填充提示词和模型
     if (item.prompt) {
-      setPrompt(item.prompt);
+      updatePrompt(item.prompt, targetTab);
     }
     if (item.model) {
       setModel(item.model);
@@ -588,11 +647,7 @@ function Editor() {
       setGeneratedImages([item.imageUrl]);
     }
     // 切换到对应的标签页
-    if (item.referenceImagesCount > 0) {
-      setActiveTab('imageEdit');
-    } else {
-      setActiveTab('textToImage');
-    }
+    setActiveTab(targetTab);
     // 关闭历史记录模态框
     setShowHistory(false);
     // 滚动到顶部以便用户看到填充的内容
@@ -752,9 +807,15 @@ function Editor() {
                 <option value="Nano Banana">Nano Banana</option>
                 <option value="GPT-5 Image">GPT-5 Image</option>
                 <option value="GPT-5 Image Mini">GPT-5 Image Mini</option>
-                <option value="SeeDream-4">SeeDream-4</option>
+                <option value="SeeDream-4" disabled={activeTab === 'imageEdit'}>SeeDream-4</option>
               </select>
               <p className="form-note">{t('editor.modelNote')}</p>
+
+              {isImageEditModelBlocked && (
+                <div className="warning-message">
+                  ⚠️ {t('editor.modelNotSupportedForImageEdit') || '当前模型仅支持文字生图，请切换到文字模式或选择其他模型进行图生图。'}
+                </div>
+              )}
 
               {/* 积分消耗提示（不可交互） */}
               <div style={{ marginTop: 8, padding: '8px 10px', background: '#f8f9fa', borderRadius: 8, lineHeight: 1.7 }}>
@@ -857,8 +918,8 @@ function Editor() {
               <textarea
                 className="form-textarea"
                 placeholder={activeTab === 'imageEdit' ? t('editor.promptPlaceholder') : t('editor.textToImagePlaceholder')}
-                value={prompt}
-                onChange={(e) => setPrompt(e.target.value)}
+                value={currentPrompt}
+                onChange={(e) => updatePrompt(e.target.value)}
                 rows={activeTab === 'imageEdit' ? 4 : 6}
               />
             </div>
@@ -868,9 +929,10 @@ function Editor() {
               className={`btn btn-primary generate-btn ${isGenerating ? 'generating' : ''}`}
               onClick={handleGenerate}
               disabled={isGenerating ||
+                isImageEditModelBlocked ||
                 (activeTab === 'imageEdit' ?
-                  (!prompt && referenceImages.length === 0) :
-                  !prompt
+                  (!currentPrompt && referenceImages.length === 0) :
+                  !currentPrompt
                 )
               }
             >
@@ -888,7 +950,7 @@ function Editor() {
                 ⚠️ {t('editor.noImages')}
               </div>
             )}
-            {activeTab === 'textToImage' && !prompt && !isGenerating && !error && (
+            {activeTab === 'textToImage' && !currentPrompt && !isGenerating && !error && (
               <div className="warning-message">
                 ⚠️ {t('editor.noPrompt')}
               </div>

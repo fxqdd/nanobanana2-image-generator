@@ -208,7 +208,9 @@ export default {
     prepareEditImage: 'Bildbearbeitung vorbereiten',
     prepareGenerateImage: 'Bildgenerierung vorbereiten',
     uploadReferenceAndPrompt: 'Referenzbild hochladen und Bearbeitungsaufforderung eingeben',
-    enterDescriptionToGenerate: 'Detaillierte Beschreibung eingeben, um Bild zu generieren'
+    enterDescriptionToGenerate: 'Detaillierte Beschreibung eingeben, um Bild zu generieren',
+    insufficientCredits: 'Nicht genügend Credits',
+    modelNotSupportedForImageEdit: 'Dieses Modell unterstützt nur Text-zu-Bild. Wechseln Sie in den Text-zu-Bild-Modus oder wählen Sie ein anderes Modell für die Bildbearbeitung.'
   },
   showcase: {
     title: 'Galerie',

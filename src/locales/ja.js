@@ -205,7 +205,9 @@ export default {
     prepareEditImage: '画像編集の準備',
     prepareGenerateImage: '画像生成の準備',
     uploadReferenceAndPrompt: '参考画像をアップロードして編集プロンプトを入力',
-    enterDescriptionToGenerate: '詳細な説明を入力して画像を生成'
+    enterDescriptionToGenerate: '詳細な説明を入力して画像を生成',
+    insufficientCredits: 'クレジットが不足しています',
+    modelNotSupportedForImageEdit: 'このモデルはテキストからの生成のみ対応しています。テキスト生成モードに切り替えるか、別のモデルで画像編集を行ってください。'
   },
   showcase: {
     title: 'ショーケース',
