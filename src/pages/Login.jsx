@@ -180,13 +180,6 @@ const Login = () => {
       
     } catch (err) {
       console.error('[Login] 登录过程出错:', err);
-      
-      // 确保清除超时定时器
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-        timeoutId = null;
-      }
-      
       // 重新抛出错误，让上层处理
       throw err;
     }
