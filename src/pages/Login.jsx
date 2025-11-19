@@ -129,12 +129,33 @@ const Login = () => {
       
       console.log('[Login] 存储模式已设置:', getAuthStorageMode());
       
-      // 2. 调用 signInWithPassword
+      // 2. 调用 signInWithPassword（带超时保护）
       console.log('[Login] 调用 signInWithPassword...');
-      const { data, error } = await supabase.auth.signInWithPassword({
+      
+      // 创建超时 Promise
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('登录超时，请检查网络连接后重试')), 10000);
+      });
+      
+      // 使用 Promise.race 确保不会无限等待
+      const signInPromise = supabase.auth.signInWithPassword({
         email,
         password
       });
+      
+      let signInResult;
+      try {
+        signInResult = await Promise.race([signInPromise, timeoutPromise]);
+        console.log('[Login] signInWithPassword 返回结果');
+      } catch (raceError) {
+        if (raceError.message.includes('超时')) {
+          console.error('[Login] 登录超时');
+          throw new Error('登录超时，请检查网络连接后重试');
+        }
+        throw raceError;
+      }
+      
+      const { data, error } = signInResult;
       
       if (error) {
         console.error('[Login] 登录错误:', error);
@@ -158,18 +179,24 @@ const Login = () => {
       console.log('[Login] 等待 session 保存到存储...');
       await new Promise(resolve => setTimeout(resolve, 500));
       
-      // 4. 验证 session 已保存
+      // 4. 验证 session 已保存（非阻塞，失败也不影响导航）
       console.log('[Login] 验证 session 是否已保存...');
-      const { data: { session: verifySession }, error: verifyError } = await supabase.auth.getSession();
-      
-      if (verifyError) {
-        console.warn('[Login] ⚠️ 验证 session 时出错:', verifyError);
-        // 即使验证出错，也继续导航（因为 signInWithPassword 已经成功了）
-      } else if (!verifySession || verifySession.user?.email !== email) {
-        console.warn('[Login] ⚠️ Session 验证失败，但继续导航');
-        // 即使验证失败，也继续导航
-      } else {
-        console.log('[Login] ✓ Session 验证通过');
+      try {
+        const verifyPromise = supabase.auth.getSession();
+        const verifyTimeout = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('验证超时')), 2000)
+        );
+        
+        const { data: { session: verifySession } } = await Promise.race([verifyPromise, verifyTimeout]);
+        
+        if (verifySession && verifySession.user?.email === email) {
+          console.log('[Login] ✓ Session 验证通过');
+        } else {
+          console.warn('[Login] ⚠️ Session 验证失败，但继续导航');
+        }
+      } catch (verifyError) {
+        console.warn('[Login] ⚠️ Session 验证超时或出错（非关键）:', verifyError.message);
+        // 继续导航，因为 signInWithPassword 已经成功了
       }
       
       // 5. 导航到账户页面
@@ -178,7 +205,9 @@ const Login = () => {
       console.log('[Login] 目标路径:', targetPath);
       
       // 使用硬导航，确保页面完全刷新
-      window.location.href = targetPath;
+      setTimeout(() => {
+        window.location.href = targetPath;
+      }, 100);
       
     } catch (err) {
       console.error('[Login] 登录过程出错:', err);
