@@ -89,55 +89,65 @@
   margin-bottom: 8px;
 }
 
-.sidebar-meta {
+.sidebar-section-heading {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   gap: 12px;
+  margin-bottom: 12px;
 }
 
-.sidebar-meta-title {
-  font-weight: 600;
-  color: var(--text-color);
-}
-
-.sidebar-meta-pill {
-  padding: 4px 10px;
-  border-radius: 999px;
-  background: rgba(255, 165, 0, 0.15);
-  color: var(--primary-color);
-  font-size: 0.8125rem;
-}
-
-.sidebar-divider {
-  height: 1px;
-  background-color: var(--border-color);
-  margin: 12px 0;
-}
-
-.sidebar-cost {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-weight: 600;
-  color: var(--text-color);
-}
-
-.sidebar-credits {
-  margin-top: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 0.875rem;
+.sidebar-description {
+  margin: 4px 0 0 0;
+  font-size: 0.85rem;
   color: var(--text-secondary);
 }
 
-.credit-badge {
-  padding: 4px 12px;
+.sidebar-pill {
+  padding: 6px 14px;
   border-radius: 999px;
-  background-color: rgba(46, 213, 115, 0.15);
-  color: #1d8348;
+  background: rgba(255, 165, 0, 0.15);
+  color: var(--primary-color);
+  font-size: 0.85rem;
   font-weight: 600;
+  white-space: nowrap;
+}
+
+.sidebar-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 12px;
+}
+
+.sidebar-stat {
+  background: white;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-secondary);
+}
+
+.stat-value {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-color);
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.stat-unit {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
 }
 
 .sidebar-history-preview {
@@ -173,20 +183,6 @@
 
 .sidebar-history-btn:hover {
   filter: brightness(1.1);
-}
-
-.sidebar-tip {
-  text-align: left;
-  background: rgba(0, 0, 0, 0.02);
-  color: var(--text-secondary);
-  font-size: 0.9rem;
-}
-
-.sidebar-tip span {
-  display: block;
-  margin-top: 8px;
-  font-size: 0.8rem;
-  color: var(--primary-color);
 }
 
 /* 主要编辑区域 */

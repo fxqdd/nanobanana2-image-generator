@@ -645,26 +645,38 @@ function Editor() {
         </div>
 
         <div className="sidebar-section sidebar-stats">
-          <div className="sidebar-label">{t('editor.modelSelection')}</div>
-          <div className="sidebar-meta">
-            <span className="sidebar-meta-title">{model}</span>
-            <span className="sidebar-meta-pill">
+          <div className="sidebar-section-heading">
+            <div>
+              <div className="sidebar-label">{t('editor.modelSelection')}</div>
+              <p className="sidebar-description">{t('editor.modelNote')}</p>
+            </div>
+            <span className="sidebar-pill">
               {activeTab === 'imageEdit' ? t('editor.imageEdit') : t('editor.textToImage')}
             </span>
           </div>
-          <div className="sidebar-divider"></div>
-          <div className="sidebar-cost">
-            <span>{t('editor.costDisplayTitle')}</span>
-            <strong>{currentCost || 0} pts</strong>
-          </div>
-          {isLoggedIn && (
-            <div className="sidebar-credits">
-              <span>{t('editor.currentCreditsLabel') || 'Credits'}</span>
-              <span className="credit-badge">
-                {currentCredits === null ? t('common.loading') : `${currentCredits} pts`}
+
+          <div className="sidebar-stat-grid">
+            <div className="sidebar-stat">
+              <span className="stat-label">{t('editor.currentModel')}</span>
+              <span className="stat-value">{model}</span>
+            </div>
+            <div className="sidebar-stat">
+              <span className="stat-label">{t('editor.costDisplayTitle')}</span>
+              <span className="stat-value">
+                {currentCost || 0}
+                <span className="stat-unit">pts</span>
               </span>
             </div>
-          )}
+            {isLoggedIn && (
+              <div className="sidebar-stat">
+                <span className="stat-label">{t('editor.currentCreditsLabel') || 'Credits'}</span>
+                <span className="stat-value">
+                  {currentCredits === null ? t('common.loading') : currentCredits}
+                  <span className="stat-unit">pts</span>
+                </span>
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="sidebar-section">
@@ -713,10 +725,6 @@ function Editor() {
           )}
         </div>
 
-        <div className="sidebar-section sidebar-tip">
-          <p>{t('editor.prepareGenerateImage')}</p>
-          <span>{t('editor.pleaseWait')}</span>
-        </div>
       </div>
 
       {/* 主要编辑区域 */}
