@@ -1,14 +1,3 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
-import { useLanguage } from '../contexts/LanguageContext';
-import SEO from '../components/SEO';
-import supabase, { setAuthStorageMode, getAuthStorageMode, clearAuthSession } from '../lib/supabaseClient';
-import { sendVerificationEmail, registerUser } from '../utils/emailAPI';
-import { DEFAULT_FREE_PLAN, DEFAULT_FREE_CREDITS } from '../constants/subscription';
-import '../styles/Login.css';
-
-const PENDING_EMAIL_KEY = 'nb-pending-email';
 const PENDING_USERNAME_KEY = 'nb-pending-username';
 
 const Login = () => {
@@ -122,6 +111,9 @@ const Login = () => {
       // 这解决了 Cloudflare 部署后，非无痕模式下登录卡住的问题
       clearAuthSession();
 
+      // 0.1 重置 Supabase 客户端实例，确保没有内存中的残留状态
+      resetSupabaseClient();
+
       // 1. 设置存储模式（在登录前，但不要等待太久）
       const targetMode = rememberMe ? 'local' : 'session';
       const currentMode = getAuthStorageMode();
@@ -144,8 +136,19 @@ const Login = () => {
         password
       });
 
-      const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('登录请求超时，请检查网络连接或刷新页面重试')), 15000);
+      const timeoutPromise = new Promise((resolve, reject) => {
+        setTimeout(async () => {
+          console.log('[Login] 请求超时，检查是否已存在 Session...');
+          // 检查当前 session
+          const { data: { session } } = await supabase().auth.getSession();
+
+          if (session?.user) {
+            console.log('[Login] ✓ 超时但检测到有效 Session，视为登录成功');
+            resolve({ data: { session }, error: null });
+          } else {
+            reject(new Error('登录请求超时，请检查网络连接或刷新页面重试'));
+          }
+        }, 15000);
       });
 
       // 使用 Promise.race 避免无限等待
