@@ -640,7 +640,82 @@ function Editor() {
 
       <div className="editor-sidebar">
         <div className="sidebar-header">
-          <h3>Nano Banana</h3>
+          <h3>Nano Banana Studio</h3>
+          <p>{t('editor.subtitle')}</p>
+        </div>
+
+        <div className="sidebar-section sidebar-stats">
+          <div className="sidebar-label">{t('editor.modelSelection')}</div>
+          <div className="sidebar-meta">
+            <span className="sidebar-meta-title">{model}</span>
+            <span className="sidebar-meta-pill">
+              {activeTab === 'imageEdit' ? t('editor.imageEdit') : t('editor.textToImage')}
+            </span>
+          </div>
+          <div className="sidebar-divider"></div>
+          <div className="sidebar-cost">
+            <span>{t('editor.costDisplayTitle')}</span>
+            <strong>{currentCost || 0} pts</strong>
+          </div>
+          {isLoggedIn && (
+            <div className="sidebar-credits">
+              <span>{t('editor.currentCreditsLabel') || 'Credits'}</span>
+              <span className="credit-badge">
+                {currentCredits === null ? t('common.loading') : `${currentCredits} pts`}
+              </span>
+            </div>
+          )}
+        </div>
+
+        <div className="sidebar-section">
+          <div className="sidebar-label">{t('editor.functionMode')}</div>
+          <ul className="sidebar-links">
+            <li>
+              <button
+                className={`sidebar-link ${activeTab === 'imageEdit' ? 'active' : ''}`}
+                onClick={() => setActiveTab('imageEdit')}
+              >
+                <span className="sidebar-icon">🎨</span>
+                <div>
+                  <div>{t('editor.imageEdit')}</div>
+                  <small>{t('editor.uploadReferenceAndPrompt')}</small>
+                </div>
+              </button>
+            </li>
+            <li>
+              <button
+                className={`sidebar-link ${activeTab === 'textToImage' ? 'active' : ''}`}
+                onClick={() => setActiveTab('textToImage')}
+              >
+                <span className="sidebar-icon">✨</span>
+                <div>
+                  <div>{t('editor.textToImage')}</div>
+                  <small>{t('editor.enterDescriptionToGenerate')}</small>
+                </div>
+              </button>
+            </li>
+          </ul>
+        </div>
+
+        <div className="sidebar-section sidebar-history-preview">
+          <div className="sidebar-label">{t('editor.history')}</div>
+          {history.length > 0 ? (
+            <>
+              <p className="sidebar-history-text">
+                {history[0]?.prompt || t('editor.noPrompt')}
+              </p>
+              <button className="sidebar-history-btn" onClick={() => setShowHistory(true)}>
+                🕒 {t('editor.clickToUse')}
+              </button>
+            </>
+          ) : (
+            <p className="sidebar-history-empty">{t('editor.noHistory')}</p>
+          )}
+        </div>
+
+        <div className="sidebar-section sidebar-tip">
+          <p>{t('editor.prepareGenerateImage')}</p>
+          <span>{t('editor.pleaseWait')}</span>
         </div>
       </div>
 
@@ -891,8 +966,20 @@ function Editor() {
       {previewImage && (
         <div className="image-preview-modal" onClick={closePreview}>
           <div className="preview-content" onClick={e => e.stopPropagation()}>
-            <img src={previewImage} alt="Preview" />
-            <button className="close-preview-btn" onClick={closePreview}>×</button>
+            <div className="preview-header">
+              <div>
+                <p>{t('common.view')}</p>
+                <small>{model} · {activeTab === 'imageEdit' ? t('editor.imageEdit') : t('editor.textToImage')}</small>
+              </div>
+              <button className="close-preview-btn" onClick={closePreview} aria-label="close preview">×</button>
+            </div>
+            <div className="preview-image-wrapper">
+              <img src={previewImage} alt="Preview" />
+            </div>
+            <div className="preview-actions">
+              <button onClick={() => downloadImage(previewImage)}>{t('editor.downloadImage')}</button>
+              <button onClick={() => window.open(previewImage, '_blank')}>{t('common.view')}</button>
+            </div>
           </div>
         </div>
       )}
