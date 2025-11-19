@@ -434,58 +434,58 @@ const Login = () => {
             });
             
             // 立即设置 loading 为 false，避免 UI 卡住
+            console.log('[Login] Step 8: Setting isLoading to false...');
             setIsLoading(false);
+            console.log('[Login] Step 8: ✓ isLoading set to false');
             
-            // 确保 session 已保存到存储（带超时保护）
-            console.log('[Login] Step 8: Ensuring session is persisted...');
-            try {
-              await Promise.race([
-                new Promise(resolve => setTimeout(resolve, 300)),
-                new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 1000))
-              ]);
-              console.log('[Login] Step 8: ✓ Wait completed');
-            } catch (waitError) {
-              console.warn('[Login] Step 8: ⚠️ Wait timeout, proceeding anyway:', waitError.message);
-            }
-            
-            // 快速验证 session（带超时保护），但不阻塞导航
-            console.log('[Login] Step 9: Quick session verification (non-blocking)...');
-            const sessionCheckPromise = supabase.auth.getSession().then(({ data, error }) => {
-              if (error) {
-                console.warn('[Login] Step 9: ⚠️ getSession error (non-critical):', error);
-              } else {
-                console.log('[Login] Step 9: ✓ Session verified:', {
-                  exists: !!data?.session,
-                  email: data?.session?.user?.email
-                });
-              }
-            }).catch(err => {
-              console.warn('[Login] Step 9: ⚠️ getSession exception (non-critical):', err);
+            // 确保 session 已保存到存储（带超时保护，但不阻塞）
+            console.log('[Login] Step 9: Ensuring session is persisted (non-blocking)...');
+            const persistPromise = Promise.race([
+              new Promise(resolve => setTimeout(resolve, 200)),
+              new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 500))
+            ]).then(() => {
+              console.log('[Login] Step 9: ✓ Wait completed');
+            }).catch(waitError => {
+              console.warn('[Login] Step 9: ⚠️ Wait timeout, proceeding anyway:', waitError.message);
             });
             
-            // 不等待 session 验证完成，直接导航
-            // 如果 session 验证失败，会在新页面重新检查
-            console.log('[Login] Step 10: ✓ Preparing navigation (not waiting for session check)...');
+            // 不等待 session 保存完成，立即准备导航
+            console.log('[Login] Step 10: Preparing navigation immediately...');
             
             // 使用 window.location.replace 进行硬导航
             const targetPath = getLocalizedPath('/account');
-            console.log('[Login] Step 11: Navigating to:', targetPath);
+            console.log('[Login] Step 11: Target path:', targetPath);
             console.log('[Login] Step 11: Current location:', window.location.href);
-            console.log('[Login] ========== NAVIGATING ==========');
+            console.log('[Login] ========== NAVIGATING NOW ==========');
             
-            // 立即导航，不等待
-            // 使用 setTimeout 确保当前代码执行完成
-            setTimeout(() => {
-              console.log('[Login] Step 11: Executing window.location.replace...');
-              window.location.replace(targetPath);
-            }, 50);
+            // 立即导航，不等待任何异步操作
+            // 使用 requestAnimationFrame 确保在下一个渲染周期执行
+            requestAnimationFrame(() => {
+              console.log('[Login] Step 11: Executing navigation in requestAnimationFrame...');
+              try {
+                window.location.replace(targetPath);
+                console.log('[Login] Step 11: ✓ window.location.replace called successfully');
+              } catch (navError) {
+                console.error('[Login] Step 11: ✗ Navigation error:', navError);
+                // 如果 replace 失败，尝试使用 href
+                try {
+                  window.location.href = targetPath;
+                  console.log('[Login] Step 11: ✓ Fallback to window.location.href');
+                } catch (hrefError) {
+                  console.error('[Login] Step 11: ✗ Both navigation methods failed:', hrefError);
+                  setError('导航失败，请手动刷新页面');
+                  setIsLoading(false);
+                }
+              }
+            });
             
-            // 不等待 session 检查完成
-            sessionCheckPromise.catch(() => {
+            // 不等待任何 promise 完成
+            persistPromise.catch(() => {
               // 忽略错误，已经导航了
             });
             
-        return;
+            // 立即返回，不执行后续代码
+            return;
           }
           
           // 如果还是没有 session，最后尝试 getSession
