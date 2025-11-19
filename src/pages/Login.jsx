@@ -112,19 +112,22 @@ const Login = () => {
 
   // ========== 完全重写的邮箱登录函数 ==========
   const handleEmailLogin = async (email, password, rememberMe) => {
+    let timeoutId = null;
+    
     try {
       console.log('[Login] ========== 开始登录 ==========');
       console.log('[Login] 邮箱:', email);
       console.log('[Login] 记住我:', rememberMe);
       
-      // 1. 设置存储模式（在登录前）
+      // 1. 设置存储模式（在登录前，但不要等待太久）
       const targetMode = rememberMe ? 'local' : 'session';
       const currentMode = getAuthStorageMode();
       
       if (currentMode !== targetMode) {
         console.log('[Login] 切换存储模式:', currentMode, '->', targetMode);
         setAuthStorageMode(targetMode, true);
-        await new Promise(resolve => setTimeout(resolve, 100));
+        // 只等待很短时间，让存储切换完成
+        await new Promise(resolve => setTimeout(resolve, 50));
       }
       
       console.log('[Login] 存储模式已设置:', getAuthStorageMode());
@@ -132,39 +135,88 @@ const Login = () => {
       // 2. 调用 signInWithPassword（带超时保护）
       console.log('[Login] 调用 signInWithPassword...');
       
-      // 创建超时 Promise
-      const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('登录超时，请检查网络连接后重试')), 10000);
-      });
-      
-      // 使用 Promise.race 确保不会无限等待
+      // 使用更可靠的超时处理方式
       const signInPromise = supabase.auth.signInWithPassword({
         email,
         password
+      }).then(result => {
+        // 登录成功时立即清除超时定时器
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+          timeoutId = null;
+        }
+        return result;
+      }).catch(error => {
+        // 登录失败时也清除超时定时器
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+          timeoutId = null;
+        }
+        throw error;
+      });
+      
+      // 创建超时 Promise，但使用更长的超时时间（30秒）
+      const timeoutPromise = new Promise((_, reject) => {
+        timeoutId = setTimeout(() => {
+          const timeoutError = new Error('登录超时，请检查网络连接后重试');
+          timeoutId = null; // 清除引用
+          reject(timeoutError);
+        }, 30000); // 增加到30秒
       });
       
       let signInResult;
       try {
+        // 使用 Promise.race，但确保正确处理结果
         signInResult = await Promise.race([signInPromise, timeoutPromise]);
         console.log('[Login] signInWithPassword 返回结果');
       } catch (raceError) {
-        if (raceError.message.includes('超时')) {
+        // 清除超时定时器（双重保险）
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+          timeoutId = null;
+        }
+        
+        // 检查是否是超时错误
+        if (raceError.message && raceError.message.includes('超时')) {
           console.error('[Login] 登录超时');
           throw new Error('登录超时，请检查网络连接后重试');
         }
+        
+        // 检查是否是 Supabase 的错误
+        if (raceError.message) {
+          // 如果是网络错误，提供更友好的提示
+          if (raceError.message.includes('fetch') || 
+              raceError.message.includes('network') ||
+              raceError.message.includes('Failed to fetch') ||
+              raceError.message.includes('NetworkError')) {
+            throw new Error('网络连接失败，请检查网络后重试');
+          }
+          throw raceError;
+        }
+        
         throw raceError;
+      } finally {
+        // 确保清除超时定时器（三重保险）
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+          timeoutId = null;
+        }
       }
       
       const { data, error } = signInResult;
       
       if (error) {
         console.error('[Login] 登录错误:', error);
-        throw error;
+        // 提供更友好的错误消息
+        if (error.message) {
+          throw error;
+        }
+        throw new Error(error.message || '登录失败，请检查邮箱和密码');
       }
       
       if (!data?.session) {
         console.error('[Login] 登录失败：没有返回 session');
-        throw new Error('登录失败：没有返回 session');
+        throw new Error('登录失败：服务器未返回会话信息');
       }
       
       console.log('[Login] ✓ signInWithPassword 成功，已获取 session');
@@ -175,42 +227,28 @@ const Login = () => {
         hasRefreshToken: !!data.session.refresh_token
       });
       
-      // 3. 等待 session 保存到存储（Supabase 会自动保存，但需要一点时间）
-      console.log('[Login] 等待 session 保存到存储...');
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      // 4. 验证 session 已保存（非阻塞，失败也不影响导航）
-      console.log('[Login] 验证 session 是否已保存...');
-      try {
-        const verifyPromise = supabase.auth.getSession();
-        const verifyTimeout = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('验证超时')), 2000)
-        );
-        
-        const { data: { session: verifySession } } = await Promise.race([verifyPromise, verifyTimeout]);
-        
-        if (verifySession && verifySession.user?.email === email) {
-          console.log('[Login] ✓ Session 验证通过');
-        } else {
-          console.warn('[Login] ⚠️ Session 验证失败，但继续导航');
-        }
-      } catch (verifyError) {
-        console.warn('[Login] ⚠️ Session 验证超时或出错（非关键）:', verifyError.message);
-        // 继续导航，因为 signInWithPassword 已经成功了
-      }
-      
-      // 5. 导航到账户页面
+      // 3. 简化流程：直接导航，Supabase 会自动保存 session
+      // 移除不必要的验证步骤，减少超时风险
       console.log('[Login] ========== 准备导航 ==========');
       const targetPath = getLocalizedPath('/account');
       console.log('[Login] 目标路径:', targetPath);
       
-      // 使用硬导航，确保页面完全刷新
-      setTimeout(() => {
-        window.location.href = targetPath;
-      }, 100);
+      // 使用 navigate 而不是硬导航，让 React Router 处理
+      // 但添加短暂延迟确保 session 已保存
+      await new Promise(resolve => setTimeout(resolve, 200));
+      
+      navigate(targetPath, { replace: true });
       
     } catch (err) {
       console.error('[Login] 登录过程出错:', err);
+      
+      // 确保清除超时定时器
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+        timeoutId = null;
+      }
+      
+      // 重新抛出错误，让上层处理
       throw err;
     }
   };
