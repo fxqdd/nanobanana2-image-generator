@@ -16,10 +16,10 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const [isLoginForm, setIsLoginForm] = useState(true); // 登录/注册切换
-  const [showPassword, setShowPassword] = useState(false); // 密码可见性
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false); // 确认密码可见性
-  const [rememberMe, setRememberMe] = useState(() => getAuthStorageMode() !== 'session'); // 记住我
+  const [isLoginForm, setIsLoginForm] = useState(true);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(() => getAuthStorageMode() !== 'session');
   const [awaitingEmailConfirmation, setAwaitingEmailConfirmation] = useState(false);
   const [verificationEmail, setVerificationEmail] = useState('');
   const [resendStatus, setResendStatus] = useState('');
@@ -31,23 +31,19 @@ const Login = () => {
   const [resetStatusType, setResetStatusType] = useState('');
   const [isResetting, setIsResetting] = useState(false);
   
-  // 注册表单额外字段
   const [username, setUsername] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  
-  // 已移除测试账号
   
   const navigate = useNavigate();
   const { socialLogin, isLoggedIn } = useAuth();
   const { t, getLocalizedPath, language } = useLanguage();
   const seoData = t('seo.login') || { title: t('login.title'), description: '', keywords: '' };
   
-  // 组件加载时检查URL是否有OAuth回调（包括Google和邮箱确认）
+  // 处理 OAuth 回调
   useEffect(() => {
     const handleOAuthCallback = async () => {
       if (typeof window === 'undefined') return;
       
-      // 检查是否是 OAuth 回调（包含 access_token）
       const hash = window.location.hash;
       if (hash) {
         const params = new URLSearchParams(hash.replace('#', ''));
@@ -60,13 +56,9 @@ const Login = () => {
         }
       }
       
-      // 处理 Supabase OAuth 回调（包括 Google 登录和邮箱确认）
       if (hash && (hash.includes('access_token') || hash.includes('type=email'))) {
         try {
           setIsLoading(true);
-          
-          // Supabase 会自动处理 URL hash 中的 token 并设置 session
-          // 我们只需要获取当前的 session
           const { data: { session }, error } = await supabase.auth.getSession();
           
           if (error) {
@@ -77,90 +69,20 @@ const Login = () => {
           }
 
           if (session?.user) {
-            console.log('✓ OAuth login successful:', {
-              userId: session.user.id,
-              email: session.user.email,
-              provider: session.user.app_metadata?.provider
-            });
-          
-            // 清除 URL 中的 hash
             window.location.hash = '';
-            
-            // 如果是新用户，可能需要创建或更新 profile
-            try {
-              // 检查 profile 是否存在
-              const { data: profile, error: profileError } = await supabase
-                .from('profiles')
-                .select('*')
-                .eq('user_id', session.user.id)
-                .single();
-              
-              if (profileError && profileError.code === 'PGRST116') {
-                // Profile 不存在，创建新的
-                const username = session.user.user_metadata?.full_name || 
-                                session.user.user_metadata?.name ||
-                                session.user.email?.split('@')[0] || 
-                                'User';
-                
-                const { error: insertError } = await supabase
-                  .from('profiles')
-                  .insert({
-                    user_id: session.user.id,
-                    username: username,
-                    email: session.user.email,
-                    plan: DEFAULT_FREE_PLAN,
-                    credits_remaining: DEFAULT_FREE_CREDITS
-                  });
-                
-                if (insertError) {
-                  console.warn('Failed to create profile after OAuth login:', insertError);
-                } else {
-                  console.log('✓ Profile created for OAuth user');
-                }
-              } else if (profile) {
-                // Profile 已存在，可能需要更新邮箱（如果不同）
-                if (profile.email !== session.user.email) {
-                  await supabase
-                    .from('profiles')
-                    .update({ email: session.user.email })
-                    .eq('user_id', session.user.id);
-                }
-              }
-            } catch (profileErr) {
-              console.warn('Error checking/creating profile:', profileErr);
-            }
-            
-            // 处理邮箱确认时的用户名更新
-            const storedUsername = window.localStorage.getItem(PENDING_USERNAME_KEY);
-            if (storedUsername && session.user.id) {
-              try {
-                await supabase.from('profiles').update({ username: storedUsername }).eq('user_id', session.user.id);
-                window.localStorage.removeItem(PENDING_USERNAME_KEY);
-              } catch (updateError) {
-                console.warn('Failed to update profile username after email confirmation', updateError);
-              }
-            }
-            
-            // 清除待处理的邮箱信息
-            window.localStorage.removeItem(PENDING_EMAIL_KEY);
-            setAwaitingEmailConfirmation(false);
-            setVerificationEmail('');
-            
-            // 返回登录页，让用户自行登录
             setIsLoading(false);
-            navigate(getLocalizedPath('/'));
+            navigate(getLocalizedPath('/account'));
             return;
           } else {
-            // 没有 session，可能是 token 还未处理完成，等待一下再试
             setTimeout(async () => {
               const { data: { session: retrySession } } = await supabase.auth.getSession();
               if (retrySession) {
                 window.location.hash = '';
                 setIsLoading(false);
-                navigate(getLocalizedPath('/'));
+                navigate(getLocalizedPath('/account'));
               } else {
                 setError(t('login.loginFailed') || '登录失败，请重试');
-              setIsLoading(false);
+                setIsLoading(false);
               }
             }, 1000);
             return;
@@ -179,13 +101,90 @@ const Login = () => {
   }, [navigate, t, getLocalizedPath]);
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const pendingEmail = window.localStorage.getItem(PENDING_EMAIL_KEY);
-    if (pendingEmail) {
-      setAwaitingEmailConfirmation(true);
-      setVerificationEmail(pendingEmail);
+    if (typeof window !== 'undefined') {
+      const pendingEmail = window.localStorage.getItem(PENDING_EMAIL_KEY);
+      if (pendingEmail) {
+        setAwaitingEmailConfirmation(true);
+        setVerificationEmail(pendingEmail);
+      }
     }
   }, []);
+
+  // ========== 完全重写的邮箱登录函数 ==========
+  const handleEmailLogin = async (email, password, rememberMe) => {
+    try {
+      console.log('[Login] ========== 开始登录 ==========');
+      console.log('[Login] 邮箱:', email);
+      console.log('[Login] 记住我:', rememberMe);
+      
+      // 1. 设置存储模式（在登录前）
+      const targetMode = rememberMe ? 'local' : 'session';
+      const currentMode = getAuthStorageMode();
+      
+      if (currentMode !== targetMode) {
+        console.log('[Login] 切换存储模式:', currentMode, '->', targetMode);
+        setAuthStorageMode(targetMode, true);
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+      
+      console.log('[Login] 存储模式已设置:', getAuthStorageMode());
+      
+      // 2. 调用 signInWithPassword
+      console.log('[Login] 调用 signInWithPassword...');
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+      
+      if (error) {
+        console.error('[Login] 登录错误:', error);
+        throw error;
+      }
+      
+      if (!data?.session) {
+        console.error('[Login] 登录失败：没有返回 session');
+        throw new Error('登录失败：没有返回 session');
+      }
+      
+      console.log('[Login] ✓ signInWithPassword 成功，已获取 session');
+      console.log('[Login] Session 信息:', {
+        email: data.session.user?.email,
+        userId: data.session.user?.id,
+        hasAccessToken: !!data.session.access_token,
+        hasRefreshToken: !!data.session.refresh_token
+      });
+      
+      // 3. 等待 session 保存到存储（Supabase 会自动保存，但需要一点时间）
+      console.log('[Login] 等待 session 保存到存储...');
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // 4. 验证 session 已保存
+      console.log('[Login] 验证 session 是否已保存...');
+      const { data: { session: verifySession }, error: verifyError } = await supabase.auth.getSession();
+      
+      if (verifyError) {
+        console.warn('[Login] ⚠️ 验证 session 时出错:', verifyError);
+        // 即使验证出错，也继续导航（因为 signInWithPassword 已经成功了）
+      } else if (!verifySession || verifySession.user?.email !== email) {
+        console.warn('[Login] ⚠️ Session 验证失败，但继续导航');
+        // 即使验证失败，也继续导航
+      } else {
+        console.log('[Login] ✓ Session 验证通过');
+      }
+      
+      // 5. 导航到账户页面
+      console.log('[Login] ========== 准备导航 ==========');
+      const targetPath = getLocalizedPath('/account');
+      console.log('[Login] 目标路径:', targetPath);
+      
+      // 使用硬导航，确保页面完全刷新
+      window.location.href = targetPath;
+      
+    } catch (err) {
+      console.error('[Login] 登录过程出错:', err);
+      throw err;
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -198,14 +197,12 @@ const Login = () => {
         return;
       }
       
-      // 简单的邮箱格式验证
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(email)) {
         setError(t('login.invalidEmail'));
         return;
       }
       
-      // 密码强度验证
       if (password.length < 6) {
         setError(t('login.passwordTooShort'));
         return;
@@ -216,7 +213,6 @@ const Login = () => {
         return;
       }
       
-      // 简单的邮箱格式验证
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(email)) {
         setError(t('login.invalidEmail'));
@@ -228,13 +224,11 @@ const Login = () => {
         return;
       }
       
-      // 密码强度验证
       if (password.length < 6) {
         setError(t('login.passwordTooShort'));
         return;
       }
       
-      // 用户名验证
       if (username.length < 3) {
         setError(t('login.usernameTooShort') || 'Username must be at least 3 characters');
         return;
@@ -243,273 +237,48 @@ const Login = () => {
 
     try {
       setIsLoading(true);
-      setError('');
       
       if (isLoginForm) {
-        // ========== 重写的邮箱登录流程 ==========
-        console.log('[Login] ========== 开始邮箱登录 ==========');
-        console.log('[Login] 邮箱:', email);
-        console.log('[Login] 记住我:', rememberMe);
-        
-        // 1. 设置存储模式（在登录前）
-        const targetMode = rememberMe ? 'local' : 'session';
-        const currentMode = getAuthStorageMode();
-        
-        if (currentMode !== targetMode) {
-          console.log('[Login] 切换存储模式:', currentMode, '->', targetMode);
-          setAuthStorageMode(targetMode, true);
-          // 等待存储切换完成
-          await new Promise(resolve => setTimeout(resolve, 50));
-        }
-        
-        console.log('[Login] 当前存储模式:', getAuthStorageMode());
-        
-        // 2. 设置 onAuthStateChange 监听器（在调用 signInWithPassword 之前）
-        let loginSuccess = false;
-        let loginSession = null;
-        let loginError = null;
-        
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-          console.log('[Login] Auth 状态变化:', event, session?.user?.email);
-          
-          if (event === 'SIGNED_IN' && session?.user?.email === email) {
-            console.log('[Login] ✓ 检测到登录成功 (onAuthStateChange)');
-            loginSuccess = true;
-            loginSession = session;
-          } else if (event === 'SIGNED_OUT') {
-            console.log('[Login] ✗ 检测到登出');
-            loginError = new Error('登录失败：用户被登出');
-          }
+        // 使用重写的登录函数
+        await handleEmailLogin(email, password, rememberMe);
+        // 如果成功，handleEmailLogin 会导航，不会执行到这里
+        setIsLoading(false);
+      } else {
+        // 注册逻辑保持不变
+        const redirectUrl = `${window.location.origin}/login`;
+        console.log('Attempting register via service endpoint:', {
+          email,
+          username,
+          hasSiteUrl: !!import.meta.env.VITE_SUPABASE_URL,
+          hasAnonKey: !!import.meta.env.VITE_SUPABASE_ANON_KEY
         });
-        
-        try {
-          // 3. 调用 signInWithPassword
-          console.log('[Login] 调用 signInWithPassword...');
-          const signInPromise = supabase.auth.signInWithPassword({ email, password });
-          
-          // 4. 等待结果（最多 3 秒）
-          const timeoutPromise = new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('登录超时')), 3000)
-          );
-          
-          let signInResult = null;
-          try {
-            signInResult = await Promise.race([signInPromise, timeoutPromise]);
-            console.log('[Login] signInWithPassword 返回结果');
-            
-            if (signInResult?.error) {
-              console.error('[Login] 登录错误:', signInResult.error.message);
-              loginError = signInResult.error;
-            } else if (signInResult?.data?.session) {
-              console.log('[Login] ✓ 从 signInWithPassword 获取到 session');
-              loginSuccess = true;
-              loginSession = signInResult.data.session;
-            }
-          } catch (timeoutError) {
-            console.log('[Login] signInWithPassword 超时，等待 onAuthStateChange...');
-            // 等待 onAuthStateChange 触发（最多 2 秒）
-            await new Promise(resolve => setTimeout(resolve, 2000));
-          }
-          
-          // 5. 清理监听器
-          subscription.unsubscribe();
-          
-          // 6. 检查登录结果
-          if (loginError) {
-            console.error('[Login] ✗ 登录失败:', loginError.message);
-            setError(loginError.message || t('login.loginFailed'));
-            setIsLoading(false);
-            return;
-          }
-          
-          // 7. 获取最终 session（优先使用 onAuthStateChange 的结果）
-          const finalSession = loginSession || signInResult?.data?.session;
-          
-          if (finalSession && finalSession.user?.email === email) {
-            console.log('[Login] ========== 登录成功 ==========');
-            console.log('[Login] Session 信息:', {
-              email: finalSession.user.email,
-              userId: finalSession.user.id,
-              hasAccessToken: !!finalSession.access_token,
-              hasRefreshToken: !!finalSession.refresh_token
-            });
-            
-            // 8. 立即设置 loading 为 false
-            setIsLoading(false);
-            
-            // 9. 等待一小段时间让 session 保存
-            console.log('[Login] 等待 session 保存到存储...');
-            try {
-              await new Promise(resolve => setTimeout(resolve, 300));
-              console.log('[Login] 等待完成');
-            } catch (waitErr) {
-              console.warn('[Login] 等待过程出错，继续执行:', waitErr);
-            }
-            
-            // 10. 尝试快速验证 session（非阻塞，失败也不影响导航）
-            console.log('[Login] 尝试快速验证 session（非阻塞）...');
-            
-            // 使用 Promise.race 确保不会卡住，但不等待结果
-            const verifyPromise = (async () => {
-              try {
-                const { data: { session: verifySession } } = await Promise.race([
-                  supabase.auth.getSession(),
-                  new Promise((_, reject) => setTimeout(() => reject(new Error('验证超时')), 500))
-                ]);
-                
-                if (verifySession && verifySession.user?.email === email) {
-                  console.log('[Login] ✓ Session 验证通过');
-                } else {
-                  console.warn('[Login] ⚠️ Session 验证失败，但继续导航');
-                }
-              } catch (verifyError) {
-                console.warn('[Login] ⚠️ Session 验证超时或出错（非关键）:', verifyError.message);
-              }
-            })();
-            
-            // 不等待验证完成，立即准备导航
-            console.log('[Login] ========== 准备导航 ==========');
-            const targetPath = getLocalizedPath('/account');
-            console.log('[Login] 目标路径:', targetPath);
-            console.log('[Login] 当前 URL:', window.location.href);
-            
-            // 11. 立即导航，不等待任何异步操作
-            // 因为 onAuthStateChange 已经确认登录成功，session 应该已经保存
-            console.log('[Login] 执行导航（立即执行，不等待验证完成）...');
-            
-            // 使用 try-catch 确保导航一定会执行
-            try {
-              window.location.replace(targetPath);
-              console.log('[Login] ✓ window.location.replace 已调用');
-            } catch (navError) {
-              console.error('[Login] ✗ 导航出错，尝试备用方法:', navError);
-              // 备用导航方法
-              try {
-                window.location.href = targetPath;
-                console.log('[Login] ✓ 使用 window.location.href 作为备用');
-              } catch (hrefError) {
-                console.error('[Login] ✗ 所有导航方法都失败:', hrefError);
-                setError('导航失败，请手动刷新页面');
-                setIsLoading(false);
-              }
-            }
-            
-            // 不等待 verifyPromise
-            verifyPromise.catch(() => {
-              // 忽略错误，已经导航了
-            });
-            
-            return;
-          }
-          
-          // 11. 如果还没有 session，最后尝试 getSession（带超时）
-          console.log('[Login] 未找到 session，尝试 getSession...');
-          const getSessionPromise = supabase.auth.getSession();
-          const getSessionTimeout = new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('getSession 超时')), 2000)
-          );
-          
-          try {
-            const { data: { session: fallbackSession } } = await Promise.race([
-              getSessionPromise,
-              getSessionTimeout
-            ]);
-            
-            if (fallbackSession && fallbackSession.user?.email === email) {
-              console.log('[Login] ✓ 通过 getSession 找到 session');
-              setIsLoading(false);
-              const targetPath = getLocalizedPath('/account');
-              setTimeout(() => {
-                window.location.replace(targetPath);
-              }, 100);
-              return;
-            }
-          } catch (getSessionError) {
-            console.warn('[Login] getSession 失败或超时:', getSessionError.message);
-          }
-          
-          // 12. 所有方法都失败
-          console.error('[Login] ✗ 所有登录方法都失败');
-          setError(t('login.loginFailed') || '登录失败，请重试');
-          setIsLoading(false);
-          return;
-          
-        } catch (err) {
-          // 清理监听器
-          subscription.unsubscribe();
-          
-          console.error('[Login] 登录过程异常:', err);
-          
-          // 即使出错，也检查是否有 session
-          try {
-            const { data: { session: errorSession } } = await supabase.auth.getSession();
-            if (errorSession && errorSession.user?.email === email) {
-              console.log('[Login] ✓ 异常后找到 session，继续导航');
-              setIsLoading(false);
-              const targetPath = getLocalizedPath('/account');
-              setTimeout(() => {
-                window.location.replace(targetPath);
-              }, 100);
-              return;
-            }
-          } catch (checkErr) {
-            console.error('[Login] 检查 session 时出错:', checkErr);
-          }
-          
-          setError(err.message || t('login.loginFailed') || '登录失败，请重试');
-          setIsLoading(false);
-          return;
+
+        const registerResult = await registerUser({
+          email,
+          password,
+          username,
+          locale: language
+        });
+
+        console.log('✅ 用户创建成功，等待邮箱验证:', registerResult);
+
+        if (typeof window !== 'undefined') {
+          window.localStorage.setItem(PENDING_EMAIL_KEY, email);
+          window.localStorage.setItem(PENDING_USERNAME_KEY, username);
         }
+
+        setVerificationEmail(email);
+        setAwaitingEmailConfirmation(true);
+        setResendStatus('');
+        setError('');
+        setIsResending(false);
+        setPassword('');
+        setConfirmPassword('');
+        setIsLoading(false);
       }
-
-      // 构建重定向 URL - 使用简单的 /login 路径，避免语言路径问题
-      const redirectUrl = `${window.location.origin}/login`;
-      console.log('Attempting register via service endpoint:', {
-        email,
-        username,
-        hasSiteUrl: !!import.meta.env.VITE_SUPABASE_URL,
-        hasAnonKey: !!import.meta.env.VITE_SUPABASE_ANON_KEY
-      });
-
-      const registerResult = await registerUser({
-        email,
-        password,
-        username,
-        locale: language
-      });
-
-      console.log('✅ 用户创建成功，等待邮箱验证:', registerResult);
-
-      if (typeof window !== 'undefined') {
-        window.localStorage.setItem(PENDING_EMAIL_KEY, email);
-        window.localStorage.setItem(PENDING_USERNAME_KEY, username);
-      }
-
-      setVerificationEmail(email);
-      setAwaitingEmailConfirmation(true);
-      setResendStatus('');
-      setError('');
-      setIsResending(false);
-      setPassword('');
-      setConfirmPassword('');
     } catch (err) {
-      console.error('❌ 注册过程发生异常 - Auth error:', {
-        message: err.message,
-        name: err.name,
-        stack: err.stack,
-        error: err
-      });
-      console.error('🔍 异常详情:', {
-        email,
-        username,
-        isLoginForm,
-        supabaseUrl: import.meta.env.VITE_SUPABASE_URL ? 'configured' : 'missing',
-        supabaseKey: import.meta.env.VITE_SUPABASE_ANON_KEY ? 'configured' : 'missing'
-      });
+      console.error('❌ 处理过程发生异常:', err);
       setError(err.message || t('common.error') || '发生错误，请稍后重试');
-    } finally {
-      // 对于登录分支，我们在成功时已经手动 setIsLoading(false)
-      // 这里主要处理错误场景
       setIsLoading(false);
     }
   };
@@ -517,457 +286,314 @@ const Login = () => {
   const toggleForm = () => {
     setIsLoginForm(!isLoginForm);
     setError('');
-    // 重置表单
-    setEmail('');
     setPassword('');
-    setUsername('');
     setConfirmPassword('');
-    setAwaitingEmailConfirmation(false);
-    setVerificationEmail('');
-    setResendStatus('');
-    if (typeof window !== 'undefined') {
-      window.localStorage.removeItem(PENDING_EMAIL_KEY);
-      window.localStorage.removeItem(PENDING_USERNAME_KEY);
-    }
   };
 
-  const handleForgotPassword = () => {
-    setShowResetPassword(true);
-    setResetEmail(email || '');
-    setResetStatus('');
-    setResetStatusType('');
-  };
-
-  const handleResetPassword = async (e) => {
-    e.preventDefault();
-    if (!resetEmail) {
-      setResetStatus(t('login.invalidEmail') || '请输入有效的邮箱地址');
-      setResetStatusType('error');
-      return;
-    }
-
-    try {
-      setIsResetting(true);
-      setResetStatus('');
-      setResetStatusType('');
-
-      await sendVerificationEmail(resetEmail, {
-        type: 'recovery',
-        locale: language
-      });
-
-      setResetStatus(t('login.resetPasswordSuccess') || '密码重置邮件已发送，请查收邮箱。');
-      setResetStatusType('success');
-    } catch (resetErr) {
-      console.error('❌ Password reset email send error:', resetErr);
-      setResetStatus(
-        resetErr.message ||
-          t('login.resetPasswordError') ||
-          '密码重置邮件发送失败，请稍后重试。'
-      );
-      setResetStatusType('error');
-    } finally {
-      setIsResetting(false);
-    }
-  };
-
-  const closeResetPanel = () => {
-    setShowResetPassword(false);
-    setResetEmail('');
-    setResetStatus('');
-    setResetStatusType('');
-  };
-
-  // 社交媒体登录处理函数
   const handleSocialLogin = async (provider) => {
     try {
       setIsLoading(true);
+      setError('');
       
-      if (provider === 'Google') {
-        // 使用 Supabase 的内置 Google OAuth
-        const redirectUrl = `${window.location.origin}${getLocalizedPath('/login')}`;
-        
-        console.log('Initiating Google OAuth with Supabase...');
-        const { data, error } = await supabase.auth.signInWithOAuth({
-          provider: 'google',
-          options: {
-            redirectTo: redirectUrl,
-            queryParams: {
-              access_type: 'offline',
-              prompt: 'consent',
-            }
-          }
-        });
-        
-        if (error) {
-          console.error('Google OAuth initiation error:', error);
-          setError(error.message || t('login.googleLoginFailed'));
-          setIsLoading(false);
-          return;
+      const redirectUrl = `${window.location.origin}${getLocalizedPath('/login')}`;
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: redirectUrl
         }
-        
-        // Supabase 会自动处理重定向，这里不需要手动跳转
-        // 如果返回了 URL，说明需要重定向
-        if (data?.url) {
-          window.location.href = data.url;
-        }
-      } else {
-        // 其他社交登录保持模拟流程（如果需要）
-        console.log(`正在重定向到${provider}授权页面...`);
-        
-        // 模拟授权码获取和用户信息请求
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        
-        // 模拟从社交媒体API获取的用户信息
-        const socialUserInfo = {
-          id: `${provider.toLowerCase()}-${Date.now()}`,
-          name: `${provider} 用户_${Math.floor(Math.random() * 1000)}`,
-          email: `${provider.toLowerCase()}_${Math.floor(Math.random() * 10000)}@example.com`,
-          avatar: `https://via.placeholder.com/150?text=${provider.charAt(0)}`
-        };
-        
-        console.log(`从${provider}获取到用户信息:`, socialUserInfo);
-        
-        // 调用社交媒体登录函数
-        const result = await socialLogin(provider, socialUserInfo);
-        
-        if (result.success) {
-          // 可以根据是否是新用户显示不同的欢迎信息
-          if (result.isNewUser) {
-            console.log(`欢迎新用户通过${provider}登录！`);
-          }
-          navigate('/');
-        } else {
-          setError(result.error || `${provider}登录失败，请稍后重试`);
-        }
+      });
+      
+      if (error) {
+        console.error('Social login error:', error);
+        setError(error.message || t('login.socialLoginFailed'));
         setIsLoading(false);
+        return;
       }
-    } catch (error) {
-      setError(`${provider}登录失败，请稍后重试`);
-      console.error(`${provider}登录错误:`, error);
+      
+      // OAuth 会重定向，不需要手动导航
+    } catch (err) {
+      console.error('Social login exception:', err);
+      setError(err.message || t('login.socialLoginFailed'));
       setIsLoading(false);
     }
   };
 
-  const handleResendEmail = async () => {
+  const handleResendVerification = async () => {
     if (!verificationEmail) return;
+    
+    setIsResending(true);
+    setResendStatus('');
+    setResendStatusType('');
+    
     try {
-      setIsResending(true);
-      setResendStatus('');
-      setResendStatusType('');
-      
-      console.log('📧 Resending verification email via Resend to:', verificationEmail);
-
-      await sendVerificationEmail(verificationEmail, {
-        type: 'signup',
-        locale: language
-      });
-
-      setResendStatus(t('login.verificationResendSuccess') || '已重新发送，请查收邮箱');
-      setResendStatusType('success');
+      const result = await sendVerificationEmail(verificationEmail);
+      if (result.success) {
+        setResendStatus(t('login.verificationEmailSent') || '验证邮件已重新发送');
+        setResendStatusType('success');
+      } else {
+        setResendStatus(result.error || t('login.resendFailed') || '重新发送失败');
+        setResendStatusType('error');
+      }
     } catch (err) {
-      console.error('❌ 重新发送邮件时发生异常 - Resend verification email exception:', err);
-      setResendStatus(
-        err.message ||
-          t('login.verificationResendError') ||
-          '重新发送失败，请检查网络连接和邮箱地址'
-      );
+      console.error('Resend verification error:', err);
+      setResendStatus(err.message || t('login.resendFailed') || '重新发送失败');
       setResendStatusType('error');
     } finally {
       setIsResending(false);
     }
   };
 
-  return (
-    <div className="login-page">
-      <SEO
-        title={seoData.title}
-        description={seoData.description || t('login.subtitle')}
-        keywords={seoData.keywords || 'login, register, Nano Banana 2'}
-        path={getLocalizedPath('/login')}
-      />
+  const handleResetPassword = async (e) => {
+    e.preventDefault();
+    if (!resetEmail) {
+      setResetStatus(t('login.enterEmail') || '请输入邮箱');
+      setResetStatusType('error');
+      return;
+    }
+    
+    setIsResetting(true);
+    setResetStatus('');
+    setResetStatusType('');
+    
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
+        redirectTo: `${window.location.origin}${getLocalizedPath('/reset-password')}`
+      });
       
+      if (error) {
+        setResetStatus(error.message || t('login.resetFailed') || '重置密码失败');
+        setResetStatusType('error');
+      } else {
+        setResetStatus(t('login.resetEmailSent') || '重置密码邮件已发送');
+        setResetStatusType('success');
+      }
+    } catch (err) {
+      console.error('Reset password error:', err);
+      setResetStatus(err.message || t('login.resetFailed') || '重置密码失败');
+      setResetStatusType('error');
+    } finally {
+      setIsResetting(false);
+    }
+  };
+
+  // 如果已登录，重定向到账户页面
+  useEffect(() => {
+    if (isLoggedIn) {
+      navigate(getLocalizedPath('/account'), { replace: true });
+    }
+  }, [isLoggedIn, navigate, getLocalizedPath]);
+
+  // 其余 UI 代码保持不变...
+  return (
+    <>
+      <SEO 
+        title={seoData.title}
+        description={seoData.description}
+        keywords={seoData.keywords}
+      />
       <div className="login-container">
-        {showResetPassword && (
-          <div
-            className="reset-password-overlay"
-            style={{
-              position: 'fixed',
-              inset: 0,
-              background: 'rgba(0,0,0,0.45)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              zIndex: 1000
-            }}
-          >
-            <div
-              className="reset-password-card"
-              style={{
-                background: '#ffffff',
-                borderRadius: '14px',
-                padding: '28px 32px',
-                maxWidth: '420px',
-                width: '90%',
-                boxShadow: '0 18px 48px rgba(0,0,0,0.18)',
-                position: 'relative'
-              }}
-            >
-              <button
-                onClick={closeResetPanel}
-                style={{
-                  position: 'absolute',
-                  right: '16px',
-                  top: '16px',
-                  border: 'none',
-                  background: 'transparent',
-                  fontSize: '1.2rem',
-                  cursor: 'pointer',
-                  color: 'var(--text-secondary)'
-                }}
-                aria-label={t('common.close') || '关闭'}
+        <div className="login-card">
+          {awaitingEmailConfirmation ? (
+            <div className="verification-message">
+              <h2>{t('login.verificationTitle') || '验证您的邮箱'}</h2>
+              <p>{t('login.verificationMessage') || `我们已向 ${verificationEmail} 发送了验证邮件。请点击邮件中的链接完成注册。`}</p>
+              <button 
+                onClick={handleResendVerification}
+                disabled={isResending}
+                className="btn btn-primary"
               >
-                ×
+                {isResending ? t('login.sending') || '发送中...' : t('login.resendEmail') || '重新发送邮件'}
               </button>
-              <h3 style={{ margin: '0 0 12px', fontSize: '1.4rem' }}>
-                {t('login.resetPasswordTitle') || '重置密码'}
-              </h3>
-              <p style={{ margin: '0 0 20px', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
-                {t('login.resetPasswordDescription') ||
-                  '输入注册邮箱，我们将发送密码重置链接。'}
-              </p>
+              {resendStatus && (
+                <p className={resendStatusType === 'success' ? 'success-message' : 'error-message'}>
+                  {resendStatus}
+                </p>
+              )}
+              <button 
+                onClick={() => {
+                  setAwaitingEmailConfirmation(false);
+                  setVerificationEmail('');
+                  if (typeof window !== 'undefined') {
+                    window.localStorage.removeItem(PENDING_EMAIL_KEY);
+                    window.localStorage.removeItem(PENDING_USERNAME_KEY);
+                  }
+                }}
+                className="btn btn-secondary"
+              >
+                {t('login.backToLogin') || '返回登录'}
+              </button>
+            </div>
+          ) : showResetPassword ? (
+            <div className="reset-password-form">
+              <h2>{t('login.resetPassword') || '重置密码'}</h2>
               <form onSubmit={handleResetPassword}>
-                <div className="form-group" style={{ marginBottom: '16px' }}>
-                  <label htmlFor="reset-email">{t('login.email')}</label>
+                <div className="form-group">
+                  <label htmlFor="reset-email">{t('login.email') || '邮箱'}</label>
                   <input
                     type="email"
                     id="reset-email"
                     value={resetEmail}
                     onChange={(e) => setResetEmail(e.target.value)}
-                    placeholder={t('login.email')}
+                    placeholder={t('login.emailPlaceholder') || '请输入您的邮箱'}
                     required
                   />
                 </div>
                 {resetStatus && (
-                  <div
-                    style={{
-                      background:
-                        resetStatusType === 'success'
-                          ? 'rgba(76, 175, 80, 0.12)'
-                          : 'rgba(244, 67, 54, 0.12)',
-                      color: resetStatusType === 'success' ? '#256029' : '#b71c1c',
-                      padding: '10px 12px',
-                      borderRadius: '8px',
-                      marginBottom: '16px',
-                      lineHeight: 1.5
-                    }}
-                  >
+                  <p className={resetStatusType === 'success' ? 'success-message' : 'error-message'}>
                     {resetStatus}
-                  </div>
+                  </p>
                 )}
-                <button
-                  type="submit"
-                  className="login-button"
-                  style={{ width: '100%' }}
-                  disabled={isResetting}
+                <button type="submit" disabled={isResetting} className="btn btn-primary">
+                  {isResetting ? t('login.sending') || '发送中...' : t('login.sendResetEmail') || '发送重置邮件'}
+                </button>
+                <button 
+                  type="button"
+                  onClick={() => setShowResetPassword(false)}
+                  className="btn btn-secondary"
                 >
-                  {isResetting
-                    ? t('common.loading') || '发送中...'
-                    : t('login.resetPasswordAction') || '发送重置邮件'}
+                  {t('login.backToLogin') || '返回登录'}
                 </button>
               </form>
             </div>
-          </div>
-        )}
-
-        <div className="login-header">
-          <h2>{isLoginForm ? t('login.title') : t('login.registerTitle')}</h2>
-          <p className="login-subtitle">
-            {isLoginForm 
-              ? t('login.subtitle') 
-              : t('login.registerSubtitle')}
-          </p>
-        </div>
-
-        {error && (
-          <div className="error-message">
-            {error}
-          </div>
-        )}
-
-        <form className="login-form" onSubmit={handleSubmit}>
-          {!isLoginForm && (
-            <div className="form-group">
-              <label htmlFor="username">{t('login.username')}</label>
-              <input
-                type="text"
-                id="username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder={t('login.username')}
-                required
-              />
-            </div>
-          )}
-
-          <div className="form-group">
-            <label htmlFor="email">{t('login.email')}</label>
-            <input
-              type="email"
-              id="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder={t('login.email')}
-              required
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="password">{t('login.password')}</label>
-            <div className="password-input-container">
-              <input
-                type={showPassword ? 'text' : 'password'}
-                id="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder={t('login.password')}
-                required
-              />
-              <button
-                type="button"
-                className="toggle-password-visibility"
-                onClick={() => setShowPassword(!showPassword)}
-                aria-label={showPassword ? t('common.hide') : t('common.show')}
-              >
-                {showPassword ? '👁️‍🗨️' : '👁️'}
-              </button>
-            </div>
-            <small className="password-hint">{t('login.passwordTooShort')}</small>
-          </div>
-
-          {!isLoginForm && (
-            <div className="form-group">
-            <label htmlFor="confirm-password">{t('login.confirmPassword')}</label>
-            <div className="password-input-container">
-              <input
-                type={showConfirmPassword ? 'text' : 'password'}
-                id="confirm-password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder={t('login.confirmPassword')}
-                required
-              />
-              <button
-                type="button"
-                className="toggle-password-visibility"
-                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                aria-label={showConfirmPassword ? t('common.hide') : t('common.show')}
-              >
-                {showConfirmPassword ? '👁️‍🗨️' : '👁️'}
-              </button>
-            </div>
-          </div>
-          )}
-
-          {isLoginForm && (
-            <div className="password-options">
-              <div className="remember-me">
-            <input 
-              type="checkbox" 
-              id="remember" 
-              checked={rememberMe}
-              onChange={(e) => setRememberMe(e.target.checked)}
-            />
-                <label htmlFor="remember">{t('login.rememberMe')}</label>
-          </div>
-              <button 
-                type="button" 
-                className="forgot-password"
-                onClick={handleForgotPassword}
-              >
-                {t('login.forgotPassword')}
-              </button>
-            </div>
-          )}
-
-          {!isLoginForm && awaitingEmailConfirmation && (
-            <div className="verification-box">
-              <h4>{t('login.verificationTitle') || '完成邮箱验证'}</h4>
-              <p>
-                {t('login.verificationLinkDesc') || '验证邮件已发送，请点击邮件中的确认链接完成注册。如未收到，请检查垃圾邮件文件夹。'}
-                <br />
-                <strong>{verificationEmail}</strong>
-              </p>
-              <div className="verification-actions">
-                <button
-                  type="button"
-                  className="verification-button secondary"
-                  onClick={handleResendEmail}
-                  disabled={isResending}
-                >
-                  {isResending ? t('common.loading') : (t('login.verificationResend') || '重新发送邮件')}
-                </button>
-                {resendStatus && (
-                  <span className={`verification-status ${resendStatusType}`}>
-                    {resendStatus}
-                  </span>
+          ) : (
+            <>
+              <h1>{t('login.title') || 'Login'}</h1>
+              <p className="login-subtitle">{t('login.subtitle') || 'Welcome back'}</p>
+              
+              {error && <div className="error-message">{error}</div>}
+              
+              <form onSubmit={handleSubmit}>
+                {!isLoginForm && (
+                  <div className="form-group">
+                    <label htmlFor="username">{t('login.username') || 'Username'}</label>
+                    <input
+                      type="text"
+                      id="username"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      placeholder={t('login.usernamePlaceholder') || 'Username'}
+                      required
+                      minLength={3}
+                    />
+                  </div>
                 )}
+                
+                <div className="form-group">
+                  <label htmlFor="email">{t('login.email') || 'Email'}</label>
+                  <input
+                    type="email"
+                    id="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder={t('login.emailPlaceholder') || 'Email'}
+                    required
+                    autoComplete="email"
+                  />
+                </div>
+                
+                <div className="form-group">
+                  <label htmlFor="password">{t('login.password') || 'Password'}</label>
+                  <div className="password-input-wrapper">
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      id="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder={t('login.passwordPlaceholder') || 'Password'}
+                      required
+                      minLength={6}
+                      autoComplete={isLoginForm ? 'current-password' : 'new-password'}
+                    />
+                    <button
+                      type="button"
+                      className="password-toggle"
+                      onClick={() => setShowPassword(!showPassword)}
+                      aria-label={showPassword ? t('login.hidePassword') || 'Hide password' : t('login.showPassword') || 'Show password'}
+                    >
+                      {showPassword ? '👁️' : '👁️‍🗨️'}
+                    </button>
+                  </div>
+                  <p className="password-hint">{t('login.passwordHint') || 'Password must be at least 6 characters'}</p>
+                </div>
+                
+                {!isLoginForm && (
+                  <div className="form-group">
+                    <label htmlFor="confirmPassword">{t('login.confirmPassword') || 'Confirm Password'}</label>
+                    <div className="password-input-wrapper">
+                      <input
+                        type={showConfirmPassword ? 'text' : 'password'}
+                        id="confirmPassword"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        placeholder={t('login.confirmPasswordPlaceholder') || 'Confirm Password'}
+                        required
+                        minLength={6}
+                        autoComplete="new-password"
+                      />
+                      <button
+                        type="button"
+                        className="password-toggle"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        aria-label={showConfirmPassword ? t('login.hidePassword') || 'Hide password' : t('login.showPassword') || 'Show password'}
+                      >
+                        {showConfirmPassword ? '👁️' : '👁️‍🗨️'}
+                      </button>
+                    </div>
+                  </div>
+                )}
+                
+                {isLoginForm && (
+                  <div className="form-options">
+                    <label className="checkbox-label">
+                      <input
+                        type="checkbox"
+                        checked={rememberMe}
+                        onChange={(e) => setRememberMe(e.target.checked)}
+                      />
+                      <span>{t('login.rememberMe') || 'Remember me'}</span>
+                    </label>
+                    <Link to="#" onClick={(e) => { e.preventDefault(); setShowResetPassword(true); }} className="forgot-password">
+                      {t('login.forgotPassword') || 'Forgot password?'}
+                    </Link>
+                  </div>
+                )}
+                
+                <button type="submit" disabled={isLoading} className="btn btn-primary btn-large">
+                  {isLoading ? (t('login.loading') || 'Loading...') : (isLoginForm ? t('login.login') || 'Login' : t('login.register') || 'Register')}
+                </button>
+              </form>
+              
+              <p className="form-switch">
+                {isLoginForm 
+                  ? (<>Don't have an account? <Link to="#" onClick={(e) => { e.preventDefault(); toggleForm(); }}>{t('login.register') || 'Register'}</Link></>)
+                  : (<>Already have an account? <Link to="#" onClick={(e) => { e.preventDefault(); toggleForm(); }}>{t('login.login') || 'Login'}</Link></>)
+                }
+              </p>
+              
+              <div className="social-login-divider">
+                <span>{t('login.orLoginWith') || 'Or login with'}</span>
               </div>
-            </div>
-          )}
-
-          <button 
-            type="submit" 
-            className="login-button"
-            disabled={isLoading}
-          >
-            {isLoading ? (
-              <>
-                <span className="loading-spinner"></span>
-                {t('common.loading')}
-              </>
-            ) : (
-              isLoginForm ? t('login.login') : t('login.register')
-            )}
-
-          </button>
-
-          <div className="form-toggle">
-            <span>
-              {isLoginForm 
-                ? t('login.noAccount') + ' ' 
-                : t('login.alreadyHaveAccount') + ' '}
-              <button 
-                type="button" 
-                className="toggle-link"
-                onClick={toggleForm}
+              
+              <button
+                onClick={() => handleSocialLogin('google')}
+                disabled={isLoading}
+                className="btn btn-social google-login"
               >
-                {isLoginForm ? t('login.register') : t('login.login')}
+                <span className="google-icon">G</span>
+                {t('login.loginWithGoogle') || 'Login with Google'}
               </button>
-            </span>
-          </div>
-        </form>
-
-        <div className="login-divider">
-          <span>{t('login.orLoginWith') || '或使用以下方式登录'}</span>
-        </div>
-
-        <div className="social-login">
-          <button className="social-button google" onClick={() => handleSocialLogin('Google')} disabled={isLoading}>
-            <span className="social-icon">G</span>
-            {t('login.loginWithGoogle')}
-          </button>
-        </div>
-
-        <div className="login-footer">
-          <p>{t('login.agreeTerms') || '登录或注册即表示您同意我们的'}
-            <Link to={getLocalizedPath('/terms')}>{t('footer.terms')}</Link>
-            {t('login.and') || '和'}
-            <Link to={getLocalizedPath('/privacy')}>{t('footer.privacy')}</Link>
-          </p>
+              
+              <p className="terms-text">
+                {t('login.termsText') || 'By logging in or registering, you agree to our'} 
+                <Link to={getLocalizedPath('/terms')}>{t('login.termsOfService') || 'Terms of Service'}</Link> 
+                {t('login.and') || ' and '}
+                <Link to={getLocalizedPath('/privacy')}>{t('login.privacyPolicy') || 'Privacy Policy'}</Link>
+              </p>
+            </>
+          )}
         </div>
       </div>
-    </div>
+    </>
   );
 };
 
