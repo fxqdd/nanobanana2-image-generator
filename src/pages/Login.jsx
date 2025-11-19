@@ -1,3 +1,14 @@
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
+import { useLanguage } from '../contexts/LanguageContext';
+import SEO from '../components/SEO';
+import supabase, { setAuthStorageMode, getAuthStorageMode, clearAuthSession, resetSupabaseClient } from '../lib/supabaseClient';
+import { sendVerificationEmail, registerUser } from '../utils/emailAPI';
+import { DEFAULT_FREE_PLAN, DEFAULT_FREE_CREDITS } from '../constants/subscription';
+import '../styles/Login.css';
+
+const PENDING_EMAIL_KEY = 'nb-pending-email';
 const PENDING_USERNAME_KEY = 'nb-pending-username';
 
 const Login = () => {
