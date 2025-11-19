@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import SEO from '../components/SEO';
-import supabase, { setAuthStorageMode, getAuthStorageMode } from '../lib/supabaseClient';
+import supabase, { setAuthStorageMode, getAuthStorageMode, clearAuthSession } from '../lib/supabaseClient';
 import { sendVerificationEmail, registerUser } from '../utils/emailAPI';
 import { DEFAULT_FREE_PLAN, DEFAULT_FREE_CREDITS } from '../constants/subscription';
 import '../styles/Login.css';
@@ -31,20 +31,20 @@ const Login = () => {
   const [resetStatus, setResetStatus] = useState('');
   const [resetStatusType, setResetStatusType] = useState('');
   const [isResetting, setIsResetting] = useState(false);
-  
+
   const [username, setUsername] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  
+
   const navigate = useNavigate();
   const { socialLogin, isLoggedIn, syncSessionToState } = useAuth();
   const { t, getLocalizedPath, language } = useLanguage();
   const seoData = t('seo.login') || { title: t('login.title'), description: '', keywords: '' };
-  
+
   // 处理 OAuth 回调
   useEffect(() => {
     const handleOAuthCallback = async () => {
       if (typeof window === 'undefined') return;
-      
+
       const hash = window.location.hash;
       if (hash) {
         const params = new URLSearchParams(hash.replace('#', ''));
@@ -56,12 +56,12 @@ const Login = () => {
           return;
         }
       }
-      
+
       if (hash && (hash.includes('access_token') || hash.includes('type=email'))) {
         try {
           setIsLoading(true);
           const { data: { session }, error } = await supabase().auth.getSession();
-          
+
           if (error) {
             console.error('OAuth callback error:', error);
             setError(error.message || t('login.loginFailed'));
@@ -97,7 +97,7 @@ const Login = () => {
         setIsLoading(false);
       }
     };
-    
+
     handleOAuthCallback();
   }, [navigate, t, getLocalizedPath]);
 
@@ -117,29 +117,33 @@ const Login = () => {
       console.log('[Login] ========== 开始登录 ==========');
       console.log('[Login] 邮箱:', email);
       console.log('[Login] 记住我:', rememberMe);
-      
+
+      // 0. 强制清理旧的会话数据，防止 stale/corrupted session 导致登录卡住
+      // 这解决了 Cloudflare 部署后，非无痕模式下登录卡住的问题
+      clearAuthSession();
+
       // 1. 设置存储模式（在登录前，但不要等待太久）
       const targetMode = rememberMe ? 'local' : 'session';
       const currentMode = getAuthStorageMode();
-      
+
       if (currentMode !== targetMode) {
         console.log('[Login] 切换存储模式:', currentMode, '->', targetMode);
         setAuthStorageMode(targetMode, true);
         // 只等待很短时间，让存储切换完成
         await new Promise(resolve => setTimeout(resolve, 50));
       }
-      
+
       console.log('[Login] 存储模式已设置:', getAuthStorageMode());
-      
+
       // 2. 调用 signInWithPassword（移除自定义超时，完全依赖 Supabase 内部处理）
       console.log('[Login] 调用 signInWithPassword...');
       const { data, error } = await supabase().auth.signInWithPassword({
         email,
         password
       });
-      
+
       console.log('[Login] signInWithPassword 调用已返回');
-      
+
       if (error) {
         console.error('[Login] 登录错误:', error);
         // 如果是网络问题，给出更具体的提示
@@ -153,12 +157,12 @@ const Login = () => {
         }
         throw new Error(error.message || '登录失败，请检查邮箱和密码');
       }
-      
+
       if (!data?.session) {
         console.error('[Login] 登录失败：没有返回 session');
         throw new Error('登录失败：服务器未返回会话信息');
       }
-      
+
       console.log('[Login] ✓ signInWithPassword 成功，已获取 session');
       console.log('[Login] Session 信息:', {
         email: data.session.user?.email,
@@ -166,14 +170,14 @@ const Login = () => {
         hasAccessToken: !!data.session.access_token,
         hasRefreshToken: !!data.session.refresh_token
       });
-      
+
       // 手动同步会话到 AuthContext，避免因监听器问题导致的状态更新延迟
       await syncSessionToState(data.session);
-      
+
       // 3. 设置登录后的加载状态，等待 AuthContext 同步
       console.log('[Login] ========== 登录成功，等待状态同步 ==========');
       setPostLoginLoading(true);
-      
+
     } catch (err) {
       console.error('[Login] 登录过程出错:', err);
       // 重新抛出错误，让上层处理
@@ -195,20 +199,20 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    
+
     // 表单验证
     if (isLoginForm) {
       if (!email || !password) {
         setError(t('login.fillAllFields'));
         return;
       }
-      
+
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(email)) {
         setError(t('login.invalidEmail'));
         return;
       }
-      
+
       if (password.length < 6) {
         setError(t('login.passwordTooShort'));
         return;
@@ -218,23 +222,23 @@ const Login = () => {
         setError(t('login.fillAllFields'));
         return;
       }
-      
+
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(email)) {
         setError(t('login.invalidEmail'));
         return;
       }
-      
+
       if (password !== confirmPassword) {
         setError(t('login.passwordsNotMatch'));
         return;
       }
-      
+
       if (password.length < 6) {
         setError(t('login.passwordTooShort'));
         return;
       }
-      
+
       if (username.length < 3) {
         setError(t('login.usernameTooShort') || 'Username must be at least 3 characters');
         return;
@@ -243,7 +247,7 @@ const Login = () => {
 
     try {
       setIsLoading(true);
-      
+
       if (isLoginForm) {
         // 使用重写的登录函数
         await handleEmailLogin(email, password, rememberMe);
@@ -300,7 +304,7 @@ const Login = () => {
     try {
       setIsLoading(true);
       setError('');
-      
+
       const redirectUrl = `${window.location.origin}${getLocalizedPath('/login')}`;
       const { data, error } = await supabase().auth.signInWithOAuth({
         provider,
@@ -308,14 +312,14 @@ const Login = () => {
           redirectTo: redirectUrl
         }
       });
-      
+
       if (error) {
         console.error('Social login error:', error);
         setError(error.message || t('login.socialLoginFailed'));
         setIsLoading(false);
         return;
       }
-      
+
       // OAuth 会重定向，不需要手动导航
     } catch (err) {
       console.error('Social login exception:', err);
@@ -326,11 +330,11 @@ const Login = () => {
 
   const handleResendVerification = async () => {
     if (!verificationEmail) return;
-    
+
     setIsResending(true);
     setResendStatus('');
     setResendStatusType('');
-    
+
     try {
       const result = await sendVerificationEmail(verificationEmail);
       if (result.success) {
@@ -356,16 +360,16 @@ const Login = () => {
       setResetStatusType('error');
       return;
     }
-    
+
     setIsResetting(true);
     setResetStatus('');
     setResetStatusType('');
-    
+
     try {
       const { error } = await supabase().auth.resetPasswordForEmail(resetEmail, {
         redirectTo: `${window.location.origin}${getLocalizedPath('/reset-password')}`
       });
-      
+
       if (error) {
         setResetStatus(error.message || t('login.resetFailed') || '重置密码失败');
         setResetStatusType('error');
@@ -392,7 +396,7 @@ const Login = () => {
   // 其余 UI 代码保持不变...
   return (
     <>
-      <SEO 
+      <SEO
         title={seoData.title}
         description={seoData.description}
         keywords={seoData.keywords}
@@ -403,7 +407,7 @@ const Login = () => {
             <div className="verification-message">
               <h2>{t('login.verificationTitle') || '验证您的邮箱'}</h2>
               <p>{t('login.verificationMessage') || `我们已向 ${verificationEmail} 发送了验证邮件。请点击邮件中的链接完成注册。`}</p>
-              <button 
+              <button
                 onClick={handleResendVerification}
                 disabled={isResending}
                 className="btn btn-primary"
@@ -415,7 +419,7 @@ const Login = () => {
                   {resendStatus}
                 </p>
               )}
-              <button 
+              <button
                 onClick={() => {
                   setAwaitingEmailConfirmation(false);
                   setVerificationEmail('');
@@ -452,7 +456,7 @@ const Login = () => {
                 <button type="submit" disabled={isResetting} className="btn btn-primary">
                   {isResetting ? t('login.sending') || '发送中...' : t('login.sendResetEmail') || '发送重置邮件'}
                 </button>
-                <button 
+                <button
                   type="button"
                   onClick={() => setShowResetPassword(false)}
                   className="btn btn-secondary"
@@ -465,9 +469,9 @@ const Login = () => {
             <>
               <h1>{t('login.title') || 'Login'}</h1>
               <p className="login-subtitle">{t('login.subtitle') || 'Welcome back'}</p>
-              
+
               {error && <div className="error-message">{error}</div>}
-              
+
               <form onSubmit={handleSubmit}>
                 {!isLoginForm && (
                   <div className="form-group">
@@ -483,7 +487,7 @@ const Login = () => {
                     />
                   </div>
                 )}
-                
+
                 <div className="form-group">
                   <label htmlFor="email">{t('login.email') || 'Email'}</label>
                   <input
@@ -496,7 +500,7 @@ const Login = () => {
                     autoComplete="email"
                   />
                 </div>
-                
+
                 <div className="form-group">
                   <label htmlFor="password">{t('login.password') || 'Password'}</label>
                   <div className="password-input-wrapper">
@@ -521,7 +525,7 @@ const Login = () => {
                   </div>
                   <p className="password-hint">{t('login.passwordHint') || 'Password must be at least 6 characters'}</p>
                 </div>
-                
+
                 {!isLoginForm && (
                   <div className="form-group">
                     <label htmlFor="confirmPassword">{t('login.confirmPassword') || 'Confirm Password'}</label>
@@ -547,7 +551,7 @@ const Login = () => {
                     </div>
                   </div>
                 )}
-                
+
                 {isLoginForm && (
                   <div className="form-options">
                     <label className="checkbox-label">
@@ -563,23 +567,23 @@ const Login = () => {
                     </Link>
                   </div>
                 )}
-                
+
                 <button type="submit" disabled={isLoading} className="btn btn-primary btn-large">
                   {isLoading ? (t('login.loading') || 'Loading...') : (isLoginForm ? t('login.login') || 'Login' : t('login.register') || 'Register')}
                 </button>
               </form>
-              
+
               <p className="form-switch">
-                {isLoginForm 
+                {isLoginForm
                   ? (<>Don't have an account? <Link to="#" onClick={(e) => { e.preventDefault(); toggleForm(); }}>{t('login.register') || 'Register'}</Link></>)
                   : (<>Already have an account? <Link to="#" onClick={(e) => { e.preventDefault(); toggleForm(); }}>{t('login.login') || 'Login'}</Link></>)
                 }
               </p>
-              
+
               <div className="social-login-divider">
                 <span>{t('login.orLoginWith') || 'Or login with'}</span>
               </div>
-              
+
               <button
                 onClick={() => handleSocialLogin('google')}
                 disabled={isLoading}
@@ -588,10 +592,10 @@ const Login = () => {
                 <span className="google-icon">G</span>
                 {t('login.loginWithGoogle') || 'Login with Google'}
               </button>
-              
+
               <p className="terms-text">
-                {t('login.termsText') || 'By logging in or registering, you agree to our'} 
-                <Link to={getLocalizedPath('/terms')}>{t('login.termsOfService') || 'Terms of Service'}</Link> 
+                {t('login.termsText') || 'By logging in or registering, you agree to our'}
+                <Link to={getLocalizedPath('/terms')}>{t('login.termsOfService') || 'Terms of Service'}</Link>
                 {t('login.and') || ' and '}
                 <Link to={getLocalizedPath('/privacy')}>{t('login.privacyPolicy') || 'Privacy Policy'}</Link>
               </p>

@@ -137,3 +137,16 @@ export const setAuthStorageMode = (mode = 'local', preserveSession = true) => {
 };
 
 
+
+export const clearAuthSession = () => {
+  if (typeof window === 'undefined') return;
+  
+  try {
+    // Clear from both storages to be safe
+    window.localStorage.removeItem(SUPABASE_STORAGE_KEY);
+    window.sessionStorage.removeItem(SUPABASE_STORAGE_KEY);
+    console.log('[AuthStorage] Cleared auth session from storage');
+  } catch (error) {
+    console.warn('[AuthStorage] Failed to clear auth session:', error);
+  }
+};
