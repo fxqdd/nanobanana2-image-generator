@@ -1,52 +1,70 @@
-/* 登录页面样式 */
-.login-page {
+/* 登录页面样式 - iPhone风格 */
+.login-container {
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 20px;
-  background: linear-gradient(135deg, #fff, #f8f9fa);
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  position: relative;
 }
 
-.login-container {
+.login-card {
   width: 100%;
-  max-width: 450px;
-  background-color: white;
-  border-radius: var(--radius);
-  box-shadow: var(--shadow-medium);
-  padding: 40px;
-  transition: var(--transition);
+  max-width: 420px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 24px;
+  box-shadow: 
+    0 20px 60px rgba(0, 0, 0, 0.1),
+    0 0 0 1px rgba(255, 255, 255, 0.5) inset;
+  padding: 48px 32px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.login-header {
-  text-align: center;
-  margin-bottom: 32px;
-}
-
-.login-header h2 {
-  font-size: 2rem;
+.login-card h1 {
+  font-size: 32px;
   font-weight: 700;
-  color: var(--text-color);
-  margin-bottom: 8px;
+  color: #1d1d1f;
+  margin: 0 0 8px 0;
+  text-align: center;
+  letter-spacing: -0.5px;
 }
 
 .login-subtitle {
-  color: var(--text-secondary);
-  font-size: 1rem;
-  line-height: 1.5;
+  color: #86868b;
+  font-size: 17px;
+  line-height: 1.47;
+  text-align: center;
+  margin: 0 0 32px 0;
+  font-weight: 400;
 }
 
 .error-message {
-  background-color: #ffebee;
-  color: #c62828;
+  background-color: #ff3b30;
+  color: white;
   padding: 12px 16px;
-  border-radius: var(--radius);
+  border-radius: 12px;
   margin-bottom: 20px;
-  font-size: 0.9rem;
-  border: 1px solid #ffcdd2;
+  font-size: 15px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(255, 59, 48, 0.2);
 }
 
-.login-form {
+.success-message {
+  background-color: #34c759;
+  color: white;
+  padding: 12px 16px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  font-size: 15px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(52, 199, 89, 0.2);
+}
+
+/* 表单样式 */
+form {
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -59,146 +77,462 @@
 }
 
 .form-group label {
-  font-weight: 500;
-  color: var(--text-color);
-  font-size: 0.95rem;
+  font-weight: 600;
+  color: #1d1d1f;
+  font-size: 15px;
+  letter-spacing: -0.24px;
 }
 
 .form-group input {
-  padding: 12px 16px;
-  font-size: 1rem;
-  border: 2px solid var(--border-color);
-  border-radius: var(--radius);
-  background-color: white;
-  color: var(--text-color);
-  transition: var(--transition);
+  width: 100%;
+  padding: 14px 16px;
+  font-size: 17px;
+  border: 1px solid #d2d2d7;
+  border-radius: 12px;
+  background-color: #f5f5f7;
+  color: #1d1d1f;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
 }
 
 .form-group input:focus {
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(255, 165, 0, 0.1);
+  border-color: #007aff;
+  background-color: white;
+  box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.1);
 }
 
-/* 密码输入容器样式 */
-.password-input-container {
+.form-group input::placeholder {
+  color: #86868b;
+}
+
+/* 密码输入容器 */
+.password-input-wrapper {
   position: relative;
   display: flex;
   align-items: center;
 }
 
-.toggle-password-visibility {
+.password-input-wrapper input {
+  padding-right: 48px;
+}
+
+.password-toggle {
   position: absolute;
-  right: 10px;
+  right: 12px;
   background: none;
   border: none;
   cursor: pointer;
-  font-size: 18px;
-  padding: 5px;
-  color: var(--text-secondary);
+  font-size: 20px;
+  padding: 4px;
+  color: #86868b;
   transition: color 0.2s;
-}
-
-.toggle-password-visibility:hover {
-  color: var(--primary-color);
-}
-
-/* 密码提示文本 */
-.password-hint {
-  display: block;
-  margin-top: 5px;
-  font-size: 12px;
-  color: var(--text-secondary);
-}
-
-/* 测试账号样式 */
-.test-accounts {
-  margin-top: 20px;
-  padding: 15px;
-  background-color: var(--background-secondary);
-  border: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
   border-radius: 8px;
 }
 
-.test-accounts-title {
-    font-weight: 600;
-    margin-bottom: 10px;
-    color: var(--text-primary);
-  }
-
-.test-account-item {
-  margin-bottom: 8px;
-  font-size: 14px;
-  color: var(--text-secondary);
-  font-family: monospace;
+.password-toggle:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+  color: #1d1d1f;
 }
 
-.password-options {
+.password-hint {
+  font-size: 13px;
+  color: #86868b;
+  margin-top: 4px;
+  line-height: 1.38;
+}
+
+/* 表单选项 */
+.form-options {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
+  margin: -8px 0;
 }
 
-.remember-me {
+.checkbox-label {
   display: flex;
   align-items: center;
   gap: 8px;
-}
-
-.remember-me input[type="checkbox"] {
-  width: auto;
-  margin: 0;
-}
-
-.remember-me label {
-  font-weight: normal;
-  color: var(--text-secondary);
-  font-size: 0.9rem;
   cursor: pointer;
+  font-size: 15px;
+  color: #1d1d1f;
+  user-select: none;
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  cursor: pointer;
+  accent-color: #007aff;
 }
 
 .forgot-password {
   background: none;
   border: none;
-  color: var(--primary-color);
-  font-size: 0.9rem;
+  color: #007aff;
+  font-size: 15px;
   cursor: pointer;
   padding: 0;
-  transition: var(--transition);
+  text-decoration: none;
+  transition: opacity 0.2s;
+  font-weight: 400;
 }
 
 .forgot-password:hover {
-  color: #ff8c00;
-  text-decoration: underline;
+  opacity: 0.7;
+  text-decoration: none;
 }
 
-.login-button {
-  background-color: var(--primary-color);
-  color: white;
-  border: none;
-  border-radius: var(--radius);
-  padding: 14px 24px;
-  font-size: 1.1rem;
+/* iPhone风格按钮 */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  font-size: 17px;
   font-weight: 600;
+  text-align: center;
+  border: none;
+  border-radius: 12px;
   cursor: pointer;
-  transition: var(--transition);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  outline: none;
+  position: relative;
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+  letter-spacing: -0.24px;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+.btn:active {
+  transform: scale(0.97);
+}
+
+.btn-primary {
+  background: linear-gradient(180deg, #007aff 0%, #0051d5 100%);
+  color: white;
+  box-shadow: 
+    0 4px 14px rgba(0, 122, 255, 0.3),
+    0 0 0 0.5px rgba(0, 0, 0, 0.05) inset;
+  padding: 14px 24px;
+  width: 100%;
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: linear-gradient(180deg, #0051d5 0%, #003d9e 100%);
+  box-shadow: 
+    0 6px 20px rgba(0, 122, 255, 0.4),
+    0 0 0 0.5px rgba(0, 0, 0, 0.05) inset;
+  transform: translateY(-1px);
+}
+
+.btn-primary:active:not(:disabled) {
+  transform: scale(0.98) translateY(0);
+  box-shadow: 
+    0 2px 8px rgba(0, 122, 255, 0.3),
+    0 0 0 0.5px rgba(0, 0, 0, 0.05) inset;
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  background: linear-gradient(180deg, #86868b 0%, #6e6e73 100%);
+}
+
+.btn-secondary {
+  background: rgba(142, 142, 147, 0.12);
+  color: #007aff;
+  border: none;
+  padding: 14px 24px;
+  width: 100%;
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: rgba(142, 142, 147, 0.2);
+}
+
+.btn-secondary:active:not(:disabled) {
+  background: rgba(142, 142, 147, 0.25);
+  transform: scale(0.98);
+}
+
+.btn-large {
+  padding: 16px 24px;
+  font-size: 17px;
+}
+
+/* 社交登录按钮 */
+.btn-social {
+  background: white;
+  color: #1d1d1f;
+  border: 1px solid #d2d2d7;
+  padding: 14px 24px;
+  width: 100%;
+  font-size: 17px;
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.btn-social:hover:not(:disabled) {
+  background: #f5f5f7;
+  border-color: #86868b;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.btn-social:active:not(:disabled) {
+  transform: scale(0.98);
+  background: #e8e8ed;
+}
+
+.google-login {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 10px;
 }
 
-.login-button:hover:not(:disabled) {
-  background-color: #ff8c00;
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-medium);
+.google-icon {
+  width: 20px;
+  height: 20px;
+  background: linear-gradient(135deg, #4285f4 0%, #ea4335 50%, #fbbc04 75%, #34a853 100%);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 700;
+  font-size: 14px;
 }
 
-.login-button:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-  transform: none;
+/* 表单切换链接 */
+.form-switch {
+  text-align: center;
+  color: #86868b;
+  font-size: 15px;
+  margin: 24px 0;
+  line-height: 1.47;
+}
+
+.form-switch a {
+  color: #007aff;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.form-switch a:hover {
+  text-decoration: underline;
+}
+
+/* 社交登录分隔线 */
+.social-login-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 32px 0;
+  color: #86868b;
+  font-size: 13px;
+  position: relative;
+}
+
+.social-login-divider::before,
+.social-login-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(to right, transparent, #d2d2d7, transparent);
+  margin: 0 16px;
+}
+
+/* 条款文本 */
+.terms-text {
+  text-align: center;
+  color: #86868b;
+  font-size: 13px;
+  line-height: 1.38;
+  margin-top: 24px;
+}
+
+.terms-text a {
+  color: #007aff;
+  text-decoration: none;
+}
+
+.terms-text a:hover {
+  text-decoration: underline;
+}
+
+/* 验证消息 */
+.verification-message {
+  text-align: center;
+}
+
+.verification-message h2 {
+  font-size: 28px;
+  font-weight: 700;
+  color: #1d1d1f;
+  margin: 0 0 12px 0;
+  letter-spacing: -0.5px;
+}
+
+.verification-message p {
+  font-size: 17px;
+  color: #86868b;
+  line-height: 1.47;
+  margin: 0 0 24px 0;
+}
+
+.verification-message .btn {
+  margin: 8px 0;
+}
+
+/* 重置密码表单 */
+.reset-password-form {
+  text-align: center;
+}
+
+.reset-password-form h2 {
+  font-size: 28px;
+  font-weight: 700;
+  color: #1d1d1f;
+  margin: 0 0 24px 0;
+  letter-spacing: -0.5px;
+}
+
+.reset-password-form form {
+  text-align: left;
+}
+
+.reset-password-form .btn {
+  margin-top: 8px;
+}
+
+/* 暗色模式适配 */
+body.dark-mode .login-container {
+  background: linear-gradient(135deg, #1c1c1e 0%, #000000 100%);
+}
+
+body.dark-mode .login-card {
+  background: rgba(28, 28, 30, 0.95);
+  box-shadow: 
+    0 20px 60px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+}
+
+body.dark-mode .login-card h1,
+body.dark-mode .form-group label {
+  color: #f5f5f7;
+}
+
+body.dark-mode .login-subtitle,
+body.dark-mode .password-hint,
+body.dark-mode .form-switch,
+body.dark-mode .social-login-divider,
+body.dark-mode .terms-text {
+  color: #86868b;
+}
+
+body.dark-mode .form-group input {
+  background-color: rgba(142, 142, 147, 0.12);
+  border-color: rgba(142, 142, 147, 0.3);
+  color: #f5f5f7;
+}
+
+body.dark-mode .form-group input:focus {
+  background-color: rgba(142, 142, 147, 0.2);
+  border-color: #0a84ff;
+  box-shadow: 0 0 0 4px rgba(10, 132, 255, 0.2);
+}
+
+body.dark-mode .btn-secondary {
+  background: rgba(142, 142, 147, 0.2);
+  color: #0a84ff;
+}
+
+body.dark-mode .btn-social {
+  background: rgba(142, 142, 147, 0.12);
+  border-color: rgba(142, 142, 147, 0.3);
+  color: #f5f5f7;
+}
+
+body.dark-mode .btn-social:hover:not(:disabled) {
+  background: rgba(142, 142, 147, 0.2);
+}
+
+body.dark-mode .password-toggle:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #f5f5f7;
+}
+
+body.dark-mode .checkbox-label {
+  color: #f5f5f7;
+}
+
+body.dark-mode .forgot-password {
+  color: #0a84ff;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .login-container {
+    padding: 16px;
+  }
+  
+  .login-card {
+    padding: 40px 24px;
+    border-radius: 20px;
+    max-width: 100%;
+  }
+  
+  .login-card h1 {
+    font-size: 28px;
+  }
+  
+  .login-subtitle {
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .login-card {
+    padding: 32px 20px;
+    border-radius: 16px;
+  }
+  
+  .login-card h1 {
+    font-size: 24px;
+  }
+  
+  .form-group input {
+    padding: 12px 14px;
+    font-size: 16px;
+  }
+  
+  .btn {
+    padding: 14px 20px;
+    font-size: 16px;
+  }
+}
+
+/* 加载动画 */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .loading-spinner {
@@ -208,323 +542,4 @@
   border-top-color: white;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
-}
-
-.form-toggle {
-  text-align: center;
-  color: var(--text-secondary);
-  font-size: 0.9rem;
-}
-
-.toggle-link {
-  background: none;
-  border: none;
-  color: var(--primary-color);
-  font-weight: 500;
-  cursor: pointer;
-  padding: 0;
-  transition: var(--transition);
-}
-
-.toggle-link:hover {
-  color: #ff8c00;
-  text-decoration: underline;
-}
-
-.login-divider {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 32px 0;
-  color: var(--text-secondary);
-  font-size: 0.9rem;
-}
-
-.login-divider::before,
-.login-divider::after {
-  content: '';
-  flex: 1;
-  height: 1px;
-  background-color: var(--border-color);
-  margin: 0 16px;
-}
-
-.social-login {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-  margin-bottom: 24px;
-}
-
-.social-button {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 12px;
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius);
-  background-color: white;
-  color: var(--text-color);
-  cursor: pointer;
-  transition: var(--transition);
-  font-size: 0.85rem;
-}
-
-.social-button:hover {
-  background-color: #f8f9fa;
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-light);
-}
-
-.social-icon {
-  font-size: 1.2rem;
-  font-weight: bold;
-}
-
-.social-button.google .social-icon {
-  color: #db4437;
-}
-
-.social-button.google .social-icon {
-  color: #db4437;
-}
-
-.social-button.github .social-icon {
-  color: white;
-}
-
-.social-button.facebook .social-icon {
-  color: white;
-}
-
-.social-button.github {
-  background-color: #24292e;
-  color: white;
-}
-
-.social-button.github:hover {
-  background-color: #1d2125;
-}
-
-.social-button.facebook {
-  background-color: #1877f2;
-  color: white;
-}
-
-.social-button.facebook:hover {
-  background-color: #166fe5;
-}
-
-.verification-box {
-  margin-top: 24px;
-  padding: 18px;
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius);
-  background-color: var(--background-secondary);
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.verification-box h4 {
-  margin: 0;
-  font-size: 1.1rem;
-  color: var(--text-color);
-}
-
-.verification-box p {
-  margin: 0;
-  font-size: 0.95rem;
-  color: var(--text-secondary);
-  line-height: 1.5;
-}
-
-.verification-actions {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-
-.verification-button {
-  background-color: var(--primary-color);
-  color: white;
-  border: none;
-  border-radius: var(--radius);
-  padding: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: var(--transition);
-}
-
-.verification-button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.verification-button:hover:not(:disabled) {
-  background-color: #ff8c00;
-  box-shadow: var(--shadow-light);
-}
-
-.verification-button.secondary {
-  background-color: transparent;
-  color: var(--primary-color);
-  border: 2px solid var(--primary-color);
-}
-
-.verification-button.secondary:hover:not(:disabled) {
-  background-color: rgba(255, 165, 0, 0.1);
-  box-shadow: none;
-}
-
-.verification-status {
-  font-size: 0.9rem;
-  color: var(--text-secondary);
-}
-
-.verification-status.success {
-  color: var(--primary-color);
-}
-
-.verification-status.error {
-  color: #d32f2f;
-}
-
-.login-footer {
-  text-align: center;
-  color: var(--text-secondary);
-  font-size: 0.85rem;
-  line-height: 1.5;
-}
-
-.login-footer a {
-  color: var(--primary-color);
-  text-decoration: none;
-  margin: 0 4px;
-}
-
-.login-footer a:hover {
-  text-decoration: underline;
-}
-
-/* 暗色模式适配 */
-body.dark-mode .login-page {
-  background: linear-gradient(135deg, #1a1a2e, #16213e);
-}
-
-body.dark-mode .login-container {
-  background-color: var(--background-dark);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-}
-
-body.dark-mode .login-header h2,
-body.dark-mode .form-group label,
-body.dark-mode .social-button {
-  color: var(--text-color);
-}
-
-body.dark-mode .login-subtitle,
-body.dark-mode .remember-me label,
-body.dark-mode .form-toggle,
-body.dark-mode .login-divider,
-body.dark-mode .login-footer {
-  color: var(--text-secondary);
-}
-
-body.dark-mode .form-group input {
-  background-color: rgba(255, 255, 255, 0.05);
-  border-color: var(--border-color);
-  color: var(--text-color);
-}
-
-body.dark-mode .form-group input:focus {
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(255, 183, 77, 0.2);
-}
-
-body.dark-mode .social-button {
-  background-color: rgba(255, 255, 255, 0.05);
-  border-color: var(--border-color);
-}
-
-body.dark-mode .social-button:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-}
-
-body.dark-mode .social-button.github:hover {
-  background-color: #30363d;
-}
-
-body.dark-mode .social-button.facebook {
-  background-color: #1877f2;
-  color: white;
-}
-
-body.dark-mode .social-button.facebook:hover {
-  background-color: #166fe5;
-}
-
-body.dark-mode .verification-box {
-  background-color: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.1);
-}
-
-body.dark-mode .verification-box p {
-  color: var(--text-secondary);
-}
-
-body.dark-mode .verification-button.secondary {
-  color: var(--primary-color);
-  border-color: var(--primary-color);
-}
-
-body.dark-mode .error-message {
-  background-color: rgba(220, 53, 69, 0.1);
-  color: #ff7b72;
-  border-color: rgba(220, 53, 69, 0.3);
-}
-
-/* 响应式设计 */
-@media (max-width: 768px) {
-  .login-container {
-    padding: 32px 24px;
-  }
-  
-  .login-header h2 {
-    font-size: 1.75rem;
-  }
-  
-  .social-login {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  
-  .social-button:last-child {
-    grid-column: 1 / -1;
-  }
-}
-
-@media (max-width: 480px) {
-  .login-container {
-    padding: 24px 20px;
-  }
-  
-  .login-header h2 {
-    font-size: 1.5rem;
-  }
-  
-  .form-group input {
-    padding: 10px 14px;
-  }
-  
-  .login-button {
-    padding: 12px 20px;
-    font-size: 1rem;
-  }
-  
-  .social-login {
-    grid-template-columns: 1fr;
-  }
 }
