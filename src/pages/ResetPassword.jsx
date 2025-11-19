@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { supabase } from '../lib/supabaseClient'
+import supabase from '../lib/supabaseClient'
 import SEO from '../components/SEO'
 import { useLanguage } from '../contexts/LanguageContext'
 
@@ -113,14 +113,14 @@ const ResetPassword = () => {
         let sessionPromise = null
 
         if (accessToken && refreshToken) {
-          sessionPromise = supabase.auth.setSession({
+          sessionPromise = supabase().auth.setSession({
             access_token: accessToken,
             refresh_token: refreshToken
           })
         } else if (code) {
-          sessionPromise = supabase.auth.exchangeCodeForSession(code)
+          sessionPromise = supabase().auth.exchangeCodeForSession(code)
         } else if (tokenHash && email) {
-          sessionPromise = supabase.auth.verifyOtp({
+          sessionPromise = supabase().auth.verifyOtp({
             type: 'recovery',
             token: tokenHash,
             email
@@ -218,7 +218,7 @@ const ResetPassword = () => {
       setStatusType('')
       setStatusMessage('')
 
-      const { error } = await supabase.auth.updateUser({ password })
+      const { error } = await supabase().auth.updateUser({ password })
 
       if (error) {
         console.error('Failed to update password:', error)
@@ -236,7 +236,7 @@ const ResetPassword = () => {
 
       // 确保新密码生效后引导用户重新登录
       setTimeout(async () => {
-        await supabase.auth.signOut()
+        await supabase().auth.signOut()
         navigate(getLocalizedPath('/login'))
       }, 2000)
     } catch (err) {

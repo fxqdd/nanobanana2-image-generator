@@ -1,7 +1,7 @@
 import supabase from '../lib/supabaseClient';
 
 export async function getCurrentUser() {
-  const { data: { user }, error } = await supabase.auth.getUser();
+  const { data: { user }, error } = await supabase().auth.getUser();
   if (error) throw error;
   return user || null;
 }
@@ -9,7 +9,7 @@ export async function getCurrentUser() {
 export async function getMyProfile() {
   const user = await getCurrentUser();
   if (!user) return null;
-  const { data, error } = await supabase
+  const { data, error } = await supabase()
     .from('profiles')
     .select('*')
     .eq('user_id', user.id)
@@ -21,7 +21,7 @@ export async function getMyProfile() {
 export async function getMySubscription() {
   const user = await getCurrentUser();
   if (!user) return null;
-  const { data, error } = await supabase
+  const { data, error } = await supabase()
     .from('subscriptions')
     .select('*')
     .eq('user_id', user.id)
@@ -37,12 +37,12 @@ export async function getMyInvoices(limit = 10) {
   if (!user) return [];
 
   try {
-    const { data, error } = await supabase
-      .from('invoices')
-      .select('id, amount_cents, currency, provider, external_id, description, issued_at')
-      .eq('user_id', user.id)
-      .order('issued_at', { ascending: false })
-      .limit(limit);
+    const { data, error } = await supabase()
+    .from('invoices')
+    .select('id, amount_cents, currency, provider, external_id, description, issued_at')
+    .eq('user_id', user.id)
+    .order('issued_at', { ascending: false })
+    .limit(limit);
 
     if (error) {
       console.warn('Failed to load invoices (table may not exist):', error);
@@ -62,7 +62,7 @@ export async function getMyGenerationsCountThisMonth() {
   const from = new Date();
   from.setDate(1);
   from.setHours(0, 0, 0, 0);
-  const { count, error } = await supabase
+  const { count, error } = await supabase()
     .from('generations')
     .select('id', { count: 'exact', head: true })
     .eq('user_id', user.id)
@@ -76,7 +76,7 @@ export async function getMyGenerationHistory(limit = 30) {
   const user = await getCurrentUser();
   if (!user) return [];
 
-  const { data, error } = await supabase
+  const { data, error } = await supabase()
     .from('generations')
     .select('id, model, prompt, result_url, duration_ms, created_at')
     .eq('user_id', user.id)
@@ -96,7 +96,7 @@ export async function enforceGenerationHistoryLimit(limit = 30) {
   const user = await getCurrentUser();
   if (!user) return;
 
-  const { data, error } = await supabase
+  const { data, error } = await supabase()
     .from('generations')
     .select('id, created_at')
     .eq('user_id', user.id)
@@ -107,7 +107,7 @@ export async function enforceGenerationHistoryLimit(limit = 30) {
   const idsToDelete = data.slice(limit).map((row) => row.id);
   if (!idsToDelete.length) return;
 
-  const { error: deleteError } = await supabase
+  const { error: deleteError } = await supabase()
     .from('generations')
     .delete()
     .in('id', idsToDelete);
@@ -118,7 +118,7 @@ export async function enforceGenerationHistoryLimit(limit = 30) {
 }
 
 export async function createGenerationAndCharge({ model, prompt, resultUrl, durationMs, cost }) {
-  const { data, error } = await supabase.rpc('create_generation_with_charge', {
+  const { data, error } = await supabase().rpc('create_generation_with_charge', {
     p_model: model,
     p_prompt: prompt,
     p_result_url: resultUrl,
@@ -133,8 +133,12 @@ export async function createGenerationAndCharge({ model, prompt, resultUrl, dura
 export async function getMyCredits() {
   const user = await getCurrentUser();
   if (!user) return 0;
-  const profile = await getMyProfile();
-  return profile?.credits_remaining ?? 0;
+  const { data: profile, error } = await supabase()
+    .from('profiles')
+    .select('credits_remaining')
+    .eq('user_id', user.id)
+    .single();
+  return error ? 0 : profile?.credits_remaining ?? 0;
 }
 
 // 检查点数是否足够
@@ -156,7 +160,7 @@ export async function getAllUsers(limit = 100, offset = 0) {
   
   // 注意：Supabase 不允许直接查询 auth.users
   // 如果需要在 profiles 表中显示邮箱，需要在创建 profile 时存储 email
-  const { data, error } = await supabase
+  const { data, error } = await supabase()
     .from('profiles')
     .select('*')
     .range(offset, offset + limit - 1)
@@ -177,7 +181,7 @@ export async function updateUserCredits(userId, credits) {
     throw new Error('Access denied: Admin only');
   }
   
-  const { data, error } = await supabase
+  const { data, error } = await supabase()
     .from('profiles')
     .update({ credits_remaining: credits })
     .eq('user_id', userId)
@@ -199,7 +203,7 @@ export async function updateUserPlan(userId, plan) {
     throw new Error('Access denied: Admin only');
   }
   
-  const { data, error } = await supabase
+  const { data, error } = await supabase()
     .from('profiles')
     .update({ plan: plan })
     .eq('user_id', userId)
@@ -222,7 +226,7 @@ export async function getUserDetails(userId) {
   }
   
   // 获取 profile
-  const { data: profileData, error: profileError } = await supabase
+  const { data: profileData, error: profileError } = await supabase()
     .from('profiles')
     .select('*')
     .eq('user_id', userId)

@@ -59,7 +59,7 @@ const Login = () => {
       if (hash && (hash.includes('access_token') || hash.includes('type=email'))) {
         try {
           setIsLoading(true);
-          const { data: { session }, error } = await supabase.auth.getSession();
+          const { data: { session }, error } = await supabase().auth.getSession();
           
           if (error) {
             console.error('OAuth callback error:', error);
@@ -75,7 +75,7 @@ const Login = () => {
             return;
           } else {
             setTimeout(async () => {
-              const { data: { session: retrySession } } = await supabase.auth.getSession();
+              const { data: { session: retrySession } } = await supabase().auth.getSession();
               if (retrySession) {
                 window.location.hash = '';
                 setIsLoading(false);
@@ -132,7 +132,7 @@ const Login = () => {
       
       // 2. 调用 signInWithPassword（移除自定义超时，完全依赖 Supabase 内部处理）
       console.log('[Login] 调用 signInWithPassword...');
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase().auth.signInWithPassword({
         email,
         password
       });
@@ -295,7 +295,7 @@ const Login = () => {
       setError('');
       
       const redirectUrl = `${window.location.origin}${getLocalizedPath('/login')}`;
-      const { data, error } = await supabase.auth.signInWithOAuth({
+      const { data, error } = await supabase().auth.signInWithOAuth({
         provider,
         options: {
           redirectTo: redirectUrl
@@ -355,7 +355,7 @@ const Login = () => {
     setResetStatusType('');
     
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
+      const { error } = await supabase().auth.resetPasswordForEmail(resetEmail, {
         redirectTo: `${window.location.origin}${getLocalizedPath('/reset-password')}`
       });
       

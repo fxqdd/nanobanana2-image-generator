@@ -107,6 +107,7 @@ export const setAuthStorageMode = (mode = 'local', preserveSession = true) => {
   // 旧存储会在下次切换时自然被覆盖
 };
 
-export default supabase;
+export const getSupabaseClient = () => supabase;
+export default getSupabaseClient;
 
 

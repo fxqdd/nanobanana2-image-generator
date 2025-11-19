@@ -33,7 +33,7 @@ export const AuthProvider = ({ children }) => {
     if (!supabaseUser) return null;
     const defaultProfile = buildDefaultProfilePayload(supabaseUser);
     try {
-      const { data, error } = await supabase
+      const { data, error } = await supabase()
         .from('profiles')
         .insert(defaultProfile)
         .select('*')
@@ -58,7 +58,7 @@ export const AuthProvider = ({ children }) => {
 
     try {
       // 从 profiles 表获取用户信息（去掉额外的超时逻辑，避免误判为失败）
-      const { data: profile, error } = await supabase
+      const { data: profile, error } = await supabase()
         .from('profiles')
         .select('*')
         .eq('user_id', supabaseUser.id)
@@ -192,7 +192,7 @@ export const AuthProvider = ({ children }) => {
         
         // 最多重试 5 次，每次间隔 200ms
         for (let attempt = 0; attempt < 5; attempt++) {
-          const result = await supabase.auth.getSession();
+          const result = await supabase().auth.getSession();
           session = result.data?.session;
           error = result.error;
           
@@ -241,7 +241,7 @@ export const AuthProvider = ({ children }) => {
 
     // 监听 Supabase auth 状态变化
     try {
-      const { data: { subscription: authSubscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      const { data: { subscription: authSubscription } } = supabase().auth.onAuthStateChange(async (event, session) => {
         console.log('🔄 Auth state changed:', event, session?.user?.email || 'no user');
         console.log('🔄 Session details:', { 
           hasSession: !!session, 
@@ -276,7 +276,7 @@ export const AuthProvider = ({ children }) => {
   // 常规邮箱登录函数（现在使用 Supabase）
   const login = async (credentials) => {
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase().auth.signInWithPassword({
         email: credentials.email,
         password: credentials.password
       });
@@ -311,7 +311,7 @@ export const AuthProvider = ({ children }) => {
   // 注册函数（现在使用 Supabase）
   const register = async (userData) => {
     try {
-      const { data, error } = await supabase.auth.signUp({
+      const { data, error } = await supabase().auth.signUp({
         email: userData.email,
         password: userData.password,
         options: {
@@ -338,7 +338,7 @@ export const AuthProvider = ({ children }) => {
   // 登出函数（现在使用 Supabase）
   const logout = async () => {
     try {
-      const { error } = await supabase.auth.signOut();
+      const { error } = await supabase().auth.signOut();
       if (error) {
         console.error('登出失败:', error);
       }
