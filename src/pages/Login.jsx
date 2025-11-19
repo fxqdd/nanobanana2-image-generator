@@ -433,32 +433,39 @@ const Login = () => {
               refreshToken: finalSession.refresh_token ? 'present' : 'missing'
             });
             
-            // 确保 session 已保存到存储
-            console.log('[Login] Step 8: Ensuring session is persisted...');
-            await new Promise(resolve => setTimeout(resolve, 300));
-            
-            // 再次确认 session 存在（从存储中读取）
-            console.log('[Login] Step 9: Verifying session from storage...');
-            const { data: { session: confirmedSession }, error: getSessionError } = await supabase.auth.getSession();
-            
-            if (getSessionError) {
-              console.error('[Login] Step 9: ✗ Error getting session:', getSessionError);
-            }
-            
-            console.log('[Login] Step 9: confirmedSession exists:', !!confirmedSession);
-            console.log('[Login] Step 9: confirmedSession email:', confirmedSession?.user?.email);
-            console.log('[Login] Step 9: Email match:', confirmedSession?.user?.email === email);
-            
-            if (!confirmedSession || confirmedSession.user?.email !== email) {
-              console.error('[Login] Step 9: ✗ Session not found or email mismatch after login');
-              console.error('[Login] Step 9: This is a critical error - session was lost!');
-              setError(t('login.loginFailed') || '登录失败，请重试');
-              setIsLoading(false);
-        return;
-            }
-            
-            console.log('[Login] Step 10: ✓ Session confirmed, preparing navigation...');
+            // 立即设置 loading 为 false，避免 UI 卡住
             setIsLoading(false);
+            
+            // 确保 session 已保存到存储（带超时保护）
+            console.log('[Login] Step 8: Ensuring session is persisted...');
+            try {
+              await Promise.race([
+                new Promise(resolve => setTimeout(resolve, 300)),
+                new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 1000))
+              ]);
+              console.log('[Login] Step 8: ✓ Wait completed');
+            } catch (waitError) {
+              console.warn('[Login] Step 8: ⚠️ Wait timeout, proceeding anyway:', waitError.message);
+            }
+            
+            // 快速验证 session（带超时保护），但不阻塞导航
+            console.log('[Login] Step 9: Quick session verification (non-blocking)...');
+            const sessionCheckPromise = supabase.auth.getSession().then(({ data, error }) => {
+              if (error) {
+                console.warn('[Login] Step 9: ⚠️ getSession error (non-critical):', error);
+              } else {
+                console.log('[Login] Step 9: ✓ Session verified:', {
+                  exists: !!data?.session,
+                  email: data?.session?.user?.email
+                });
+              }
+            }).catch(err => {
+              console.warn('[Login] Step 9: ⚠️ getSession exception (non-critical):', err);
+            });
+            
+            // 不等待 session 验证完成，直接导航
+            // 如果 session 验证失败，会在新页面重新检查
+            console.log('[Login] Step 10: ✓ Preparing navigation (not waiting for session check)...');
             
             // 使用 window.location.replace 进行硬导航
             const targetPath = getLocalizedPath('/account');
@@ -466,12 +473,19 @@ const Login = () => {
             console.log('[Login] Step 11: Current location:', window.location.href);
             console.log('[Login] ========== NAVIGATING ==========');
             
-            // 添加一个小延迟确保状态更新
-            await new Promise(resolve => setTimeout(resolve, 100));
+            // 立即导航，不等待
+            // 使用 setTimeout 确保当前代码执行完成
+            setTimeout(() => {
+              console.log('[Login] Step 11: Executing window.location.replace...');
+              window.location.replace(targetPath);
+            }, 50);
             
-            window.location.replace(targetPath);
-            console.log('[Login] Step 11: ✓ window.location.replace called');
-            return;
+            // 不等待 session 检查完成
+            sessionCheckPromise.catch(() => {
+              // 忽略错误，已经导航了
+            });
+            
+        return;
           }
           
           // 如果还是没有 session，最后尝试 getSession
