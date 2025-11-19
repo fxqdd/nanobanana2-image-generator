@@ -26,7 +26,10 @@ if /i "!addAll!"=="y" (
     git reset HEAD dist/ >nul 2>&1
     git reset HEAD node_modules/ >nul 2>&1
     git reset HEAD .env >nul 2>&1
-    git reset HEAD ".env.*" >nul 2>&1
+    git reset HEAD .env* >nul 2>&1
+    git reset HEAD *.log >nul 2>&1
+    git reset HEAD .DS_Store >nul 2>&1
+    git reset HEAD *.local >nul 2>&1
     echo ✓ 文件已添加
 )
 
