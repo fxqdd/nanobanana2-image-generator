@@ -269,36 +269,88 @@ const Login = () => {
         
         console.log('[Login] Calling signInWithPassword...');
         
+        // 使用 onAuthStateChange 作为主要检测方式，因为 signInWithPassword 的 promise 可能不会 resolve
+        let loginResolved = false;
+        let loginSession = null;
+        let loginError = null;
+        
+        // 设置 onAuthStateChange 监听器，在 signInWithPassword 之前
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+          console.log('[Login] onAuthStateChange event:', event, session?.user?.email);
+          if (event === 'SIGNED_IN' && session?.user?.email === email) {
+            console.log('[Login] ✓ SIGNED_IN detected via onAuthStateChange');
+            loginResolved = true;
+            loginSession = session;
+          } else if (event === 'SIGNED_OUT') {
+            console.log('[Login] SIGNED_OUT detected');
+            loginError = new Error('登录失败：用户被登出');
+          }
+        });
+        
         try {
-          // 简化登录流程：直接调用 signInWithPassword，然后检查 session
-          const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({ 
+          // 调用 signInWithPassword，但不完全依赖它的返回值
+          const signInPromise = supabase.auth.signInWithPassword({ 
             email, 
             password 
           });
           
-          if (signInError) {
-            console.error('[Login] Sign in error:', signInError);
-            setError(signInError.message || t('login.loginFailed'));
+          // 设置超时：5 秒内如果没有结果，使用 onAuthStateChange 的结果
+          const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Login timeout')), 5000)
+          );
+          
+          let signInResult = null;
+          try {
+            signInResult = await Promise.race([signInPromise, timeoutPromise]);
+            console.log('[Login] signInWithPassword resolved:', {
+              hasData: !!signInResult?.data,
+              hasSession: !!signInResult?.data?.session,
+              hasError: !!signInResult?.error
+            });
+            
+            if (signInResult?.error) {
+              console.error('[Login] Sign in error from promise:', signInResult.error);
+              loginError = signInResult.error;
+            } else if (signInResult?.data?.session) {
+              console.log('[Login] ✓ Session received from signInWithPassword promise');
+              loginResolved = true;
+              loginSession = signInResult.data.session;
+            }
+          } catch (raceError) {
+            console.log('[Login] signInWithPassword timeout or error, will use onAuthStateChange result:', raceError.message);
+            // 等待一下，让 onAuthStateChange 有机会触发
+            await new Promise(resolve => setTimeout(resolve, 1000));
+          }
+          
+          // 清理监听器
+          subscription.unsubscribe();
+          
+          // 检查登录结果
+          if (loginError) {
+            console.error('[Login] Login failed:', loginError);
+            setError(loginError.message || t('login.loginFailed'));
             setIsLoading(false);
             return;
           }
           
-          // 检查 signInWithPassword 返回的 session
-          if (signInData?.session) {
-            console.log('[Login] ✓ Login successful, session received from signInWithPassword');
+          // 优先使用 onAuthStateChange 的结果（更可靠）
+          const finalSession = loginSession || signInResult?.data?.session;
+          
+          if (finalSession && finalSession.user?.email === email) {
+            console.log('[Login] ✓ Login successful, session confirmed');
             console.log('[Login] Session details:', {
-              email: signInData.session.user?.email,
-              userId: signInData.session.user?.id
+              email: finalSession.user?.email,
+              userId: finalSession.user?.id
             });
             
             // 确保 session 已保存到存储
             console.log('[Login] Ensuring session is persisted...');
-            await new Promise(resolve => setTimeout(resolve, 200));
+            await new Promise(resolve => setTimeout(resolve, 300));
             
             // 再次确认 session 存在（从存储中读取）
             const { data: { session: confirmedSession } } = await supabase.auth.getSession();
-            if (!confirmedSession) {
-              console.error('[Login] ✗ Session not found after login, login may have failed');
+            if (!confirmedSession || confirmedSession.user?.email !== email) {
+              console.error('[Login] ✗ Session not found or email mismatch after login');
               setError(t('login.loginFailed') || '登录失败，请重试');
               setIsLoading(false);
               return;
@@ -307,17 +359,15 @@ const Login = () => {
             console.log('[Login] ✓ Session confirmed, navigating...');
             setIsLoading(false);
             
-            // 使用 window.location.replace 进行硬导航，避免历史记录问题
+            // 使用 window.location.replace 进行硬导航
             const targetPath = getLocalizedPath('/account');
             console.log('[Login] Navigating to:', targetPath);
-            
-            // 使用 replace 而不是 href，避免返回按钮回到登录页面
             window.location.replace(targetPath);
             return;
           }
           
-          // 如果 signInWithPassword 没有返回 session，等待一下再检查
-          console.log('[Login] No session in signInWithPassword result, checking getSession()...');
+          // 如果还是没有 session，最后尝试 getSession
+          console.log('[Login] No session from signInWithPassword or onAuthStateChange, checking getSession()...');
           await new Promise(resolve => setTimeout(resolve, 500));
           
           const { data: { session: fallbackSession }, error: sessionError } = await supabase.auth.getSession();
@@ -346,6 +396,9 @@ const Login = () => {
           
         } catch (signInErr) {
           console.error('[Login] signInWithPassword exception:', signInErr);
+          
+          // 清理监听器
+          subscription.unsubscribe();
           
           // 即使出错，也检查一下是否有 session
           try {
