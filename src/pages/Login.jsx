@@ -112,8 +112,6 @@ const Login = () => {
 
   // ========== 完全重写的邮箱登录函数 ==========
   const handleEmailLogin = async (email, password, rememberMe) => {
-    let timeoutId = null;
-    
     try {
       console.log('[Login] ========== 开始登录 ==========');
       console.log('[Login] 邮箱:', email);
@@ -132,84 +130,25 @@ const Login = () => {
       
       console.log('[Login] 存储模式已设置:', getAuthStorageMode());
       
-      // 2. 调用 signInWithPassword（带超时保护）
+      // 2. 调用 signInWithPassword（移除自定义超时，完全依赖 Supabase 内部处理）
       console.log('[Login] 调用 signInWithPassword...');
-      
-      // 使用更可靠的超时处理方式
-      const signInPromise = supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password
-      }).then(result => {
-        // 登录成功时立即清除超时定时器
-        if (timeoutId) {
-          clearTimeout(timeoutId);
-          timeoutId = null;
-        }
-        return result;
-      }).catch(error => {
-        // 登录失败时也清除超时定时器
-        if (timeoutId) {
-          clearTimeout(timeoutId);
-          timeoutId = null;
-        }
-        throw error;
       });
       
-      // 创建超时 Promise，但使用更长的超时时间（30秒）
-      const timeoutPromise = new Promise((_, reject) => {
-        timeoutId = setTimeout(() => {
-          const timeoutError = new Error('登录超时，请检查网络连接后重试');
-          timeoutId = null; // 清除引用
-          reject(timeoutError);
-        }, 30000); // 增加到30秒
-      });
-      
-      let signInResult;
-      try {
-        // 使用 Promise.race，但确保正确处理结果
-        signInResult = await Promise.race([signInPromise, timeoutPromise]);
-        console.log('[Login] signInWithPassword 返回结果');
-      } catch (raceError) {
-        // 清除超时定时器（双重保险）
-        if (timeoutId) {
-          clearTimeout(timeoutId);
-          timeoutId = null;
-        }
-        
-        // 检查是否是超时错误
-        if (raceError.message && raceError.message.includes('超时')) {
-          console.error('[Login] 登录超时');
-          throw new Error('登录超时，请检查网络连接后重试');
-        }
-        
-        // 检查是否是 Supabase 的错误
-        if (raceError.message) {
-          // 如果是网络错误，提供更友好的提示
-          if (raceError.message.includes('fetch') || 
-              raceError.message.includes('network') ||
-              raceError.message.includes('Failed to fetch') ||
-              raceError.message.includes('NetworkError')) {
-            throw new Error('网络连接失败，请检查网络后重试');
-          }
-          throw raceError;
-        }
-        
-        throw raceError;
-      } finally {
-        // 确保清除超时定时器（三重保险）
-        if (timeoutId) {
-          clearTimeout(timeoutId);
-          timeoutId = null;
-        }
-      }
-      
-      const { data, error } = signInResult;
+      console.log('[Login] signInWithPassword 调用已返回');
       
       if (error) {
         console.error('[Login] 登录错误:', error);
-        // 提供更友好的错误消息
-        if (error.message) {
-          throw error;
+        // 如果是网络问题，给出更具体的提示
+        if (error.message && (
+          error.message.includes('fetch') ||
+          error.message.includes('network') ||
+          error.message.includes('Failed to fetch') ||
+          error.message.includes('NetworkError')
+        )) {
+          throw new Error('网络连接失败，请检查网络后重试');
         }
         throw new Error(error.message || '登录失败，请检查邮箱和密码');
       }
