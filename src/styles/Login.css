@@ -1,24 +1,24 @@
-/* 登录页面样式 - iPhone风格 */
+/* 登录页面样式 - iPhone风格，白黄配色 */
 .login-container {
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 20px;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  background: linear-gradient(135deg, #fffef7 0%, #fff9e6 50%, #ffe8b3 100%);
   position: relative;
 }
 
 .login-card {
   width: 100%;
   max-width: 420px;
-  background: rgba(255, 255, 255, 0.95);
+  background: rgba(255, 255, 255, 0.98);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-radius: 24px;
   box-shadow: 
-    0 20px 60px rgba(0, 0, 0, 0.1),
-    0 0 0 1px rgba(255, 255, 255, 0.5) inset;
+    0 20px 60px rgba(255, 165, 0, 0.15),
+    0 0 0 1px rgba(255, 215, 0, 0.3) inset;
   padding: 48px 32px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -99,9 +99,9 @@ form {
 }
 
 .form-group input:focus {
-  border-color: #007aff;
+  border-color: #FFA500;
   background-color: white;
-  box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.1);
+  box-shadow: 0 0 0 4px rgba(255, 165, 0, 0.15);
 }
 
 .form-group input::placeholder {
@@ -172,24 +172,24 @@ form {
   height: 18px;
   margin: 0;
   cursor: pointer;
-  accent-color: #007aff;
+  accent-color: #FFA500;
 }
 
 .forgot-password {
   background: none;
   border: none;
-  color: #007aff;
+  color: #FFA500;
   font-size: 15px;
   cursor: pointer;
   padding: 0;
   text-decoration: none;
-  transition: opacity 0.2s;
+  transition: all 0.2s;
   font-weight: 400;
 }
 
 .forgot-password:hover {
-  opacity: 0.7;
-  text-decoration: none;
+  color: #ff8c00;
+  text-decoration: underline;
 }
 
 /* iPhone风格按钮 */
@@ -219,11 +219,11 @@ form {
 }
 
 .btn-primary {
-  background: linear-gradient(180deg, #007aff 0%, #0051d5 100%);
+  background: linear-gradient(180deg, #FFA500 0%, #ff8c00 100%);
   color: white;
   box-shadow: 
-    0 4px 14px rgba(0, 122, 255, 0.3),
-    0 0 0 0.5px rgba(0, 0, 0, 0.05) inset;
+    0 4px 14px rgba(255, 165, 0, 0.35),
+    0 0 0 0.5px rgba(255, 215, 0, 0.2) inset;
   padding: 14px 24px;
   width: 100%;
   font-size: 17px;
@@ -231,18 +231,18 @@ form {
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: linear-gradient(180deg, #0051d5 0%, #003d9e 100%);
+  background: linear-gradient(180deg, #ff8c00 0%, #ff7700 100%);
   box-shadow: 
-    0 6px 20px rgba(0, 122, 255, 0.4),
-    0 0 0 0.5px rgba(0, 0, 0, 0.05) inset;
+    0 6px 20px rgba(255, 165, 0, 0.45),
+    0 0 0 0.5px rgba(255, 215, 0, 0.3) inset;
   transform: translateY(-1px);
 }
 
 .btn-primary:active:not(:disabled) {
   transform: scale(0.98) translateY(0);
   box-shadow: 
-    0 2px 8px rgba(0, 122, 255, 0.3),
-    0 0 0 0.5px rgba(0, 0, 0, 0.05) inset;
+    0 2px 8px rgba(255, 165, 0, 0.35),
+    0 0 0 0.5px rgba(255, 215, 0, 0.2) inset;
 }
 
 .btn-primary:disabled {
@@ -253,9 +253,9 @@ form {
 }
 
 .btn-secondary {
-  background: rgba(142, 142, 147, 0.12);
-  color: #007aff;
-  border: none;
+  background: rgba(255, 215, 0, 0.15);
+  color: #FFA500;
+  border: 1.5px solid rgba(255, 165, 0, 0.3);
   padding: 14px 24px;
   width: 100%;
   font-size: 17px;
@@ -263,11 +263,13 @@ form {
 }
 
 .btn-secondary:hover:not(:disabled) {
-  background: rgba(142, 142, 147, 0.2);
+  background: rgba(255, 215, 0, 0.25);
+  border-color: rgba(255, 165, 0, 0.5);
+  color: #ff8c00;
 }
 
 .btn-secondary:active:not(:disabled) {
-  background: rgba(142, 142, 147, 0.25);
+  background: rgba(255, 215, 0, 0.3);
   transform: scale(0.98);
 }
 
@@ -329,12 +331,13 @@ form {
 }
 
 .form-switch a {
-  color: #007aff;
+  color: #FFA500;
   text-decoration: none;
   font-weight: 600;
 }
 
 .form-switch a:hover {
+  color: #ff8c00;
   text-decoration: underline;
 }
 
@@ -368,11 +371,12 @@ form {
 }
 
 .terms-text a {
-  color: #007aff;
+  color: #FFA500;
   text-decoration: none;
 }
 
 .terms-text a:hover {
+  color: #ff8c00;
   text-decoration: underline;
 }
 
@@ -423,7 +427,7 @@ form {
 
 /* 暗色模式适配 */
 body.dark-mode .login-container {
-  background: linear-gradient(135deg, #1c1c1e 0%, #000000 100%);
+  background: linear-gradient(135deg, #2a2419 0%, #1a150f 100%);
 }
 
 body.dark-mode .login-card {
@@ -454,13 +458,19 @@ body.dark-mode .form-group input {
 
 body.dark-mode .form-group input:focus {
   background-color: rgba(142, 142, 147, 0.2);
-  border-color: #0a84ff;
-  box-shadow: 0 0 0 4px rgba(10, 132, 255, 0.2);
+  border-color: #FFB74D;
+  box-shadow: 0 0 0 4px rgba(255, 183, 77, 0.2);
 }
 
 body.dark-mode .btn-secondary {
-  background: rgba(142, 142, 147, 0.2);
-  color: #0a84ff;
+  background: rgba(255, 183, 77, 0.15);
+  color: #FFB74D;
+  border-color: rgba(255, 183, 77, 0.3);
+}
+
+body.dark-mode .btn-secondary:hover:not(:disabled) {
+  background: rgba(255, 183, 77, 0.25);
+  border-color: rgba(255, 183, 77, 0.5);
 }
 
 body.dark-mode .btn-social {
@@ -483,7 +493,27 @@ body.dark-mode .checkbox-label {
 }
 
 body.dark-mode .forgot-password {
-  color: #0a84ff;
+  color: #FFB74D;
+}
+
+body.dark-mode .forgot-password:hover {
+  color: #FFC107;
+}
+
+body.dark-mode .form-switch a {
+  color: #FFB74D;
+}
+
+body.dark-mode .form-switch a:hover {
+  color: #FFC107;
+}
+
+body.dark-mode .terms-text a {
+  color: #FFB74D;
+}
+
+body.dark-mode .terms-text a:hover {
+  color: #FFC107;
 }
 
 /* 响应式设计 */
