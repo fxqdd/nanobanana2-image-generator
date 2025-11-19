@@ -24,7 +24,7 @@ const PLAN_CONFIG = {
   toihfe: { code: 'master-monthly', points: 5400, periodMonths: 1 },
 }
 
-export async function onRequest (context) {
+export async function onRequest(context) {
   const { request, env } = context
 
   if (request.method === 'OPTIONS') {
@@ -117,64 +117,27 @@ export async function onRequest (context) {
 
     const userId = profile.user_id
 
-    // 2. 更新 profile：计划 + 积分
-    const newCredits = (profile.credits_remaining || 0) + planCfg.points
-    const { error: updateProfileError } = await supabaseAdmin
-      .from('profiles')
-      .update({
-        plan: planCfg.code,
-        credits_remaining: newCredits
-      })
-      .eq('user_id', userId)
-
-    if (updateProfileError) {
-      console.error('Failed to update profile for subscription:', updateProfileError)
-    }
-
-    // 3. 写入 subscriptions 表
+    // 2. 使用 RPC 原子化处理：更新 profile + 写入 subscription + 写入 invoice
     const priceCents = Number(payload.price) || 0
     const currency = payload.currency || 'usd'
     const saleId = payload.sale_id || payload.id || null
     const now = payload.purchased_at ? new Date(payload.purchased_at) : new Date()
     const renewAt = addMonths(now, planCfg.periodMonths)
 
-    const { error: insertSubError } = await supabaseAdmin
-      .from('subscriptions')
-      .insert({
-        user_id: userId,
-        plan: planCfg.code,
-        status: 'active',
-        provider: 'gumroad',
-        external_id: saleId,
-        amount_cents: priceCents,
-        currency: currency.toUpperCase(),
-        renew_at: renewAt.toISOString()
-      })
+    const { error: rpcError } = await supabaseAdmin.rpc('handle_gumroad_purchase', {
+      p_user_id: userId,
+      p_plan_code: planCfg.code,
+      p_points: planCfg.points,
+      p_sale_id: saleId,
+      p_price_cents: priceCents,
+      p_currency: currency.toUpperCase(),
+      p_renew_at: renewAt.toISOString(),
+      p_metadata: payload
+    })
 
-    if (insertSubError) {
-      console.error('Failed to insert subscription record:', insertSubError)
-    }
-
-    // 4. 写入 invoices 表（如果存在）
-    try {
-      const { error: insertInvoiceError } = await supabaseAdmin
-        .from('invoices')
-        .insert({
-          user_id: userId,
-          provider: 'gumroad',
-          external_id: saleId,
-          amount_cents: priceCents,
-          currency: currency.toUpperCase(),
-          description: planCfg.code,
-          issued_at: now.toISOString(),
-          metadata: payload
-        })
-
-      if (insertInvoiceError) {
-        console.warn('Failed to insert invoice record (table may not exist yet):', insertInvoiceError)
-      }
-    } catch (invoiceErr) {
-      console.warn('Insert invoice threw error (likely missing table):', invoiceErr)
+    if (rpcError) {
+      console.error('Failed to process purchase via RPC:', rpcError)
+      return jsonResponse({ error: 'Processing failed' }, 500)
     }
 
     return jsonResponse({ success: true })
@@ -184,7 +147,7 @@ export async function onRequest (context) {
   }
 }
 
-function addMonths (date, months) {
+function addMonths(date, months) {
   const d = new Date(date.getTime())
   d.setMonth(d.getMonth() + months)
   return d
