@@ -185,7 +185,26 @@ export const AuthProvider = ({ children }) => {
     const initAuth = async () => {
       try {
         console.log('🔍 初始化认证状态...');
-        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        // 增加重试逻辑，因为 session 可能还在保存中
+        let session = null;
+        let error = null;
+        
+        // 最多重试 5 次，每次间隔 200ms
+        for (let attempt = 0; attempt < 5; attempt++) {
+          const result = await supabase.auth.getSession();
+          session = result.data?.session;
+          error = result.error;
+          
+          if (session || error) {
+            break; // 有结果或错误，退出重试
+          }
+          
+          if (attempt < 4) {
+            console.log(`🔍 Session 未找到，重试中... (${attempt + 1}/5)`);
+            await new Promise(resolve => setTimeout(resolve, 200));
+          }
+        }
 
         if (error) {
           console.error('❌ Error getting session:', error);
@@ -198,6 +217,13 @@ export const AuthProvider = ({ children }) => {
         }
 
         console.log('✓ Session retrieved:', session ? 'has session' : 'no session');
+        if (session) {
+          console.log('✓ Session details:', {
+            email: session.user?.email,
+            userId: session.user?.id
+          });
+        }
+        
         if (isMounted) {
           await syncSessionToState(session);
         }

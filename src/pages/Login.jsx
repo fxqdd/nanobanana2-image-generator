@@ -337,21 +337,47 @@ const Login = () => {
             // 8. 立即设置 loading 为 false
             setIsLoading(false);
             
-            // 9. 确保 session 已保存（等待 200ms，但不阻塞）
-            console.log('[Login] 等待 session 保存...');
-            const savePromise = new Promise(resolve => setTimeout(resolve, 200));
+            // 9. 确保 session 已保存到存储（重要：必须等待保存完成）
+            console.log('[Login] 等待 session 保存到存储...');
             
-            // 10. 立即导航（不等待 session 保存完成）
+            // 轮询检查 session 是否已保存（最多等待 2 秒）
+            let sessionSaved = false;
+            for (let i = 0; i < 20; i++) {
+              await new Promise(resolve => setTimeout(resolve, 100));
+              
+              // 检查 session 是否已保存到存储
+              const { data: { session: savedSession } } = await supabase.auth.getSession();
+              if (savedSession && savedSession.user?.email === email) {
+                console.log('[Login] ✓ Session 已保存到存储 (尝试', i + 1, '/20)');
+                sessionSaved = true;
+                break;
+              }
+            }
+            
+            if (!sessionSaved) {
+              console.warn('[Login] ⚠️ Session 保存验证超时，但继续导航');
+            }
+            
+            // 10. 再次确认 session 存在（从存储读取）
+            const { data: { session: finalCheckSession } } = await supabase.auth.getSession();
+            if (!finalCheckSession || finalCheckSession.user?.email !== email) {
+              console.error('[Login] ✗ Session 验证失败，session 可能未正确保存');
+              setError('登录失败：Session 未正确保存，请重试');
+              setIsLoading(false);
+              return;
+            }
+            
+            console.log('[Login] ✓ Session 最终验证通过，准备导航');
+            
+            // 11. 导航到账户页面
             const targetPath = getLocalizedPath('/account');
             console.log('[Login] 导航到:', targetPath);
+            console.log('[Login] 当前 URL:', window.location.href);
             
-            // 使用 setTimeout 确保在下一个事件循环执行导航
-            setTimeout(() => {
-              console.log('[Login] 执行导航...');
-              window.location.replace(targetPath);
-            }, 100);
+            // 使用 window.location.replace 进行硬导航
+            // 不延迟，立即导航
+            window.location.replace(targetPath);
             
-            // 不等待 savePromise
             return;
           }
           
