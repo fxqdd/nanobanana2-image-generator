@@ -142,13 +142,17 @@ const Login = () => {
       console.log('[Login] 调用 signInWithPassword...');
 
       // 创建一个带超时的 Promise
+      let timeoutId;
       const loginPromise = supabase().auth.signInWithPassword({
         email,
         password
+      }).then(result => {
+        if (timeoutId) clearTimeout(timeoutId);
+        return result;
       });
 
       const timeoutPromise = new Promise((resolve, reject) => {
-        setTimeout(async () => {
+        timeoutId = setTimeout(async () => {
           console.log('[Login] 请求超时，检查是否已存在 Session...');
           // 检查当前 session
           const { data: { session } } = await supabase().auth.getSession();

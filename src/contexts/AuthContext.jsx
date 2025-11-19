@@ -57,12 +57,27 @@ export const AuthProvider = ({ children }) => {
     if (!supabaseUser) return null;
 
     try {
-      // 从 profiles 表获取用户信息（去掉额外的超时逻辑，避免误判为失败）
-      const { data: profile, error } = await supabase()
+      // 从 profiles 表获取用户信息（增加超时逻辑，防止数据库响应慢导致登录卡住）
+      const profilePromise = supabase()
         .from('profiles')
         .select('*')
         .eq('user_id', supabaseUser.id)
         .single();
+
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Profile fetch timeout')), 5000)
+      );
+
+      // 使用 Promise.race 避免无限等待
+      let profileResult = { data: null, error: null };
+      try {
+        profileResult = await Promise.race([profilePromise, timeoutPromise]);
+      } catch (timeoutError) {
+        console.warn('Profile fetch timed out, proceeding with basic info');
+        // 超时后继续执行，profileResult 保持默认值
+      }
+
+      const { data: profile, error } = profileResult;
 
       let resolvedProfile = profile;
 
@@ -76,23 +91,28 @@ export const AuthProvider = ({ children }) => {
       }
 
       if (!resolvedProfile) {
-        resolvedProfile = await createDefaultProfile(supabaseUser);
+        // 如果 profile 为空且没有特定错误（或者是超时的情况），尝试创建或使用默认值
+        if (!error) {
+          // 超时情况，不尝试创建，直接使用 null，让后续逻辑处理
+        } else {
+          resolvedProfile = await createDefaultProfile(supabaseUser);
+        }
       }
 
       // 构建用户数据对象
       const userData = {
         id: supabaseUser.id,
         email: supabaseUser.email,
-        name: resolvedProfile?.username || 
-              supabaseUser.user_metadata?.full_name || 
-              supabaseUser.user_metadata?.name ||
-              supabaseUser.email?.split('@')[0] || 
-              'User',
+        name: resolvedProfile?.username ||
+          supabaseUser.user_metadata?.full_name ||
+          supabaseUser.user_metadata?.name ||
+          supabaseUser.email?.split('@')[0] ||
+          'User',
         provider: supabaseUser.app_metadata?.provider || 'email',
-        avatar: supabaseUser.user_metadata?.avatar_url || 
-                supabaseUser.user_metadata?.picture || 
-                resolvedProfile?.avatar_url || 
-                null
+        avatar: supabaseUser.user_metadata?.avatar_url ||
+          supabaseUser.user_metadata?.picture ||
+          resolvedProfile?.avatar_url ||
+          null
       };
 
       return userData;
@@ -102,14 +122,14 @@ export const AuthProvider = ({ children }) => {
       return {
         id: supabaseUser.id,
         email: supabaseUser.email,
-        name: supabaseUser.user_metadata?.full_name || 
-              supabaseUser.user_metadata?.name ||
-              supabaseUser.email?.split('@')[0] || 
-              'User',
+        name: supabaseUser.user_metadata?.full_name ||
+          supabaseUser.user_metadata?.name ||
+          supabaseUser.email?.split('@')[0] ||
+          'User',
         provider: supabaseUser.app_metadata?.provider || 'email',
-        avatar: supabaseUser.user_metadata?.avatar_url || 
-                supabaseUser.user_metadata?.picture || 
-                null
+        avatar: supabaseUser.user_metadata?.avatar_url ||
+          supabaseUser.user_metadata?.picture ||
+          null
       };
     }
   };
@@ -128,14 +148,14 @@ export const AuthProvider = ({ children }) => {
           const basicUserData = {
             id: session.user.id,
             email: session.user.email,
-            name: session.user.user_metadata?.full_name || 
-                  session.user.user_metadata?.name ||
-                  session.user.email?.split('@')[0] || 
-                  'User',
+            name: session.user.user_metadata?.full_name ||
+              session.user.user_metadata?.name ||
+              session.user.email?.split('@')[0] ||
+              'User',
             provider: session.user.app_metadata?.provider || 'email',
-            avatar: session.user.user_metadata?.avatar_url || 
-                    session.user.user_metadata?.picture || 
-                    null
+            avatar: session.user.user_metadata?.avatar_url ||
+              session.user.user_metadata?.picture ||
+              null
           };
           setUser(basicUserData);
           setIsLoggedIn(true);
@@ -154,14 +174,14 @@ export const AuthProvider = ({ children }) => {
         const basicUserData = {
           id: session.user.id,
           email: session.user.email,
-          name: session.user.user_metadata?.full_name || 
-                session.user.user_metadata?.name ||
-                session.user.email?.split('@')[0] || 
-                'User',
+          name: session.user.user_metadata?.full_name ||
+            session.user.user_metadata?.name ||
+            session.user.email?.split('@')[0] ||
+            'User',
           provider: session.user.app_metadata?.provider || 'email',
-          avatar: session.user.user_metadata?.avatar_url || 
-                  session.user.user_metadata?.picture || 
-                  null
+          avatar: session.user.user_metadata?.avatar_url ||
+            session.user.user_metadata?.picture ||
+            null
         };
         setUser(basicUserData);
         setIsLoggedIn(true);
@@ -185,21 +205,21 @@ export const AuthProvider = ({ children }) => {
     const initAuth = async () => {
       try {
         console.log('🔍 初始化认证状态...');
-        
+
         // 增加重试逻辑，因为 session 可能还在保存中
         let session = null;
         let error = null;
-        
+
         // 最多重试 5 次，每次间隔 200ms
         for (let attempt = 0; attempt < 5; attempt++) {
           const result = await supabase().auth.getSession();
           session = result.data?.session;
           error = result.error;
-          
+
           if (session || error) {
             break; // 有结果或错误，退出重试
           }
-          
+
           if (attempt < 4) {
             console.log(`🔍 Session 未找到，重试中... (${attempt + 1}/5)`);
             await new Promise(resolve => setTimeout(resolve, 200));
@@ -223,7 +243,7 @@ export const AuthProvider = ({ children }) => {
             userId: session.user?.id
           });
         }
-        
+
         if (isMounted) {
           await syncSessionToState(session);
         }
@@ -243,11 +263,11 @@ export const AuthProvider = ({ children }) => {
     try {
       const { data: { subscription: authSubscription } } = supabase().auth.onAuthStateChange(async (event, session) => {
         console.log('🔄 Auth state changed:', event, session?.user?.email || 'no user');
-        console.log('🔄 Session details:', { 
-          hasSession: !!session, 
+        console.log('🔄 Session details:', {
+          hasSession: !!session,
           hasUser: !!session?.user,
           userId: session?.user?.id,
-          email: session?.user?.email 
+          email: session?.user?.email
         });
         if (isMounted) {
           await syncSessionToState(session);
@@ -284,7 +304,7 @@ export const AuthProvider = ({ children }) => {
       if (error) {
         return { success: false, error: error.message || '邮箱或密码错误' };
       }
-      
+
       if (data?.session) {
         // session 会通过 onAuthStateChange 自动同步到 state
         // 但为了确保立即更新，我们也手动同步一次
@@ -348,8 +368,8 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       console.error('登出失败:', error);
       // 即使出错也清除本地状态
-    setUser(null);
-    setIsLoggedIn(false);
+      setUser(null);
+      setIsLoggedIn(false);
     }
   };
 
@@ -370,8 +390,8 @@ export const AuthProvider = ({ children }) => {
       }
 
       // 更新本地状态
-    const updatedUser = { ...user, ...newUserData };
-    setUser(updatedUser);
+      const updatedUser = { ...user, ...newUserData };
+      setUser(updatedUser);
     } catch (error) {
       console.error('更新用户信息失败:', error);
     }
@@ -400,10 +420,10 @@ export const AuthProvider = ({ children }) => {
 // 自定义Hook，方便在组件中使用认证上下文
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  
+
   if (!context) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
-  
+
   return context;
 };
