@@ -337,50 +337,68 @@ const Login = () => {
             // 8. 立即设置 loading 为 false
             setIsLoading(false);
             
-            // 9. 等待一小段时间让 session 保存（不阻塞）
+            // 9. 等待一小段时间让 session 保存
             console.log('[Login] 等待 session 保存到存储...');
-            await new Promise(resolve => setTimeout(resolve, 300));
-            console.log('[Login] 等待完成');
-            
-            // 10. 快速验证 session（带超时，不阻塞导航）
-            console.log('[Login] 快速验证 session...');
-            let sessionVerified = false;
-            
             try {
-              // 设置超时：最多等待 1 秒
-              const verifyPromise = supabase.auth.getSession();
-              const timeoutPromise = new Promise((_, reject) => 
-                setTimeout(() => reject(new Error('验证超时')), 1000)
-              );
-              
-              const { data: { session: verifySession } } = await Promise.race([
-                verifyPromise,
-                timeoutPromise
-              ]);
-              
-              if (verifySession && verifySession.user?.email === email) {
-                console.log('[Login] ✓ Session 验证通过');
-                sessionVerified = true;
-              } else {
-                console.warn('[Login] ⚠️ Session 验证失败，但继续导航');
-              }
-            } catch (verifyError) {
-              console.warn('[Login] ⚠️ Session 验证超时或出错，但继续导航:', verifyError.message);
+              await new Promise(resolve => setTimeout(resolve, 300));
+              console.log('[Login] 等待完成');
+            } catch (waitErr) {
+              console.warn('[Login] 等待过程出错，继续执行:', waitErr);
             }
             
-            // 11. 无论验证结果如何，都进行导航
-            // 因为 onAuthStateChange 已经确认登录成功，session 应该已经保存
+            // 10. 尝试快速验证 session（非阻塞，失败也不影响导航）
+            console.log('[Login] 尝试快速验证 session（非阻塞）...');
+            
+            // 使用 Promise.race 确保不会卡住，但不等待结果
+            const verifyPromise = (async () => {
+              try {
+                const { data: { session: verifySession } } = await Promise.race([
+                  supabase.auth.getSession(),
+                  new Promise((_, reject) => setTimeout(() => reject(new Error('验证超时')), 500))
+                ]);
+                
+                if (verifySession && verifySession.user?.email === email) {
+                  console.log('[Login] ✓ Session 验证通过');
+                } else {
+                  console.warn('[Login] ⚠️ Session 验证失败，但继续导航');
+                }
+              } catch (verifyError) {
+                console.warn('[Login] ⚠️ Session 验证超时或出错（非关键）:', verifyError.message);
+              }
+            })();
+            
+            // 不等待验证完成，立即准备导航
             console.log('[Login] ========== 准备导航 ==========');
             const targetPath = getLocalizedPath('/account');
             console.log('[Login] 目标路径:', targetPath);
             console.log('[Login] 当前 URL:', window.location.href);
-            console.log('[Login] Session 验证状态:', sessionVerified ? '通过' : '未通过（但继续导航）');
             
-            // 立即导航，不等待
-            console.log('[Login] 执行导航...');
-            window.location.replace(targetPath);
+            // 11. 立即导航，不等待任何异步操作
+            // 因为 onAuthStateChange 已经确认登录成功，session 应该已经保存
+            console.log('[Login] 执行导航（立即执行，不等待验证完成）...');
             
-            // 这行代码理论上不会执行（因为页面会刷新），但为了安全起见还是加上
+            // 使用 try-catch 确保导航一定会执行
+            try {
+              window.location.replace(targetPath);
+              console.log('[Login] ✓ window.location.replace 已调用');
+            } catch (navError) {
+              console.error('[Login] ✗ 导航出错，尝试备用方法:', navError);
+              // 备用导航方法
+              try {
+                window.location.href = targetPath;
+                console.log('[Login] ✓ 使用 window.location.href 作为备用');
+              } catch (hrefError) {
+                console.error('[Login] ✗ 所有导航方法都失败:', hrefError);
+                setError('导航失败，请手动刷新页面');
+                setIsLoading(false);
+              }
+            }
+            
+            // 不等待 verifyPromise
+            verifyPromise.catch(() => {
+              // 忽略错误，已经导航了
+            });
+            
             return;
           }
           
