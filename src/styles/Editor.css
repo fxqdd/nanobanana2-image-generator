@@ -91,16 +91,10 @@
 
 .sidebar-section-heading {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
   align-items: flex-start;
-  gap: 12px;
+  gap: 8px;
   margin-bottom: 12px;
-}
-
-.sidebar-description {
-  margin: 4px 0 0 0;
-  font-size: 0.85rem;
-  color: var(--text-secondary);
 }
 
 .sidebar-pill {

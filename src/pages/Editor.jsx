@@ -646,10 +646,7 @@ function Editor() {
 
         <div className="sidebar-section sidebar-stats">
           <div className="sidebar-section-heading">
-            <div>
-              <div className="sidebar-label">{t('editor.modelSelection')}</div>
-              <p className="sidebar-description">{t('editor.modelNote')}</p>
-            </div>
+            <div className="sidebar-label">{t('editor.modelSelection')}</div>
             <span className="sidebar-pill">
               {activeTab === 'imageEdit' ? t('editor.imageEdit') : t('editor.textToImage')}
             </span>
