@@ -137,10 +137,19 @@ const Login = () => {
 
       // 2. 调用 signInWithPassword（移除自定义超时，完全依赖 Supabase 内部处理）
       console.log('[Login] 调用 signInWithPassword...');
-      const { data, error } = await supabase().auth.signInWithPassword({
+
+      // 创建一个带超时的 Promise
+      const loginPromise = supabase().auth.signInWithPassword({
         email,
         password
       });
+
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('登录请求超时，请检查网络连接或刷新页面重试')), 15000);
+      });
+
+      // 使用 Promise.race 避免无限等待
+      const { data, error } = await Promise.race([loginPromise, timeoutPromise]);
 
       console.log('[Login] signInWithPassword 调用已返回');
 
