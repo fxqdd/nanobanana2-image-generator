@@ -316,53 +316,25 @@ const Login = () => {
           // 优先使用 onAuthStateChange 的结果（如果它触发了）
           if (authStateResolved && resolvedSession) {
             console.log('[Login] ✓ Using session from onAuthStateChange');
+            console.log('[Login] Session details:', {
+              hasSession: !!resolvedSession,
+              email: resolvedSession?.user?.email,
+              userId: resolvedSession?.user?.id
+            });
             setIsLoading(false);
             
-            // 等待 AuthContext 状态更新（syncSessionToState 是异步的）
-            console.log('[Login] Waiting for AuthContext to sync state...');
+            // onAuthStateChange 已经确认了 session 存在，直接导航
+            // 给 AuthContext 一点时间同步（最多 500ms），然后立即导航
+            console.log('[Login] Giving AuthContext 500ms to sync, then navigating...');
+            await new Promise(resolve => setTimeout(resolve, 500));
             
-            // 轮询检查 isLoggedIn 状态和 session，最多等待 3 秒
-            let attempts = 0;
-            const maxAttempts = 30; // 30 * 100ms = 3 秒
-            let sessionConfirmed = false;
+            const targetPath = getLocalizedPath('/account');
+            console.log('[Login] ✓ Navigating to:', targetPath);
+            console.log('[Login] Using hard navigation to ensure state is loaded');
             
-            while (attempts < maxAttempts && !sessionConfirmed) {
-              await new Promise(resolve => setTimeout(resolve, 100));
-              
-              // 检查 session
-              const { data: sessionCheck } = await supabase.auth.getSession();
-              if (sessionCheck?.session) {
-                console.log(`[Login] Session confirmed (attempt ${attempts + 1}/${maxAttempts})`);
-                sessionConfirmed = true;
-                break;
-              }
-              
-              attempts++;
-              if (attempts % 10 === 0) {
-                console.log(`[Login] Still waiting for session... (${attempts}/${maxAttempts})`);
-              }
-            }
-            
-            // 再次确认 session 存在
-            const { data: finalSessionCheck } = await supabase.auth.getSession();
-            console.log('[Login] Final session check:', {
-              hasSession: !!finalSessionCheck?.session,
-              email: finalSessionCheck?.session?.user?.email
-            });
-            
-            if (finalSessionCheck?.session) {
-              const targetPath = getLocalizedPath('/account');
-              console.log('[Login] ✓ Session confirmed, navigating to:', targetPath);
-              
-              // 直接使用硬导航，更可靠
-              console.log('[Login] Using hard navigation to ensure state is loaded');
-              window.location.href = targetPath;
-              return;
-            } else {
-              console.error('[Login] ✗ Session lost after waiting, login may have failed');
-              setError(t('login.loginFailed') || '登录失败，请重试');
-              return;
-            }
+            // 直接使用硬导航，强制页面刷新，确保登录状态正确加载
+            window.location.href = targetPath;
+            return;
           }
           
           // 否则使用 signInWithPassword 的结果
