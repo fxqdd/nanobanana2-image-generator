@@ -74,8 +74,12 @@ export async function getMyGenerationsCountThisMonth() {
 // 获取当前用户的生成历史，按时间倒序，限制条数
 export async function getMyGenerationHistory(limit = 30) {
   const user = await getCurrentUser();
-  if (!user) return [];
+  if (!user) {
+    console.log('getMyGenerationHistory: 用户未登录');
+    return [];
+  }
 
+  console.log('getMyGenerationHistory: 开始查询，user_id:', user.id, 'limit:', limit);
   const { data, error } = await supabase()
     .from('generations')
     .select('id, model, prompt, result_url, duration_ms, created_at')
@@ -84,10 +88,11 @@ export async function getMyGenerationHistory(limit = 30) {
     .limit(limit);
 
   if (error) {
-    console.error('Failed to load generation history:', error);
+    console.error('getMyGenerationHistory: 查询失败:', error);
     return [];
   }
 
+  console.log('getMyGenerationHistory: 查询成功，返回', data?.length || 0, '条记录');
   return data || [];
 }
 
@@ -119,10 +124,15 @@ export async function enforceGenerationHistoryLimit(limit = 30) {
 
 export async function createGenerationAndCharge({ model, prompt, resultUrl, durationMs, cost }) {
   const user = await getCurrentUser();
-  if (!user) throw new Error('Not authenticated');
+  if (!user) {
+    console.error('createGenerationAndCharge: 用户未登录');
+    throw new Error('Not authenticated');
+  }
 
   const client = supabase();
+  console.log('createGenerationAndCharge: 开始处理，cost:', cost, 'user_id:', user.id);
 
+  // 1. 先检查并获取当前点数
   let currentCredits = 0;
   if (cost && cost > 0) {
     const { data: profile, error: profileError } = await client
@@ -132,14 +142,19 @@ export async function createGenerationAndCharge({ model, prompt, resultUrl, dura
       .single();
 
     if (profileError) {
+      console.error('createGenerationAndCharge: 获取 profile 失败:', profileError);
       throw profileError;
     }
     currentCredits = profile?.credits_remaining ?? 0;
+    console.log('createGenerationAndCharge: 当前点数:', currentCredits, '需要扣除:', cost);
+    
     if (currentCredits < cost) {
+      console.error('createGenerationAndCharge: 点数不足');
       throw new Error('INSUFFICIENT_CREDITS');
     }
   }
 
+  // 2. 插入生成记录
   const { data: generation, error: insertError } = await client
     .from('generations')
     .insert({
@@ -153,19 +168,30 @@ export async function createGenerationAndCharge({ model, prompt, resultUrl, dura
     .single();
 
   if (insertError) {
+    console.error('createGenerationAndCharge: 插入生成记录失败:', insertError);
     throw insertError;
   }
 
+  console.log('createGenerationAndCharge: 生成记录已插入，id:', generation?.id);
+
+  // 3. 扣除点数
   if (cost && cost > 0) {
     const updatedCredits = Math.max(0, currentCredits - cost);
-    const { error: updateError } = await client
+    console.log('createGenerationAndCharge: 准备更新点数，从', currentCredits, '到', updatedCredits);
+    
+    const { data: updatedProfile, error: updateError } = await client
       .from('profiles')
       .update({ credits_remaining: updatedCredits })
-      .eq('user_id', user.id);
+      .eq('user_id', user.id)
+      .select('credits_remaining')
+      .single();
 
     if (updateError) {
+      console.error('createGenerationAndCharge: 更新点数失败:', updateError);
       throw updateError;
     }
+    
+    console.log('createGenerationAndCharge: 点数已更新，新点数:', updatedProfile?.credits_remaining);
   }
 
   return generation?.id;

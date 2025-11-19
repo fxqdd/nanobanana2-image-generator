@@ -395,52 +395,99 @@ function Editor() {
         // 记录到 Supabase generations 表并扣点
         const costToCharge = currentCost;
         let generationId = null;
-        try {
-          generationId = await createGenerationAndCharge({
-            model,
-            prompt: currentPrompt,
-            resultUrl: result.data.imageUrl,
-            durationMs: result.data.generationTime || 0,
-            cost: costToCharge
-          });
-          // 更新点数显示
-          if (isLoggedIn) {
-            const newCredits = await getMyCredits();
-            setCurrentCredits(newCredits);
-          }
-        } catch (chargeErr) {
-          console.warn('记录生成与扣点失败（不中断前端展示）:', chargeErr);
-        }
-
-        const newHistoryItem = {
-          id: generationId,
-          model,
-          prompt: currentPrompt,
-          referenceImagesCount: activeTab === 'imageEdit' ? referenceImages.length : 0,
-          time: Date.now(), // 保存时间戳
-          imageUrl: result.data.imageUrl,
-          generationTime: result.data.generationTime
-        };
-
+        
         if (isLoggedIn) {
-          // 登录用户：仅在内存中维护最近 10 条，并在数据库中限制上限
-          setHistory((prev) => {
-            const updated = [newHistoryItem, ...prev];
-            return updated.slice(0, 10);
-          });
           try {
-            await enforceGenerationHistoryLimit(10);
-          } catch (cleanupErr) {
-            console.warn('清理旧的生成记录失败（可忽略）:', cleanupErr);
+            console.log('开始扣点和保存记录，cost:', costToCharge);
+            generationId = await createGenerationAndCharge({
+              model,
+              prompt: currentPrompt,
+              resultUrl: result.data.imageUrl,
+              durationMs: result.data.generationTime || 0,
+              cost: costToCharge
+            });
+            console.log('扣点和保存成功，generationId:', generationId);
+            
+            // 立即更新点数显示
+            const newCredits = await getMyCredits();
+            console.log('更新后的点数:', newCredits);
+            setCurrentCredits(newCredits);
+            
+            // 重新加载 history 以确保显示最新数据
+            try {
+              const rows = await getMyGenerationHistory(10);
+              const mapped = rows.map((row) => ({
+                id: row.id,
+                model: row.model,
+                prompt: row.prompt,
+                referenceImagesCount: 0,
+                time: row.created_at ? new Date(row.created_at).getTime() : null,
+                imageUrl: row.result_url,
+                generationTime: row.duration_ms || 0
+              }));
+              setHistory(mapped);
+              console.log('History 已重新加载，条数:', mapped.length);
+            } catch (historyErr) {
+              console.error('重新加载 history 失败:', historyErr);
+              // 如果重新加载失败，至少更新内存中的 history
+              const newHistoryItem = {
+                id: generationId,
+                model,
+                prompt: currentPrompt,
+                referenceImagesCount: activeTab === 'imageEdit' ? referenceImages.length : 0,
+                time: Date.now(),
+                imageUrl: result.data.imageUrl,
+                generationTime: result.data.generationTime
+              };
+              setHistory((prev) => {
+                const updated = [newHistoryItem, ...prev];
+                return updated.slice(0, 10);
+              });
+            }
+            
+            // 清理旧的生成记录
+            try {
+              await enforceGenerationHistoryLimit(10);
+            } catch (cleanupErr) {
+              console.warn('清理旧的生成记录失败（可忽略）:', cleanupErr);
+            }
+          } catch (chargeErr) {
+            console.error('❌ 记录生成与扣点失败:', chargeErr);
+            setError(t('editor.error') + ': ' + (chargeErr.message || '扣点失败，请重试'));
+            // 即使扣点失败，也保存到本地 history（但标记为未扣点）
+            const newHistoryItem = {
+              id: null,
+              model,
+              prompt: currentPrompt,
+              referenceImagesCount: activeTab === 'imageEdit' ? referenceImages.length : 0,
+              time: Date.now(),
+              imageUrl: result.data.imageUrl,
+              generationTime: result.data.generationTime,
+              chargeFailed: true
+            };
+            setHistory((prev) => {
+              const updated = [newHistoryItem, ...prev];
+              return updated.slice(0, 10);
+            });
           }
         } else {
-          // 未登录用户：继续使用 localStorage 保存历史（最多 10 条）
+          // 未登录用户：使用 localStorage 保存历史（最多 10 条）
+          const newHistoryItem = {
+            id: null,
+            model,
+            prompt: currentPrompt,
+            referenceImagesCount: activeTab === 'imageEdit' ? referenceImages.length : 0,
+            time: Date.now(),
+            imageUrl: result.data.imageUrl,
+            generationTime: result.data.generationTime
+          };
           const updatedHistory = [newHistoryItem, ...history];
           const historyToSave = updatedHistory.slice(0, 10);
           setHistory(historyToSave);
 
           try {
             localStorage.setItem('generationHistory', JSON.stringify(historyToSave));
+            console.log('未登录用户 history 已保存到 localStorage');
           } catch (storageError) {
             console.warn('⚠️ 保存历史记录失败（不影响图像生成）:', storageError);
           }
@@ -461,7 +508,9 @@ function Editor() {
     const loadHistory = async () => {
       try {
         if (isLoggedIn) {
+          console.log('开始加载登录用户的 history...');
           const rows = await getMyGenerationHistory(10);
+          console.log('从数据库加载的 history 条数:', rows.length);
           const mapped = rows.map((row) => ({
             id: row.id,
             model: row.model,
@@ -472,18 +521,27 @@ function Editor() {
             generationTime: row.duration_ms || 0
           }));
           setHistory(mapped);
+          console.log('History 已加载到状态，条数:', mapped.length);
         } else {
+          console.log('加载未登录用户的 history...');
           const savedHistory = localStorage.getItem('generationHistory');
           if (savedHistory) {
             try {
-              setHistory(JSON.parse(savedHistory));
+              const parsed = JSON.parse(savedHistory);
+              setHistory(parsed);
+              console.log('从 localStorage 加载的 history 条数:', parsed.length);
             } catch (e) {
-              console.error('加载历史记录失败:', e);
+              console.error('解析 localStorage history 失败:', e);
+              setHistory([]);
             }
+          } else {
+            console.log('localStorage 中没有 history');
+            setHistory([]);
           }
         }
       } catch (err) {
         console.error('加载历史记录失败:', err);
+        setHistory([]);
       }
     };
 
