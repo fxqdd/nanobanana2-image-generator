@@ -59,14 +59,35 @@ if (!supabaseUrl || !supabaseAnonKey) {
   });
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    persistSession: true,
-    autoRefreshToken: true,
-    storage: storageAdapter,
-    storageKey: SUPABASE_STORAGE_KEY
+// 创建并导出Supabase客户端函数
+// 创建单一的 Supabase 客户端实例
+let supabaseClient = null;
+
+// 初始化并获取 Supabase 客户端实例
+export const getSupabaseClient = () => {
+  // 如果客户端实例已存在，直接返回
+  if (supabaseClient) {
+    return supabaseClient;
   }
-});
+  
+  // 创建新的客户端实例
+  supabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+      storage: storageAdapter,
+      storageKey: SUPABASE_STORAGE_KEY
+    }
+  });
+  
+  return supabaseClient;
+}
+
+// 默认导出客户端实例获取函数
+export default getSupabaseClient;
+
+// 导出客户端实例以便直接使用
+export const supabase = getSupabaseClient();
 
 export const getAuthStorageMode = () => {
   if (typeof window === 'undefined') return 'local';
@@ -106,8 +127,5 @@ export const setAuthStorageMode = (mode = 'local', preserveSession = true) => {
   // 不立即清理旧存储，让 Supabase 客户端有时间同步
   // 旧存储会在下次切换时自然被覆盖
 };
-
-export const getSupabaseClient = () => supabase;
-export default getSupabaseClient;
 
 

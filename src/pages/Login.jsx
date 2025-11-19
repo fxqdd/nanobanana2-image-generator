@@ -20,6 +20,7 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(() => getAuthStorageMode() !== 'session');
+  const [postLoginLoading, setPostLoginLoading] = useState(false);
   const [awaitingEmailConfirmation, setAwaitingEmailConfirmation] = useState(false);
   const [verificationEmail, setVerificationEmail] = useState('');
   const [resendStatus, setResendStatus] = useState('');
@@ -166,17 +167,9 @@ const Login = () => {
         hasRefreshToken: !!data.session.refresh_token
       });
       
-      // 3. 简化流程：直接导航，Supabase 会自动保存 session
-      // 移除不必要的验证步骤，减少超时风险
-      console.log('[Login] ========== 准备导航 ==========');
-      const targetPath = getLocalizedPath('/account');
-      console.log('[Login] 目标路径:', targetPath);
-      
-      // 使用 navigate 而不是硬导航，让 React Router 处理
-      // 但添加短暂延迟确保 session 已保存
-      await new Promise(resolve => setTimeout(resolve, 200));
-      
-      navigate(targetPath, { replace: true });
+      // 3. 设置登录后的加载状态，等待 AuthContext 同步
+      console.log('[Login] ========== 登录成功，等待状态同步 ==========');
+      setPostLoginLoading(true);
       
     } catch (err) {
       console.error('[Login] 登录过程出错:', err);
@@ -184,6 +177,17 @@ const Login = () => {
       throw err;
     }
   };
+
+  // 监听登录状态变化并导航
+  useEffect(() => {
+    if (isLoggedIn && postLoginLoading) {
+      console.log('[Login] ========== 状态同步完成，开始导航 ==========');
+      const targetPath = getLocalizedPath('/account');
+      console.log('[Login] 目标路径:', targetPath);
+      navigate(targetPath, { replace: true });
+      setPostLoginLoading(false);
+    }
+  }, [isLoggedIn, postLoginLoading, navigate, getLocalizedPath]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
