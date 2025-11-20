@@ -82,7 +82,7 @@ export async function getMyGenerationHistory(limit = 30) {
   console.log('getMyGenerationHistory: 开始查询，user_id:', user.id, 'limit:', limit);
   const { data, error } = await supabase()
     .from('generations')
-    .select('id, model, prompt, result_url, duration_ms, created_at')
+    .select('id, model, result_url, duration_ms, created_at')
     .eq('user_id', user.id)
     .order('created_at', { ascending: false })
     .limit(limit);
@@ -161,8 +161,7 @@ export async function createGenerationAndCharge({ model, prompt, resultUrl, dura
       user_id: user.id,
       model,
       result_url: resultUrl,
-      duration_ms: durationMs || 0,
-      cost: cost || 0
+      duration_ms: durationMs || 0
     })
     .select('id')
     .single();
