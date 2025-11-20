@@ -47,6 +47,7 @@ class ModelAPIService {
     this.newApiProviderBase = import.meta.env.VITE_NEW_API_PROVIDER_BASE || '';
     this.newApiProviderKey = import.meta.env.VITE_NEW_API_PROVIDER_KEY || '';
     this.newApiProviderModel = import.meta.env.VITE_NEW_API_PROVIDER_MODEL || 'gemini-2.5-flash-image';
+    this.newApiProviderModelPro = import.meta.env.VITE_NEW_API_PROVIDER_MODEL_PRO || 'gemini-3-pro-image-preview';
     this.useNewApiProvider = !!(this.newApiProviderBase && this.newApiProviderKey);
     
     // 默认禁用代理模式，直接使用 API 密钥
@@ -1237,10 +1238,28 @@ class ModelAPIService {
     }
   }
 
+  async callNanoBananaPro(prompt, referenceImages = [], options = {}) {
+    const proModel = this.newApiProviderModelPro || this.newApiProviderModel;
+    if (!this.useNewApiProvider) {
+      console.warn('⚠️ 未配置新API提供商，Nano Banana 2 (Pro) 将回退到标准 Nano Banana 模型。');
+      return this.callNanoBanana(prompt, referenceImages, options);
+    }
+
+    console.log('🎨 调用NanoBanana 2 (Pro) 模型 (Gemini 3 Pro Image Preview):', {
+      prompt,
+      referenceImagesCount: referenceImages.length,
+      options,
+      model: proModel
+    });
+
+    return this.callNewApiProvider(prompt, referenceImages, options, proModel);
+  }
+
   // 新 API 提供商调用方法（用于 gemini-2.5-flash-image 模型）
-  async callNewApiProvider(prompt, referenceImages = [], options = {}) {
+  async callNewApiProvider(prompt, referenceImages = [], options = {}, modelOverride) {
     try {
       const startTime = Date.now();
+      const targetModel = modelOverride || this.newApiProviderModel;
       
       // 检查是否使用 Cloudflare Functions 代理
       // 在生产环境且 API Base URL 包含 /api/ 时使用代理
@@ -1322,7 +1341,7 @@ class ModelAPIService {
       
       // 构建请求体
       const requestBody = {
-        model: this.newApiProviderModel,
+        model: targetModel,
         messages: messages,
         max_tokens: 4096
       };
@@ -1348,7 +1367,7 @@ class ModelAPIService {
       console.log('📤 新API提供商请求:', {
         endpoint: useCfProxy ? endpoint : endpoint.replace(this.newApiProviderKey, 'API_KEY_HIDDEN'),
         baseUrl: this.newApiProviderBase.replace(this.newApiProviderKey, 'API_KEY_HIDDEN'),
-        model: this.newApiProviderModel,
+        model: targetModel,
         messagesCount: messages.length,
         hasImages: referenceImages.length > 0,
         hasApiKey: !!this.newApiProviderKey,
@@ -1614,7 +1633,7 @@ class ModelAPIService {
             success: true,
             data: {
               imageUrl: imageUrl,
-              model: this.newApiProviderModel,
+            model: targetModel,
               generationTime: generationTime.toFixed(2),
               parameters: {
                 prompt,
@@ -1703,7 +1722,7 @@ class ModelAPIService {
               success: true,
               data: {
                 imageUrl: blobUrl,
-                model: this.newApiProviderModel,
+                model: targetModel,
                 generationTime: generationTime.toFixed(2),
                 parameters: {
                   prompt,
@@ -1757,7 +1776,7 @@ class ModelAPIService {
           console.error('❌ 401认证失败详情:', {
             errorData: errorData,
             apiBase: this.newApiProviderBase?.replace(this.newApiProviderKey, 'API_KEY_HIDDEN'),
-            model: this.newApiProviderModel,
+            model: targetModel,
             hasApiKey: !!this.newApiProviderKey,
             apiKeyPrefix: this.newApiProviderKey?.substring(0, 8) + '...'
           });
@@ -1766,12 +1785,12 @@ class ModelAPIService {
           console.error('❌ 403权限不足详情:', {
             errorData: errorData,
             apiBase: this.newApiProviderBase?.replace(this.newApiProviderKey, 'API_KEY_HIDDEN'),
-            model: this.newApiProviderModel,
+            model: targetModel,
             hasApiKey: !!this.newApiProviderKey,
             apiKeyPrefix: this.newApiProviderKey?.substring(0, 8) + '...',
             errorMessage: errorMessage
           });
-          throw new Error(`新API提供商无权限访问此资源。可能原因：1) API密钥无效或过期 2) API密钥没有访问模型"${this.newApiProviderModel}"的权限 3) 模型名称不正确。请检查API密钥和模型配置。`);
+        throw new Error(`新API提供商无权限访问此资源。可能原因：1) API密钥无效或过期 2) API密钥没有访问模型"${targetModel}"的权限 3) 模型名称不正确。请检查API密钥和模型配置。`);
         } else if (status === 429) {
           throw new Error(`新API提供商配额已用尽，请稍后重试`);
         } else if (status >= 500) {
@@ -2241,14 +2260,16 @@ class ModelAPIService {
       // 根据模型名称调用不同的API，严格匹配，不进行降级
       switch (normalizedModelName) {
         case 'nano banana':
-        case 'nano banana pro':
+          console.log('✅ 调用 Nano Banana 模型 (Gemini 2.5 Flash Image)');
+          return await this.callNanoBanana(prompt, processedImages, options);
+
         case 'nano banana 2 (pro)':
         case 'nano banana 2(pro)':
         case 'nano banana 2 pro':
         case 'nano banana2 (pro)':
         case 'nano banana2 pro':
-          console.log('✅ 调用 Nano Banana 模型 (Gemini 2.5 Flash Image)');
-          return await this.callNanoBanana(prompt, processedImages, options);
+          console.log('✅ 调用 Nano Banana 2 (Pro) 模型 (Gemini 3 Pro Image Preview)');
+          return await this.callNanoBananaPro(prompt, processedImages, options);
         
         case 'gpt-5 image':
           console.log('✅ 调用 GPT-5 Image 模型');
