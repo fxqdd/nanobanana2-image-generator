@@ -80,7 +80,6 @@ export default {
     viewPricing: 'Voir les tarifs',
     nb2Title: 'Nano Banana 2 (Gempix2)',
     nb2Subtitle: 'Moteur de génération d’images nouvelle génération, propulsé par Gemini 3 Pro de Google. Compréhension du texte, lecture de graphiques/infographies et raisonnement contextuel largement améliorés.',
-    nb2Notice: 'Remarque : le modèle Gempix2 n’est pas encore disponible. Nous l’intégrerons dès sa mise en ligne ; pour l’instant, le service fonctionne toujours avec le modèle Nano Banana.',
     nb2Gemini: 'Compatibilité Gemini 3 Pro avec compréhension sémantique plus profonde',
     nb22k: 'Natif 2K (2048×2048)',
     nb24k: 'Suréchantillonnage 4K',
