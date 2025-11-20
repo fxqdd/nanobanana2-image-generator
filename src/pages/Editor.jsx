@@ -444,8 +444,8 @@ function Editor() {
             generationId = await createGenerationAndCharge({
               model,
               prompt: currentPrompt,
-              resultUrl: result.data.imageUrl,
-              durationMs: result.data.generationTime || 0,
+            resultUrl: result.data.imageUrl,
+            durationMs: Math.round(parseFloat(result.data.generationTime) || 0),
               cost: costToCharge
             });
             console.log('扣点和保存成功，generationId:', generationId);
