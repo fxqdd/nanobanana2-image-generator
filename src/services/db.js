@@ -160,9 +160,9 @@ export async function createGenerationAndCharge({ model, prompt, resultUrl, dura
     .insert({
       user_id: user.id,
       model,
-      prompt,
       result_url: resultUrl,
-      duration_ms: durationMs || 0
+      duration_ms: durationMs || 0,
+      cost: cost || 0
     })
     .select('id')
     .single();

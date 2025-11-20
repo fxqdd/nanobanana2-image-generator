@@ -8,7 +8,7 @@ import { useAuth } from '../contexts/AuthContext'
 
 function Editor() {
   const { t, getLocalizedPath } = useLanguage()
-  const { isLoggedIn } = useAuth()
+  const { isLoggedIn, user } = useAuth()
   const [activeTab, setActiveTab] = useState('imageEdit')
   const [model, setModel] = useState('Nano Banana')
   const [referenceImages, setReferenceImages] = useState([])
@@ -26,6 +26,7 @@ function Editor() {
   const [currentCredits, setCurrentCredits] = useState(null) // 当前点数
   const isGeneratingRef = useRef(false) // 使用 ref 防止重复调用
   const [previewImage, setPreviewImage] = useState(null) // 预览图片 URL
+  const [promptCache, setPromptCache] = useState({})
 
   const IMAGE_EDIT_BLOCKED_MODELS = ['SeeDream-4']
 
@@ -35,6 +36,38 @@ function Editor() {
       ...prev,
       [mode]: value
     }))
+  }
+  const getPromptCacheKey = (uid) => `generationPromptCache:${uid}`
+  const loadPromptCacheFromStorage = (uid) => {
+    if (!uid) return {}
+    try {
+      const raw = localStorage.getItem(getPromptCacheKey(uid))
+      return raw ? JSON.parse(raw) : {}
+    } catch (err) {
+      console.warn('读取 Prompt 缓存失败:', err)
+      return {}
+    }
+  }
+
+  useEffect(() => {
+    if (user?.id) {
+      setPromptCache(loadPromptCacheFromStorage(user.id))
+    } else {
+      setPromptCache({})
+    }
+  }, [user?.id])
+
+  const rememberPromptForGeneration = (generationId, promptValue) => {
+    if (!user?.id || !generationId) return
+    setPromptCache(prev => {
+      const updated = { ...prev, [generationId]: promptValue }
+      try {
+        localStorage.setItem(getPromptCacheKey(user.id), JSON.stringify(updated))
+      } catch (err) {
+        console.warn('写入 Prompt 缓存失败:', err)
+      }
+      return updated
+    })
   }
   const isImageEditModelBlocked = activeTab === 'imageEdit' && IMAGE_EDIT_BLOCKED_MODELS.includes(model)
 
@@ -407,43 +440,12 @@ function Editor() {
               cost: costToCharge
             });
             console.log('扣点和保存成功，generationId:', generationId);
+            rememberPromptForGeneration(generationId, currentPrompt);
             
             // 立即更新点数显示
             const newCredits = await getMyCredits();
             console.log('更新后的点数:', newCredits);
             setCurrentCredits(newCredits);
-            
-            // 重新加载 history 以确保显示最新数据
-            try {
-              const rows = await getMyGenerationHistory(10);
-              const mapped = rows.map((row) => ({
-                id: row.id,
-                model: row.model,
-                prompt: row.prompt,
-                referenceImagesCount: 0,
-                time: row.created_at ? new Date(row.created_at).getTime() : null,
-                imageUrl: row.result_url,
-                generationTime: row.duration_ms || 0
-              }));
-              setHistory(mapped);
-              console.log('History 已重新加载，条数:', mapped.length);
-            } catch (historyErr) {
-              console.error('重新加载 history 失败:', historyErr);
-              // 如果重新加载失败，至少更新内存中的 history
-              const newHistoryItem = {
-                id: generationId,
-                model,
-                prompt: currentPrompt,
-                referenceImagesCount: activeTab === 'imageEdit' ? referenceImages.length : 0,
-                time: Date.now(),
-                imageUrl: result.data.imageUrl,
-                generationTime: result.data.generationTime
-              };
-              setHistory((prev) => {
-                const updated = [newHistoryItem, ...prev];
-                return updated.slice(0, 10);
-              });
-            }
             
             // 清理旧的生成记录
             try {
@@ -514,7 +516,7 @@ function Editor() {
           const mapped = rows.map((row) => ({
             id: row.id,
             model: row.model,
-            prompt: row.prompt,
+            prompt: promptCache[row.id] || '',
             referenceImagesCount: 0,
             time: row.created_at ? new Date(row.created_at).getTime() : null,
             imageUrl: row.result_url,
@@ -546,8 +548,9 @@ function Editor() {
     };
 
     loadHistory();
+  }, [isLoggedIn, user?.id, promptCache]);
 
-    // 恢复编辑器状态（提示词、图片等）
+  useEffect(() => {
     loadEditorState();
   }, [isLoggedIn]);
 
