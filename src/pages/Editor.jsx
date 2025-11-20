@@ -82,14 +82,23 @@ function Editor() {
   const computeCost = () => {
     const isTextToImage = activeTab === 'textToImage';
     const m = (model || '').toLowerCase();
+    const isNanoBananaPro =
+      m === 'nano banana 2 (pro)' ||
+      m === 'nano banana 2(pro)' ||
+      m === 'nano banana 2 pro' ||
+      m === 'nano banana2 (pro)' ||
+      m === 'nano banana2 pro';
+
     if (isTextToImage) {
       if (m === 'nano banana') return 2;
+      if (isNanoBananaPro) return 4;
       if (m === 'gpt-5 image mini') return 2;
       if (m === 'gpt-5 image') return 3;
       if (m === 'seedream-4' || m === 'seedream') return 2;
     } else {
       // 图生图（imageEdit）
       if (m === 'nano banana') return 4;
+      if (isNanoBananaPro) return 5;
       if (m === 'gpt-5 image' || m === 'gpt-5 image mini') return 3;
       if (m === 'seedream-4' || m === 'seedream') return 2;
     }
@@ -866,6 +875,7 @@ function Editor() {
                 onChange={(e) => setModel(e.target.value)}
               >
                 <option value="Nano Banana">Nano Banana</option>
+                <option value="Nano Banana 2 (Pro)">Nano Banana 2 (Pro)</option>
                 <option value="GPT-5 Image">GPT-5 Image</option>
                 <option value="GPT-5 Image Mini">GPT-5 Image Mini</option>
                 <option value="SeeDream-4" disabled={activeTab === 'imageEdit'}>SeeDream-4</option>
@@ -885,12 +895,14 @@ function Editor() {
                   const items = isTextToImage
                     ? [
                       { name: 'Nano Banana', cost: 2 },
+                      { name: 'Nano Banana 2 (Pro)', cost: 4 },
                       { name: 'GPT-5 Image', cost: 3 },
                       { name: 'GPT-5 Image Mini', cost: 2 },
                       { name: 'SeeDream-4', cost: 2 }
                     ]
                     : [
                       { name: 'Nano Banana', cost: 4 },
+                      { name: 'Nano Banana 2 (Pro)', cost: 5 },
                       { name: 'GPT-5 Image', cost: 3 },
                       { name: 'GPT-5 Image Mini', cost: 3 },
                       { name: 'SeeDream-4', cost: 2 }
@@ -1145,6 +1157,7 @@ function Editor() {
               >
                 <option value="all">{t('editor.allModels')}</option>
                 <option value="Nano Banana">Nano Banana</option>
+                <option value="Nano Banana 2 (Pro)">Nano Banana 2 (Pro)</option>
                 <option value="GPT-5 Image">GPT-5 Image</option>
                 <option value="GPT-5 Image Mini">GPT-5 Image Mini</option>
                 <option value="SeeDream-4">SeeDream-4</option>

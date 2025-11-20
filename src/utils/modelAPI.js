@@ -2242,6 +2242,11 @@ class ModelAPIService {
       switch (normalizedModelName) {
         case 'nano banana':
         case 'nano banana pro':
+        case 'nano banana 2 (pro)':
+        case 'nano banana 2(pro)':
+        case 'nano banana 2 pro':
+        case 'nano banana2 (pro)':
+        case 'nano banana2 pro':
           console.log('✅ 调用 Nano Banana 模型 (Gemini 2.5 Flash Image)');
           return await this.callNanoBanana(prompt, processedImages, options);
         
