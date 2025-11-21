@@ -119,9 +119,9 @@ function Editor() {
   const handleImageUpload = async (e) => {
     if (e.target.files && e.target.files.length > 0 && referenceImages.length < 9) {
       const file = e.target.files[0];
-      // 检查文件大小（限制为 5MB，避免 localStorage 过大）
-      if (file.size > 5 * 1024 * 1024) {
-        setError('图片太大，请选择小于 5MB 的图片');
+      // 检查文件大小（限制为 10MB，避免 localStorage 过大）
+      if (file.size > 10 * 1024 * 1024) {
+        setError('图片太大，请选择小于 10MB 的图片');
         e.target.value = '';
         return;
       }
