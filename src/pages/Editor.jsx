@@ -27,6 +27,7 @@ function Editor() {
   const isGeneratingRef = useRef(false) // 使用 ref 防止重复调用
   const [previewImage, setPreviewImage] = useState(null) // 预览图片 URL
   const [promptCache, setPromptCache] = useState({})
+  const [resolution, setResolution] = useState('2K') // 清晰度选项：1K, 2K, 4K
 
   const IMAGE_EDIT_BLOCKED_MODELS = ['SeeDream-4']
 
@@ -89,20 +90,29 @@ function Editor() {
       m === 'nano banana2 (pro)' ||
       m === 'nano banana2 pro';
 
+    // 基础积分消耗
+    let baseCost = 0;
     if (isTextToImage) {
-      if (m === 'nano banana') return 2;
-      if (isNanoBananaPro) return 4;
-      if (m === 'gpt-5 image mini') return 2;
-      if (m === 'gpt-5 image') return 3;
-      if (m === 'seedream-4' || m === 'seedream') return 2;
+      if (m === 'nano banana') baseCost = 2;
+      else if (isNanoBananaPro) baseCost = 4;
+      else if (m === 'gpt-5 image mini') baseCost = 2;
+      else if (m === 'gpt-5 image') baseCost = 3;
+      else if (m === 'seedream-4' || m === 'seedream') baseCost = 2;
     } else {
       // 图生图（imageEdit）
-      if (m === 'nano banana') return 4;
-      if (isNanoBananaPro) return 5;
-      if (m === 'gpt-5 image' || m === 'gpt-5 image mini') return 3;
-      if (m === 'seedream-4' || m === 'seedream') return 2;
+      if (m === 'nano banana') baseCost = 4;
+      else if (isNanoBananaPro) baseCost = 5;
+      else if (m === 'gpt-5 image' || m === 'gpt-5 image mini') baseCost = 3;
+      else if (m === 'seedream-4' || m === 'seedream') baseCost = 2;
     }
-    return 0;
+
+    // 根据清晰度调整积分消耗
+    let resolutionMultiplier = 1;
+    if (resolution === '1K') resolutionMultiplier = 0.8; // 1K 打8折
+    else if (resolution === '2K') resolutionMultiplier = 1; // 2K 原价
+    else if (resolution === '4K') resolutionMultiplier = 2; // 4K 双倍积分
+
+    return Math.ceil(baseCost * resolutionMultiplier);
   };
   const currentCost = computeCost();
 
@@ -181,7 +191,8 @@ function Editor() {
           prompts,
           referenceImages: updatedImages,
           activeTab,
-          model
+          model,
+          resolution
         });
 
         e.target.value = '';
@@ -207,7 +218,8 @@ function Editor() {
       prompts,
       referenceImages: newImages,
       activeTab,
-      model
+      model,
+      resolution
     });
   }
 
@@ -222,6 +234,7 @@ function Editor() {
         },
         activeTab: state.activeTab || 'imageEdit',
         model: state.model || 'Nano Banana',
+        resolution: state.resolution || resolution || '2K',
         // 只保存 base64 数据，不保存 Blob URL（因为 Blob URL 不能持久化）
         referenceImages: (state.referenceImages || []).map(img => {
           // 如果是字符串（旧格式或 base64），直接保存
@@ -256,6 +269,7 @@ function Editor() {
         localStorage.setItem('editorTextPrompt', promptsToSave?.textToImage || '');
         localStorage.setItem('editorActiveTab', state.activeTab || 'imageEdit');
         localStorage.setItem('editorModel', state.model || 'Nano Banana');
+        localStorage.setItem('editorResolution', state.resolution || resolution || '2K');
       } catch (e) {
         console.warn('保存编辑器状态失败:', e);
       }
@@ -455,13 +469,17 @@ function Editor() {
           })
         : [];
 
+      // 根据清晰度设置size选项
+      const sizeOption = resolution === '1K' ? '1K' : resolution === '2K' ? '2K' : '4K';
+      
       const result = await modelAPI.generateImage(
         model,
         currentPrompt,
         imagesForAPI,
         {
           style: 'realistic',
-          resolution: '800x600'
+          size: sizeOption,
+          resolution: resolution
         }
       );
 
@@ -635,12 +653,13 @@ function Editor() {
         prompts,
         referenceImages,
         activeTab,
-        model
+        model,
+        resolution
       });
     }, 500); // 防抖：500ms 后保存，避免频繁写入
 
     return () => clearTimeout(timer);
-  }, [prompts, activeTab, model]);
+  }, [prompts, activeTab, model, resolution]);
 
   // 当图片数量改变时，立即保存（图片上传是异步的，需要立即保存）
   useEffect(() => {
@@ -650,7 +669,8 @@ function Editor() {
         prompts,
         referenceImages,
         activeTab,
-        model
+        model,
+        resolution
       });
     }, 100);
 
@@ -664,7 +684,8 @@ function Editor() {
         prompts,
         referenceImages,
         activeTab,
-        model
+        model,
+        resolution
       });
     };
 
@@ -952,6 +973,28 @@ function Editor() {
                   ⚠️ {t('editor.modelNotSupportedForImageEdit') || '当前模型仅支持文字生图，请切换到文字模式或选择其他模型进行图生图。'}
                 </div>
               )}
+
+              {/* 清晰度选择 */}
+              <div style={{ marginTop: 16 }}>
+                <label className="form-label" style={{ marginBottom: 8, display: 'block' }}>
+                  清晰度
+                </label>
+                <select
+                  className="form-select"
+                  value={resolution}
+                  onChange={(e) => setResolution(e.target.value)}
+                  style={{ width: '100%' }}
+                >
+                  <option value="1K">1K (1024×1024) - 节省积分</option>
+                  <option value="2K">2K (2048×2048) - 标准</option>
+                  <option value="4K">4K (4096×4096) - 高清</option>
+                </select>
+                <p className="form-note" style={{ marginTop: 4, fontSize: '0.85em', color: '#666' }}>
+                  {resolution === '1K' && '1K清晰度消耗更少积分'}
+                  {resolution === '2K' && '2K清晰度为标准选项'}
+                  {resolution === '4K' && '4K清晰度消耗双倍积分，适合高质量需求'}
+                </p>
+              </div>
 
               {/* 积分消耗提示（不可交互） */}
               <div style={{ marginTop: 8, padding: '8px 10px', background: '#f8f9fa', borderRadius: 8, lineHeight: 1.7 }}>

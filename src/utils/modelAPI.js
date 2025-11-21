@@ -202,13 +202,27 @@ class ModelAPIService {
       
       // 添加图像和文本提示词
       if (imageParts.length > 0) {
+        let imagePrompt = `基于提供的参考图像，生成以下描述的图像：${prompt}`;
+        
+        // 如果指定了清晰度，在prompt中提及
+        if (options.size || options.resolution) {
+          const res = options.size || options.resolution;
+          if (res === '4K') {
+            imagePrompt += ' 请生成4K超高清分辨率（4096x4096像素）的图像。';
+          } else if (res === '2K') {
+            imagePrompt += ' 请生成2K高清分辨率（2048x2048像素）的图像。';
+          } else if (res === '1K') {
+            imagePrompt += ' 请生成1K标准分辨率（1024x1024像素）的图像。';
+          }
+        }
+        
         messages.push({
           role: 'user',
           content: [
             ...imageParts,
             {
               type: 'text',
-              text: `基于提供的参考图像，生成以下描述的图像：${prompt}`
+              text: imagePrompt
             }
           ]
         });
@@ -221,9 +235,27 @@ class ModelAPIService {
     } else {
       // 纯文本提示词 - 对于 Gemini 2.5 Flash Image，需要使用明确的图像生成指令
       // 注意：Gemini 2.5 Flash Image 需要明确的图像生成请求
-      const imagePrompt = modelId.includes('gemini-2.5-flash-image') 
+      let imagePrompt = modelId.includes('gemini-2.5-flash-image') 
         ? `Generate an image of: ${prompt}. Return only the image data, no text description.`
         : `生成以下描述的图像：${prompt}`;
+      
+      // 如果指定了清晰度，在prompt中提及
+      if (options.size || options.resolution) {
+        const res = options.size || options.resolution;
+        if (res === '4K') {
+          imagePrompt += modelId.includes('gemini-2.5-flash-image')
+            ? ' Generate at 4K ultra-high resolution (4096x4096 pixels).'
+            : ' 请生成4K超高清分辨率（4096x4096像素）的图像。';
+        } else if (res === '2K') {
+          imagePrompt += modelId.includes('gemini-2.5-flash-image')
+            ? ' Generate at 2K high resolution (2048x2048 pixels).'
+            : ' 请生成2K高清分辨率（2048x2048像素）的图像。';
+        } else if (res === '1K') {
+          imagePrompt += modelId.includes('gemini-2.5-flash-image')
+            ? ' Generate at 1K standard resolution (1024x1024 pixels).'
+            : ' 请生成1K标准分辨率（1024x1024像素）的图像。';
+        }
+      }
       
       messages.push({
         role: 'user',
@@ -246,12 +278,20 @@ class ModelAPIService {
       // 但 Gemini 2.5 Flash Image 可能不支持，所以先不设置
     }
     
-    // 添加图像配置（如果模型支持）
-    if (options.aspectRatio || options.size) {
-      body.image_config = {
-        aspect_ratio: options.aspectRatio || this.parseSizeToAspectRatio(options.size)
-      };
-    }
+      // 添加图像配置（如果模型支持）
+      const sizeOption = options.size || options.resolution;
+      if (options.aspectRatio || sizeOption) {
+        body.image_config = {
+          aspect_ratio: options.aspectRatio || this.parseSizeToAspectRatio(sizeOption)
+        };
+        // 如果提供了清晰度选项，尝试设置size
+        if (sizeOption && (sizeOption === '1K' || sizeOption === '2K' || sizeOption === '4K')) {
+          // OpenRouter API可能支持size参数
+          if (!body.image_config.size) {
+            body.image_config.size = sizeOption;
+          }
+        }
+      }
     
     console.log('📤 OpenRouter 请求:', {
       model: modelId,
@@ -1041,9 +1081,21 @@ class ModelAPIService {
       }
 
       // 添加文本提示词 - 对于图像生成，需要明确请求生成图像
-      const imageGenerationPrompt = referenceImages.length > 0 
+      let imageGenerationPrompt = referenceImages.length > 0 
         ? `基于提供的参考图像，生成以下描述的图像：${prompt}`
         : `生成以下描述的图像：${prompt}`;
+      
+      // 如果指定了清晰度，在prompt中提及（某些模型可能通过prompt控制分辨率）
+      if (options.size || options.resolution) {
+        const res = options.size || options.resolution;
+        if (res === '4K') {
+          imageGenerationPrompt += ' 请生成4K超高清分辨率（4096x4096像素）的图像。';
+        } else if (res === '2K') {
+          imageGenerationPrompt += ' 请生成2K高清分辨率（2048x2048像素）的图像。';
+        } else if (res === '1K') {
+          imageGenerationPrompt += ' 请生成1K标准分辨率（1024x1024像素）的图像。';
+        }
+      }
       
       requestBody.contents[0].parts.push({
         text: imageGenerationPrompt
@@ -1057,6 +1109,15 @@ class ModelAPIService {
         maxOutputTokens: 8192
         // 不设置 responseMimeType，让模型自动返回图像
       };
+
+      // 添加分辨率配置（如果支持）
+      if (options.size || options.resolution) {
+        const res = options.size || options.resolution;
+        // Gemini API可能通过其他方式支持分辨率，这里先记录
+        console.log('📐 分辨率选项:', res);
+        // 注意：Gemini 2.5 Flash Image 可能不支持直接设置分辨率
+        // 但我们可以尝试在prompt中提及分辨率要求
+      }
 
       // 如果启用代理，直接走后端/边缘代理（模型固定为 Gemini 2.5 Flash Image）
       let response;
@@ -1316,13 +1377,27 @@ class ModelAPIService {
         }
         
         if (imageParts.length > 0) {
+          let imagePrompt = `基于提供的参考图像，生成以下描述的图像：${prompt}`;
+          
+          // 如果指定了清晰度，在prompt中提及
+          if (options.size || options.resolution) {
+            const res = options.size || options.resolution;
+            if (res === '4K') {
+              imagePrompt += ' 请生成4K超高清分辨率（4096x4096像素）的图像。';
+            } else if (res === '2K') {
+              imagePrompt += ' 请生成2K高清分辨率（2048x2048像素）的图像。';
+            } else if (res === '1K') {
+              imagePrompt += ' 请生成1K标准分辨率（1024x1024像素）的图像。';
+            }
+          }
+          
           messages.push({
             role: 'user',
             content: [
               ...imageParts,
               {
                 type: 'text',
-                text: `基于提供的参考图像，生成以下描述的图像：${prompt}`
+                text: imagePrompt
               }
             ]
           });
@@ -1333,9 +1408,23 @@ class ModelAPIService {
           });
         }
       } else {
+        let imagePrompt = `生成以下描述的图像：${prompt}`;
+        
+        // 如果指定了清晰度，在prompt中提及
+        if (options.size || options.resolution) {
+          const res = options.size || options.resolution;
+          if (res === '4K') {
+            imagePrompt += ' 请生成4K超高清分辨率（4096x4096像素）的图像。';
+          } else if (res === '2K') {
+            imagePrompt += ' 请生成2K高清分辨率（2048x2048像素）的图像。';
+          } else if (res === '1K') {
+            imagePrompt += ' 请生成1K标准分辨率（1024x1024像素）的图像。';
+          }
+        }
+        
         messages.push({
           role: 'user',
-          content: `生成以下描述的图像：${prompt}`
+          content: imagePrompt
         });
       }
       
@@ -1347,10 +1436,18 @@ class ModelAPIService {
       };
       
       // 添加图像配置（如果支持）
-      if (options.aspectRatio || options.size) {
+      if (options.aspectRatio || options.size || options.resolution) {
+        const sizeOption = options.size || options.resolution;
         requestBody.image_config = {
-          aspect_ratio: options.aspectRatio || this.parseSizeToAspectRatio(options.size)
+          aspect_ratio: options.aspectRatio || this.parseSizeToAspectRatio(sizeOption)
         };
+        // 如果提供了分辨率选项，尝试设置size
+        if (sizeOption && (sizeOption === '1K' || sizeOption === '2K' || sizeOption === '4K')) {
+          // 某些API可能支持size参数
+          if (!requestBody.image_config.size) {
+            requestBody.image_config.size = sizeOption;
+          }
+        }
       }
       
       // 构建请求头
@@ -1871,14 +1968,18 @@ class ModelAPIService {
         : '/api/volcano/images/generations';  // 生产环境：使用 Cloudflare Pages Functions 代理
 
       // 构建请求体
+      // 支持清晰度选项：1K, 2K, 4K
+      const sizeOption = options.size || options.resolution || '2K';
       const requestBody = {
         model: this.volcanoModelId,
         prompt: prompt,
-        size: options.size || '2K',
+        size: sizeOption, // 火山引擎支持 1K, 2K, 4K
         response_format: 'url',
         watermark: options.watermark !== false, // 默认添加水印
         stream: false
       };
+      
+      console.log('📐 SeeDream 清晰度设置:', sizeOption);
 
       // 如果有参考图像（图生图模式），添加图像数组
       if (referenceImages.length > 0) {
