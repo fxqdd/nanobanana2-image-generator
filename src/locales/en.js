@@ -517,8 +517,8 @@ export default {
     },
     home: {
       title: 'Nano Banana 2 - Best AI Image Generator | Text to Image | SeeDream 4.0',
-      description: 'Nano Banana 2 is the most powerful AI image editing tool, supporting text to image, image generation and editing. Using SeeDream 4.0 and the latest AI technology, surpassing Flux Kontext, providing professional-grade image editing experience.',
-      keywords: 'nanobanana, Nano Banana 2, SeeDream 4.0, best image generator, text to image, AI image editor, AI image generator, image editing, text to image generator, AI art generator'
+      description: 'The most powerful image model Nano Banana 2 has been released, surpassing the previous version of Nano Banana. It supports image editing and text-to-image generation, with resolution options (1K, 2K, 4K) to unleash your creativity. Our platform also supports GPT series and SeeDream image generation models.',
+      keywords: 'nanobanana, Nano Banana 2, SeeDream 4.0, best image generator, text to image, AI image editor, AI image generator, image editing, text to image generator, AI art generator, GPT image, resolution options, 4K image generation'
     },
     editor: {
       title: 'AI Image Editor - Nano Banana 2 | Image Editing | Text to Image',
