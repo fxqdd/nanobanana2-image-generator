@@ -116,6 +116,40 @@ function Editor() {
     });
   };
 
+  // 将 blob URL 转换为 data URL（用于持久化保存）
+  const convertBlobUrlToDataUrl = async (blobUrl) => {
+    try {
+      // 如果已经是 data URL，直接返回
+      if (blobUrl.startsWith('data:')) {
+        return blobUrl;
+      }
+      
+      // 如果是 HTTP/HTTPS URL，直接返回（永久 URL）
+      if (blobUrl.startsWith('http://') || blobUrl.startsWith('https://')) {
+        return blobUrl;
+      }
+      
+      // 如果是 blob URL，转换为 data URL
+      if (blobUrl.startsWith('blob:')) {
+        const response = await fetch(blobUrl);
+        const blob = await response.blob();
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = reject;
+          reader.readAsDataURL(blob);
+        });
+      }
+      
+      // 其他情况，直接返回
+      return blobUrl;
+    } catch (error) {
+      console.error('转换 blob URL 失败:', error);
+      // 如果转换失败，返回原 URL（至少可以尝试显示）
+      return blobUrl;
+    }
+  };
+
   const handleImageUpload = async (e) => {
     if (e.target.files && e.target.files.length > 0 && referenceImages.length < 9) {
       const file = e.target.files[0];
@@ -441,11 +475,21 @@ function Editor() {
         if (isLoggedIn) {
           try {
             console.log('开始扣点和保存记录，cost:', costToCharge);
+            
+            // 将 blob URL 转换为 data URL 以便持久化保存
+            const persistentUrl = await convertBlobUrlToDataUrl(result.data.imageUrl);
+            console.log('图片 URL 已转换:', {
+              original: result.data.imageUrl.substring(0, 50) + '...',
+              persistent: persistentUrl.substring(0, 50) + '...',
+              isBlob: result.data.imageUrl.startsWith('blob:'),
+              isDataUrl: persistentUrl.startsWith('data:')
+            });
+            
             generationId = await createGenerationAndCharge({
               model,
               prompt: currentPrompt,
-            resultUrl: result.data.imageUrl,
-            durationMs: Math.round(parseFloat(result.data.generationTime) || 0),
+              resultUrl: persistentUrl,
+              durationMs: Math.round(parseFloat(result.data.generationTime) || 0),
               cost: costToCharge
             });
             console.log('扣点和保存成功，generationId:', generationId);
@@ -466,13 +510,15 @@ function Editor() {
             console.error('❌ 记录生成与扣点失败:', chargeErr);
             setError(t('editor.error') + ': ' + (chargeErr.message || '扣点失败，请重试'));
             // 即使扣点失败，也保存到本地 history（但标记为未扣点）
+            // 将 blob URL 转换为 data URL 以便持久化保存
+            const persistentUrl = await convertBlobUrlToDataUrl(result.data.imageUrl);
             const newHistoryItem = {
               id: null,
               model,
               prompt: currentPrompt,
               referenceImagesCount: activeTab === 'imageEdit' ? referenceImages.length : 0,
               time: Date.now(),
-              imageUrl: result.data.imageUrl,
+              imageUrl: persistentUrl,
               generationTime: result.data.generationTime,
               chargeFailed: true
             };
@@ -483,13 +529,20 @@ function Editor() {
           }
         } else {
           // 未登录用户：使用 localStorage 保存历史（最多 10 条）
+          // 将 blob URL 转换为 data URL 以便持久化保存
+          const persistentUrl = await convertBlobUrlToDataUrl(result.data.imageUrl);
+          console.log('未登录用户：图片 URL 已转换:', {
+            original: result.data.imageUrl.substring(0, 50) + '...',
+            persistent: persistentUrl.substring(0, 50) + '...'
+          });
+          
           const newHistoryItem = {
             id: null,
             model,
             prompt: currentPrompt,
             referenceImagesCount: activeTab === 'imageEdit' ? referenceImages.length : 0,
             time: Date.now(),
-            imageUrl: result.data.imageUrl,
+            imageUrl: persistentUrl,
             generationTime: result.data.generationTime
           };
           const updatedHistory = [newHistoryItem, ...history];
@@ -522,15 +575,27 @@ function Editor() {
           console.log('开始加载登录用户的 history...');
           const rows = await getMyGenerationHistory(10);
           console.log('从数据库加载的 history 条数:', rows.length);
-          const mapped = rows.map((row) => ({
-            id: row.id,
-            model: row.model,
-            prompt: promptCache[row.id] || '',
-            referenceImagesCount: 0,
-            time: row.created_at ? new Date(row.created_at).getTime() : null,
-            imageUrl: row.result_url,
-            generationTime: row.duration_ms || 0
-          }));
+          const mapped = rows.map((row) => {
+            let imageUrl = row.result_url;
+            
+            // 如果 URL 是失效的 blob URL，标记为无效（显示占位符）
+            // data URL 和 HTTP URL 可以直接使用
+            if (imageUrl && imageUrl.startsWith('blob:')) {
+              console.warn('检测到 blob URL（可能已失效）:', imageUrl.substring(0, 50));
+              // blob URL 在页面刷新后会失效，但我们可以尝试使用它
+              // 如果加载失败，img 标签的 onError 会处理
+            }
+            
+            return {
+              id: row.id,
+              model: row.model,
+              prompt: promptCache[row.id] || '',
+              referenceImagesCount: 0,
+              time: row.created_at ? new Date(row.created_at).getTime() : null,
+              imageUrl: imageUrl,
+              generationTime: row.duration_ms || 0
+            };
+          });
           setHistory(mapped);
           console.log('History 已加载到状态，条数:', mapped.length);
         } else {
