@@ -731,7 +731,17 @@ const Showcase = () => {
                   ) : (
                     <p>{t('showcase.uploadHint')}</p>
                   )}
-                  <input type="file" accept="image/*" onChange={handleImageChange} />
+                  <div className="upload-controls">
+                    <label className="custom-file-upload">
+                      <span>{t('showcase.uploadButton')}</span>
+                      <input type="file" accept="image/*" onChange={handleImageChange} />
+                    </label>
+                    {formState.imageFile && (
+                      <span className="file-name" title={formState.imageFile.name}>
+                        {formState.imageFile.name}
+                      </span>
+                    )}
+                  </div>
                 </div>
               </label>
               {formState.error && <p className="form-error">{formState.error}</p>}

@@ -249,6 +249,7 @@ export default {
     modalTagsPlaceholder: '用逗号分隔多个标签',
     modalImageLabel: '图片上传',
     uploadHint: '上传 PNG/JPG 图片',
+    uploadButton: '选择图片',
     modalCancel: '取消',
     modalSubmit: '发布',
     detailPromptTitle: '提示词详情',

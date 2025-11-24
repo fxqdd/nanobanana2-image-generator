@@ -247,6 +247,7 @@ export default {
     modalTagsPlaceholder: 'Tags séparés par des virgules',
     modalImageLabel: 'Image',
     uploadHint: 'Téléversez une image PNG/JPG',
+    uploadButton: 'Choisir une image',
     modalCancel: 'Annuler',
     modalSubmit: 'Publier',
     detailPromptTitle: 'Détails du prompt',

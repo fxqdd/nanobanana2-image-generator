@@ -248,6 +248,7 @@ export default {
     modalTagsPlaceholder: 'Теги через запятую',
     modalImageLabel: 'Изображение',
     uploadHint: 'Загрузите PNG/JPG',
+    uploadButton: 'Выбрать файл',
     modalCancel: 'Отмена',
     modalSubmit: 'Опубликовать',
     detailPromptTitle: 'Детали промпта',

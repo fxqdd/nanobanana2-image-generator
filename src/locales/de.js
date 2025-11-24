@@ -247,6 +247,7 @@ export default {
     modalTagsPlaceholder: 'Tags durch Kommata trennen',
     modalImageLabel: 'Bild',
     uploadHint: 'PNG/JPG hochladen',
+    uploadButton: 'Bild auswählen',
     modalCancel: 'Abbrechen',
     modalSubmit: 'Veröffentlichen',
     detailPromptTitle: 'Prompt-Details',

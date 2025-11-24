@@ -244,6 +244,7 @@ export default {
     modalTagsPlaceholder: 'カンマ区切りでタグを入力',
     modalImageLabel: '画像アップロード',
     uploadHint: 'PNG/JPG 画像をアップロード',
+    uploadButton: '画像を選択',
     modalCancel: 'キャンセル',
     modalSubmit: '公開',
     detailPromptTitle: 'プロンプト詳細',

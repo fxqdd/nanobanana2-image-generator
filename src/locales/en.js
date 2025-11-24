@@ -249,6 +249,7 @@ export default {
     modalTagsPlaceholder: 'Comma separated tags',
     modalImageLabel: 'Image upload',
     uploadHint: 'Upload an image (PNG/JPG)',
+    uploadButton: 'Select image',
     modalCancel: 'Cancel',
     modalSubmit: 'Publish',
     detailPromptTitle: 'Prompt details',
