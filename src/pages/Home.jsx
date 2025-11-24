@@ -91,7 +91,7 @@ function Home() {
               {t('home.nb2Subtitle') || '由 Google 先进的 Gemini 3 Pro 模型驱动的新一代图像生成引擎'}
             </p>
             <h3 className="nb2-features-heading" style={{ fontSize: '1.1rem', fontWeight: '600', marginTop: '1.5rem', marginBottom: '1rem' }}>
-              核心特性
+              {t('home.nb2FeaturesHeading')}
             </h3>
             <ul className="nb2-list">
               <li>✓ {t('home.nb2Gemini') || 'Gemini 3 Pro 支持，语义理解更深'}</li>

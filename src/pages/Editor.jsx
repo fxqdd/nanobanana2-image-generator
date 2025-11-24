@@ -977,7 +977,7 @@ function Editor() {
               {/* 清晰度选择 */}
               <div style={{ marginTop: 16 }}>
                 <label className="form-label" style={{ marginBottom: 8, display: 'block' }}>
-                  清晰度
+                  {t('editor.resolutionLabel')}
                 </label>
                 <select
                   className="form-select"
@@ -985,14 +985,14 @@ function Editor() {
                   onChange={(e) => setResolution(e.target.value)}
                   style={{ width: '100%' }}
                 >
-                  <option value="1K">1K (1024×1024) - 节省积分</option>
-                  <option value="2K">2K (2048×2048) - 标准</option>
-                  <option value="4K">4K (4096×4096) - 高清</option>
+                  <option value="1K">{t('editor.resolutionOption1')}</option>
+                  <option value="2K">{t('editor.resolutionOption2')}</option>
+                  <option value="4K">{t('editor.resolutionOption3')}</option>
                 </select>
                 <p className="form-note" style={{ marginTop: 4, fontSize: '0.85em', color: '#666' }}>
-                  {resolution === '1K' && '1K清晰度消耗更少积分'}
-                  {resolution === '2K' && '2K清晰度为标准选项'}
-                  {resolution === '4K' && '4K清晰度消耗双倍积分，适合高质量需求'}
+                  {resolution === '1K' && t('editor.resolutionNote1')}
+                  {resolution === '2K' && t('editor.resolutionNote2')}
+                  {resolution === '4K' && t('editor.resolutionNote3')}
                 </p>
               </div>
 
