@@ -1,0 +1,700 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  
+  <!-- 首页 - 所有语言版本 -->
+  <url>
+    <loc>https://nanobanana2.online/</loc>
+    <lastmod>2025-11-24</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://nanobanana2.online/zh" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://nanobanana2.online/en" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://nanobanana2.online/ja" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://nanobanana2.online/fr" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://nanobanana2.online/de" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://nanobanana2.online/ru" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://nanobanana2.online/en" />
+  </url>
+  
+  <url>
+    <loc>https://nanobanana2.online/zh</loc>
+    <lastmod>2025-11-24</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://nanobanana2.online/zh" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://nanobanana2.online/en" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://nanobanana2.online/ja" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://nanobanana2.online/fr" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://nanobanana2.online/de" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://nanobanana2.online/ru" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://nanobanana2.online/en" />
+  </url>
+  
+  <url>
+    <loc>https://nanobanana2.online/en</loc>
+    <lastmod>2025-11-24</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://nanobanana2.online/zh" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://nanobanana2.online/en" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://nanobanana2.online/ja" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://nanobanana2.online/fr" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://nanobanana2.online/de" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://nanobanana2.online/ru" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://nanobanana2.online/en" />
+  </url>
+  
+  <url>
+    <loc>https://nanobanana2.online/ja</loc>
+    <lastmod>2025-11-24</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://nanobanana2.online/zh" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://nanobanana2.online/en" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://nanobanana2.online/ja" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://nanobanana2.online/fr" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://nanobanana2.online/de" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://nanobanana2.online/ru" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://nanobanana2.online/en" />
+  </url>
+  
+  <url>
+    <loc>https://nanobanana2.online/fr</loc>
+    <lastmod>2025-11-24</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://nanobanana2.online/zh" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://nanobanana2.online/en" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://nanobanana2.online/ja" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://nanobanana2.online/fr" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://nanobanana2.online/de" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://nanobanana2.online/ru" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://nanobanana2.online/en" />
+  </url>
+  
+  <url>
+    <loc>https://nanobanana2.online/de</loc>
+    <lastmod>2025-11-24</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://nanobanana2.online/zh" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://nanobanana2.online/en" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://nanobanana2.online/ja" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://nanobanana2.online/fr" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://nanobanana2.online/de" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://nanobanana2.online/ru" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://nanobanana2.online/en" />
+  </url>
+  
+  <url>
+    <loc>https://nanobanana2.online/ru</loc>
+    <lastmod>2025-11-24</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://nanobanana2.online/zh" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://nanobanana2.online/en" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://nanobanana2.online/ja" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://nanobanana2.online/fr" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://nanobanana2.online/de" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://nanobanana2.online/ru" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://nanobanana2.online/en" />
+  </url>
+  
+  <!-- Showcase 页面 -->
+  <url>
+    <loc>https://nanobanana2.online/zh/showcase</loc>
+    <lastmod>2025-11-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://nanobanana2.online/zh/showcase" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://nanobanana2.online/en/showcase" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://nanobanana2.online/ja/showcase" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://nanobanana2.online/fr/showcase" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://nanobanana2.online/de/showcase" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://nanobanana2.online/ru/showcase" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://nanobanana2.online/en/showcase" />
+  </url>
+  
+  <url>
+    <loc>https://nanobanana2.online/en/showcase</loc>
+    <lastmod>2025-11-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://nanobanana2.online/zh/showcase" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://nanobanana2.online/en/showcase" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://nanobanana2.online/ja/showcase" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://nanobanana2.online/fr/showcase" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://nanobanana2.online/de/showcase" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://nanobanana2.online/ru/showcase" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://nanobanana2.online/en/showcase" />
+  </url>
+  
+  <url>
+    <loc>https://nanobanana2.online/ja/showcase</loc>
+    <lastmod>2025-11-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://nanobanana2.online/zh/showcase" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://nanobanana2.online/en/showcase" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://nanobanana2.online/ja/showcase" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://nanobanana2.online/fr/showcase" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://nanobanana2.online/de/showcase" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://nanobanana2.online/ru/showcase" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://nanobanana2.online/en/showcase" />
+  </url>
+  
+  <url>
+    <loc>https://nanobanana2.online/fr/showcase</loc>
+    <lastmod>2025-11-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://nanobanana2.online/zh/showcase" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://nanobanana2.online/en/showcase" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://nanobanana2.online/ja/showcase" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://nanobanana2.online/fr/showcase" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://nanobanana2.online/de/showcase" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://nanobanana2.online/ru/showcase" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://nanobanana2.online/en/showcase" />
+  </url>
+  
+  <url>
+    <loc>https://nanobanana2.online/de/showcase</loc>
+    <lastmod>2025-11-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://nanobanana2.online/zh/showcase" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://nanobanana2.online/en/showcase" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://nanobanana2.online/ja/showcase" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://nanobanana2.online/fr/showcase" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://nanobanana2.online/de/showcase" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://nanobanana2.online/ru/showcase" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://nanobanana2.online/en/showcase" />
+  </url>
+  
+  <url>
+    <loc>https://nanobanana2.online/ru/showcase</loc>
+    <lastmod>2025-11-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://nanobanana2.online/zh/showcase" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://nanobanana2.online/en/showcase" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://nanobanana2.online/ja/showcase" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://nanobanana2.online/fr/showcase" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://nanobanana2.online/de/showcase" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://nanobanana2.online/ru/showcase" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://nanobanana2.online/en/showcase" />
+  </url>
+  
+  <!-- Pricing 页面 -->
+  <url>
+    <loc>https://nanobanana2.online/zh/pricing</loc>
+    <lastmod>2025-11-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://nanobanana2.online/zh/pricing" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://nanobanana2.online/en/pricing" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://nanobanana2.online/ja/pricing" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://nanobanana2.online/fr/pricing" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://nanobanana2.online/de/pricing" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://nanobanana2.online/ru/pricing" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://nanobanana2.online/en/pricing" />
+  </url>
+  
+  <url>
+    <loc>https://nanobanana2.online/en/pricing</loc>
+    <lastmod>2025-11-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://nanobanana2.online/zh/pricing" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://nanobanana2.online/en/pricing" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://nanobanana2.online/ja/pricing" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://nanobanana2.online/fr/pricing" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://nanobanana2.online/de/pricing" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://nanobanana2.online/ru/pricing" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://nanobanana2.online/en/pricing" />
+  </url>
+  
+  <url>
+    <loc>https://nanobanana2.online/ja/pricing</loc>
+    <lastmod>2025-11-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://nanobanana2.online/zh/pricing" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://nanobanana2.online/en/pricing" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://nanobanana2.online/ja/pricing" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://nanobanana2.online/fr/pricing" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://nanobanana2.online/de/pricing" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://nanobanana2.online/ru/pricing" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://nanobanana2.online/en/pricing" />
+  </url>
+  
+  <url>
+    <loc>https://nanobanana2.online/fr/pricing</loc>
+    <lastmod>2025-11-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://nanobanana2.online/zh/pricing" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://nanobanana2.online/en/pricing" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://nanobanana2.online/ja/pricing" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://nanobanana2.online/fr/pricing" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://nanobanana2.online/de/pricing" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://nanobanana2.online/ru/pricing" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://nanobanana2.online/en/pricing" />
+  </url>
+  
+  <url>
+    <loc>https://nanobanana2.online/de/pricing</loc>
+    <lastmod>2025-11-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://nanobanana2.online/zh/pricing" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://nanobanana2.online/en/pricing" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://nanobanana2.online/ja/pricing" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://nanobanana2.online/fr/pricing" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://nanobanana2.online/de/pricing" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://nanobanana2.online/ru/pricing" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://nanobanana2.online/en/pricing" />
+  </url>
+  
+  <url>
+    <loc>https://nanobanana2.online/ru/pricing</loc>
+    <lastmod>2025-11-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://nanobanana2.online/zh/pricing" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://nanobanana2.online/en/pricing" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://nanobanana2.online/ja/pricing" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://nanobanana2.online/fr/pricing" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://nanobanana2.online/de/pricing" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://nanobanana2.online/ru/pricing" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://nanobanana2.online/en/pricing" />
+  </url>
+  
+  <!-- API Test 页面 -->
+  <url>
+    <loc>https://nanobanana2.online/zh/api-test</loc>
+    <lastmod>2025-11-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://nanobanana2.online/zh/api-test" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://nanobanana2.online/en/api-test" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://nanobanana2.online/ja/api-test" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://nanobanana2.online/fr/api-test" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://nanobanana2.online/de/api-test" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://nanobanana2.online/ru/api-test" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://nanobanana2.online/en/api-test" />
+  </url>
+  
+  <url>
+    <loc>https://nanobanana2.online/en/api-test</loc>
+    <lastmod>2025-11-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://nanobanana2.online/zh/api-test" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://nanobanana2.online/en/api-test" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://nanobanana2.online/ja/api-test" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://nanobanana2.online/fr/api-test" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://nanobanana2.online/de/api-test" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://nanobanana2.online/ru/api-test" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://nanobanana2.online/en/api-test" />
+  </url>
+  
+  <url>
+    <loc>https://nanobanana2.online/ja/api-test</loc>
+    <lastmod>2025-11-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://nanobanana2.online/zh/api-test" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://nanobanana2.online/en/api-test" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://nanobanana2.online/ja/api-test" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://nanobanana2.online/fr/api-test" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://nanobanana2.online/de/api-test" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://nanobanana2.online/ru/api-test" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://nanobanana2.online/en/api-test" />
+  </url>
+  
+  <url>
+    <loc>https://nanobanana2.online/fr/api-test</loc>
+    <lastmod>2025-11-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://nanobanana2.online/zh/api-test" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://nanobanana2.online/en/api-test" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://nanobanana2.online/ja/api-test" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://nanobanana2.online/fr/api-test" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://nanobanana2.online/de/api-test" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://nanobanana2.online/ru/api-test" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://nanobanana2.online/en/api-test" />
+  </url>
+  
+  <url>
+    <loc>https://nanobanana2.online/de/api-test</loc>
+    <lastmod>2025-11-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://nanobanana2.online/zh/api-test" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://nanobanana2.online/en/api-test" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://nanobanana2.online/ja/api-test" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://nanobanana2.online/fr/api-test" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://nanobanana2.online/de/api-test" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://nanobanana2.online/ru/api-test" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://nanobanana2.online/en/api-test" />
+  </url>
+  
+  <url>
+    <loc>https://nanobanana2.online/ru/api-test</loc>
+    <lastmod>2025-11-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://nanobanana2.online/zh/api-test" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://nanobanana2.online/en/api-test" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://nanobanana2.online/ja/api-test" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://nanobanana2.online/fr/api-test" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://nanobanana2.online/de/api-test" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://nanobanana2.online/ru/api-test" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://nanobanana2.online/en/api-test" />
+  </url>
+  
+  <!-- Login 页面 -->
+  <url>
+    <loc>https://nanobanana2.online/zh/login</loc>
+    <lastmod>2025-11-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://nanobanana2.online/zh/login" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://nanobanana2.online/en/login" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://nanobanana2.online/ja/login" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://nanobanana2.online/fr/login" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://nanobanana2.online/de/login" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://nanobanana2.online/ru/login" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://nanobanana2.online/en/login" />
+  </url>
+  
+  <url>
+    <loc>https://nanobanana2.online/en/login</loc>
+    <lastmod>2025-11-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://nanobanana2.online/zh/login" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://nanobanana2.online/en/login" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://nanobanana2.online/ja/login" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://nanobanana2.online/fr/login" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://nanobanana2.online/de/login" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://nanobanana2.online/ru/login" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://nanobanana2.online/en/login" />
+  </url>
+  
+  <url>
+    <loc>https://nanobanana2.online/ja/login</loc>
+    <lastmod>2025-11-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://nanobanana2.online/zh/login" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://nanobanana2.online/en/login" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://nanobanana2.online/ja/login" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://nanobanana2.online/fr/login" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://nanobanana2.online/de/login" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://nanobanana2.online/ru/login" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://nanobanana2.online/en/login" />
+  </url>
+  
+  <url>
+    <loc>https://nanobanana2.online/fr/login</loc>
+    <lastmod>2025-11-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://nanobanana2.online/zh/login" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://nanobanana2.online/en/login" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://nanobanana2.online/ja/login" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://nanobanana2.online/fr/login" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://nanobanana2.online/de/login" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://nanobanana2.online/ru/login" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://nanobanana2.online/en/login" />
+  </url>
+  
+  <url>
+    <loc>https://nanobanana2.online/de/login</loc>
+    <lastmod>2025-11-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://nanobanana2.online/zh/login" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://nanobanana2.online/en/login" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://nanobanana2.online/ja/login" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://nanobanana2.online/fr/login" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://nanobanana2.online/de/login" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://nanobanana2.online/ru/login" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://nanobanana2.online/en/login" />
+  </url>
+  
+  <url>
+    <loc>https://nanobanana2.online/ru/login</loc>
+    <lastmod>2025-11-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://nanobanana2.online/zh/login" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://nanobanana2.online/en/login" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://nanobanana2.online/ja/login" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://nanobanana2.online/fr/login" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://nanobanana2.online/de/login" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://nanobanana2.online/ru/login" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://nanobanana2.online/en/login" />
+  </url>
+  
+  <!-- Terms 页面 -->
+  <url>
+    <loc>https://nanobanana2.online/zh/terms</loc>
+    <lastmod>2025-11-24</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.5</priority>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://nanobanana2.online/zh/terms" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://nanobanana2.online/en/terms" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://nanobanana2.online/ja/terms" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://nanobanana2.online/fr/terms" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://nanobanana2.online/de/terms" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://nanobanana2.online/ru/terms" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://nanobanana2.online/en/terms" />
+  </url>
+  
+  <url>
+    <loc>https://nanobanana2.online/en/terms</loc>
+    <lastmod>2025-11-24</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.5</priority>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://nanobanana2.online/zh/terms" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://nanobanana2.online/en/terms" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://nanobanana2.online/ja/terms" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://nanobanana2.online/fr/terms" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://nanobanana2.online/de/terms" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://nanobanana2.online/ru/terms" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://nanobanana2.online/en/terms" />
+  </url>
+  
+  <url>
+    <loc>https://nanobanana2.online/ja/terms</loc>
+    <lastmod>2025-11-24</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.5</priority>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://nanobanana2.online/zh/terms" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://nanobanana2.online/en/terms" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://nanobanana2.online/ja/terms" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://nanobanana2.online/fr/terms" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://nanobanana2.online/de/terms" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://nanobanana2.online/ru/terms" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://nanobanana2.online/en/terms" />
+  </url>
+  
+  <url>
+    <loc>https://nanobanana2.online/fr/terms</loc>
+    <lastmod>2025-11-24</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.5</priority>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://nanobanana2.online/zh/terms" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://nanobanana2.online/en/terms" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://nanobanana2.online/ja/terms" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://nanobanana2.online/fr/terms" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://nanobanana2.online/de/terms" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://nanobanana2.online/ru/terms" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://nanobanana2.online/en/terms" />
+  </url>
+  
+  <url>
+    <loc>https://nanobanana2.online/de/terms</loc>
+    <lastmod>2025-11-24</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.5</priority>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://nanobanana2.online/zh/terms" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://nanobanana2.online/en/terms" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://nanobanana2.online/ja/terms" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://nanobanana2.online/fr/terms" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://nanobanana2.online/de/terms" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://nanobanana2.online/ru/terms" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://nanobanana2.online/en/terms" />
+  </url>
+  
+  <url>
+    <loc>https://nanobanana2.online/ru/terms</loc>
+    <lastmod>2025-11-24</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.5</priority>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://nanobanana2.online/zh/terms" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://nanobanana2.online/en/terms" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://nanobanana2.online/ja/terms" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://nanobanana2.online/fr/terms" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://nanobanana2.online/de/terms" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://nanobanana2.online/ru/terms" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://nanobanana2.online/en/terms" />
+  </url>
+  
+  <!-- Privacy 页面 -->
+  <url>
+    <loc>https://nanobanana2.online/zh/privacy</loc>
+    <lastmod>2025-11-24</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.5</priority>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://nanobanana2.online/zh/privacy" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://nanobanana2.online/en/privacy" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://nanobanana2.online/ja/privacy" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://nanobanana2.online/fr/privacy" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://nanobanana2.online/de/privacy" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://nanobanana2.online/ru/privacy" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://nanobanana2.online/en/privacy" />
+  </url>
+  
+  <url>
+    <loc>https://nanobanana2.online/en/privacy</loc>
+    <lastmod>2025-11-24</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.5</priority>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://nanobanana2.online/zh/privacy" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://nanobanana2.online/en/privacy" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://nanobanana2.online/ja/privacy" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://nanobanana2.online/fr/privacy" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://nanobanana2.online/de/privacy" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://nanobanana2.online/ru/privacy" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://nanobanana2.online/en/privacy" />
+  </url>
+  
+  <url>
+    <loc>https://nanobanana2.online/ja/privacy</loc>
+    <lastmod>2025-11-24</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.5</priority>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://nanobanana2.online/zh/privacy" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://nanobanana2.online/en/privacy" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://nanobanana2.online/ja/privacy" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://nanobanana2.online/fr/privacy" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://nanobanana2.online/de/privacy" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://nanobanana2.online/ru/privacy" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://nanobanana2.online/en/privacy" />
+  </url>
+  
+  <url>
+    <loc>https://nanobanana2.online/fr/privacy</loc>
+    <lastmod>2025-11-24</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.5</priority>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://nanobanana2.online/zh/privacy" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://nanobanana2.online/en/privacy" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://nanobanana2.online/ja/privacy" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://nanobanana2.online/fr/privacy" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://nanobanana2.online/de/privacy" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://nanobanana2.online/ru/privacy" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://nanobanana2.online/en/privacy" />
+  </url>
+  
+  <url>
+    <loc>https://nanobanana2.online/de/privacy</loc>
+    <lastmod>2025-11-24</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.5</priority>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://nanobanana2.online/zh/privacy" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://nanobanana2.online/en/privacy" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://nanobanana2.online/ja/privacy" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://nanobanana2.online/fr/privacy" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://nanobanana2.online/de/privacy" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://nanobanana2.online/ru/privacy" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://nanobanana2.online/en/privacy" />
+  </url>
+  
+  <url>
+    <loc>https://nanobanana2.online/ru/privacy</loc>
+    <lastmod>2025-11-24</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.5</priority>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://nanobanana2.online/zh/privacy" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://nanobanana2.online/en/privacy" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://nanobanana2.online/ja/privacy" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://nanobanana2.online/fr/privacy" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://nanobanana2.online/de/privacy" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://nanobanana2.online/ru/privacy" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://nanobanana2.online/en/privacy" />
+  </url>
+  
+  <!-- Cookies 页面 -->
+  <url>
+    <loc>https://nanobanana2.online/zh/cookies</loc>
+    <lastmod>2025-11-24</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.5</priority>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://nanobanana2.online/zh/cookies" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://nanobanana2.online/en/cookies" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://nanobanana2.online/ja/cookies" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://nanobanana2.online/fr/cookies" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://nanobanana2.online/de/cookies" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://nanobanana2.online/ru/cookies" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://nanobanana2.online/en/cookies" />
+  </url>
+  
+  <url>
+    <loc>https://nanobanana2.online/en/cookies</loc>
+    <lastmod>2025-11-24</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.5</priority>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://nanobanana2.online/zh/cookies" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://nanobanana2.online/en/cookies" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://nanobanana2.online/ja/cookies" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://nanobanana2.online/fr/cookies" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://nanobanana2.online/de/cookies" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://nanobanana2.online/ru/cookies" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://nanobanana2.online/en/cookies" />
+  </url>
+  
+  <url>
+    <loc>https://nanobanana2.online/ja/cookies</loc>
+    <lastmod>2025-11-24</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.5</priority>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://nanobanana2.online/zh/cookies" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://nanobanana2.online/en/cookies" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://nanobanana2.online/ja/cookies" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://nanobanana2.online/fr/cookies" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://nanobanana2.online/de/cookies" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://nanobanana2.online/ru/cookies" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://nanobanana2.online/en/cookies" />
+  </url>
+  
+  <url>
+    <loc>https://nanobanana2.online/fr/cookies</loc>
+    <lastmod>2025-11-24</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.5</priority>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://nanobanana2.online/zh/cookies" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://nanobanana2.online/en/cookies" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://nanobanana2.online/ja/cookies" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://nanobanana2.online/fr/cookies" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://nanobanana2.online/de/cookies" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://nanobanana2.online/ru/cookies" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://nanobanana2.online/en/cookies" />
+  </url>
+  
+  <url>
+    <loc>https://nanobanana2.online/de/cookies</loc>
+    <lastmod>2025-11-24</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.5</priority>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://nanobanana2.online/zh/cookies" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://nanobanana2.online/en/cookies" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://nanobanana2.online/ja/cookies" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://nanobanana2.online/fr/cookies" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://nanobanana2.online/de/cookies" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://nanobanana2.online/ru/cookies" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://nanobanana2.online/en/cookies" />
+  </url>
+  
+  <url>
+    <loc>https://nanobanana2.online/ru/cookies</loc>
+    <lastmod>2025-11-24</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.5</priority>
+    <xhtml:link rel="alternate" hreflang="zh" href="https://nanobanana2.online/zh/cookies" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://nanobanana2.online/en/cookies" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://nanobanana2.online/ja/cookies" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://nanobanana2.online/fr/cookies" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://nanobanana2.online/de/cookies" />
+    <xhtml:link rel="alternate" hreflang="ru" href="https://nanobanana2.online/ru/cookies" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://nanobanana2.online/en/cookies" />
+  </url>
+  
+</urlset>
+

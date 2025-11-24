@@ -1,0 +1,113 @@
+# Nano Banana 2 - AI Image Generator Platform
+
+## About
+Nano Banana 2 is an AI-powered image generation and editing platform that provides access to multiple state-of-the-art AI models for text-to-image generation and image editing. The platform supports various resolution options (1K, 2K, 4K) and offers a user-friendly interface for creating AI-generated artwork.
+
+## Website
+https://nanobanana2.online
+
+## Supported Languages
+- Chinese (zh)
+- English (en)
+- Japanese (ja)
+- French (fr)
+- German (de)
+- Russian (ru)
+
+## Main Features
+- Text-to-Image Generation: Create images from text prompts using various AI models
+- Image Editing: Edit and modify existing images with AI assistance
+- Multiple Resolution Options: Generate images in 1K, 2K, and 4K resolutions
+- Showcase Gallery: Browse examples of AI-generated artwork
+- API Testing: Test API endpoints and functionality
+- User Account Management: Credits system, billing, and subscription management
+
+## Supported AI Models
+- Nano Banana 2: Advanced image generation model
+- SeeDream 4.0: High-quality image generation model
+- GPT Series: Text-to-image models via OpenRouter
+- Gemini 2.5 Flash Image: Fast image generation model
+- Gemini 3 Pro Image: Professional image generation model
+- Doubao SeeDream 4.0: Via Volcano Engine API
+
+## Public Pages
+- Home: https://nanobanana2.online/
+- Showcase: https://nanobanana2.online/{lang}/showcase
+- Pricing: https://nanobanana2.online/{lang}/pricing
+- API Test: https://nanobanana2.online/{lang}/api-test
+- Terms: https://nanobanana2.online/{lang}/terms
+- Privacy Policy: https://nanobanana2.online/{lang}/privacy
+- Cookies Policy: https://nanobanana2.online/{lang}/cookies
+- Login: https://nanobanana2.online/{lang}/login
+
+## Protected Pages (Require Authentication)
+- Editor: https://nanobanana2.online/{lang}/editor
+- Account: https://nanobanana2.online/{lang}/account
+- Billing: https://nanobanana2.online/{lang}/billing
+- Settings: https://nanobanana2.online/{lang}/settings
+- Admin Panel: https://nanobanana2.online/{lang}/admin
+
+## API Endpoints
+The platform uses Cloudflare Functions for API proxying:
+
+- OpenRouter API Proxy: /api/openrouter
+  - Method: POST
+  - Purpose: Proxy requests to OpenRouter for GPT series models
+  - Requires: API key in environment variables
+
+- Volcano Engine API Proxy: /api/volcano
+  - Method: POST
+  - Purpose: Proxy requests to Volcano Engine for Doubao SeeDream models
+  - Endpoints:
+    - /api/volcano/chat/completions
+    - /api/volcano/images/generations
+
+- New API Provider: /api/new-api-provider/chat/completions
+  - Method: POST
+  - Purpose: Alternative API provider for Gemini models
+
+- User Registration: /api/register-user
+  - Method: POST
+  - Purpose: Register new user accounts
+
+- Email Service: /api/send-signup-email
+  - Method: POST
+  - Purpose: Send signup confirmation emails
+
+- Gumroad Webhook: /api/gumroad-webhook
+  - Method: POST
+  - Purpose: Handle Gumroad payment webhooks
+
+## Technology Stack
+- Frontend: React 18 with Vite
+- Routing: React Router DOM
+- Authentication: Supabase
+- Payment: PayPal, Gumroad, FastSpring
+- Hosting: Cloudflare Pages
+- API Proxying: Cloudflare Functions
+
+## Usage Guidelines
+- Users must create an account to access the image editor
+- Credits system: Users purchase credits to generate images
+- Subscription plans available for regular users
+- Generated images are owned by the user
+- Users must comply with terms of service and content policies
+
+## Content Policy
+- No generation of illegal, harmful, or offensive content
+- Respect intellectual property rights
+- Follow platform terms of service
+- Generated content should comply with applicable laws
+
+## Disclaimer
+Nano Banana 2 is an independent product and is not affiliated with Google or other AI model providers. The platform provides access to AI models through custom interfaces.
+
+## Sitemap
+https://nanobanana2.online/sitemap.xml
+
+## Robots.txt
+https://nanobanana2.online/robots.txt
+
+## Last Updated
+2025-11-24
+

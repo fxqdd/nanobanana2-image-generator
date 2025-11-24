@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://nanobanana2.online/sitemap.xml
+
