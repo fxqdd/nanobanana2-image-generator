@@ -3,6 +3,7 @@ export default {
   common: {
     appName: 'Nano Banana2',
     loading: 'Chargement...',
+    verifying: 'Vérification...',
     error: 'Erreur',
     success: 'Succès',
     cancel: 'Annuler',

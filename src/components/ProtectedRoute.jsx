@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useLanguage } from '../contexts/LanguageContext';
 
 /**
  * 受保护的路由组件，只有登录用户才能访问
@@ -10,6 +11,7 @@ import { useAuth } from '../contexts/AuthContext';
  */
 const ProtectedRoute = ({ children }) => {
   const { isLoggedIn, loading } = useAuth();
+  const { t } = useLanguage();
   const location = useLocation();
   const [shouldRedirect, setShouldRedirect] = useState(false);
 
@@ -62,7 +64,7 @@ const ProtectedRoute = ({ children }) => {
       color: 'var(--text-color)'
     }}>
       <div className="auth-loading-spinner"></div>
-      <p style={{ fontSize: '18px', fontWeight: '500' }}>验证中...</p>
+      <p style={{ fontSize: '18px', fontWeight: '500' }}>{t('common.verifying') || 'Verifying...'}</p>
     </div>
   );
 

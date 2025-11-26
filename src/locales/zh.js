@@ -3,6 +3,7 @@ export default {
   common: {
     appName: 'Nano Banana2',
     loading: '加载中...',
+    verifying: '验证中...',
     error: '错误',
     success: '成功',
     cancel: '取消',
